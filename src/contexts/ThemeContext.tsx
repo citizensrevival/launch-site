@@ -36,11 +36,9 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ 
   children, 
-  attribute = 'class',
   disableTransitionOnChange = false 
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>('system')
-  const [mounted, setMounted] = useState(false)
 
   // Get system theme preference
   const getSystemTheme = (): 'light' | 'dark' => {
@@ -91,7 +89,6 @@ export function ThemeProvider({
     const initialTheme = storedTheme || 'system'
     
     setThemeState(initialTheme)
-    setMounted(true)
     
     // Apply initial theme
     const root = window.document.documentElement

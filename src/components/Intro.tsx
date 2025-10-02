@@ -1,7 +1,7 @@
 
-import { IconLink } from '@/components/IconLink'
-import { Logo } from '@/components/Logo'
-import { SignUpForm } from '@/components/SignUpForm'
+import { IconLink } from './IconLink'
+import { Logo } from './Logo'
+import { SignUpForm } from './SignUpForm'
 
 function BookIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (

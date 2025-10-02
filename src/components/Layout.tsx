@@ -1,8 +1,7 @@
 import { useId } from 'react'
 
-import { Intro, IntroFooter } from '@/components/Intro'
-import { StarField } from '@/components/StarField'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { Intro, IntroFooter } from './Intro'
+import { ThemeToggle } from './ThemeToggle'
 
 function Timeline() {
   let id = useId()
@@ -81,7 +80,7 @@ function FixedSidebar({
         <div className="mx-auto max-w-lg lg:mx-0 lg:flex lg:w-96 lg:max-w-none lg:flex-col lg:before:flex-1 lg:before:pt-6">
           <div className="pt-20 pb-16 sm:pt-32 sm:pb-20 lg:py-20">
             <div className="relative">
-              <StarField className="top-14 -right-44" />
+
               {main}
             </div>
           </div>

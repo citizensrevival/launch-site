@@ -1,5 +1,5 @@
-import { SparkleIcon } from '@/components/SparkleIcon'
-import { Layout } from '@/components/Layout'
+import { SparkleIcon } from './SparkleIcon'
+import { Layout } from './Layout'
 
 export default function HomePage() {
   return (

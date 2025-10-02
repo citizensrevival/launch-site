@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 function ThemeIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
