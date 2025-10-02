@@ -1,78 +1,47 @@
-# Commit
+# Launch Site
 
-Commit is a [Tailwind Plus](https://tailwindcss.com/plus) site template built using [Tailwind CSS](https://tailwindcss.com) and [Next.js](https://nextjs.org).
+A modern React application built with Vite, TypeScript, and Tailwind CSS.
 
-## Getting started
-
-To get started, first install dependencies via npm:
+## Development
 
 ```bash
 npm install
-```
-
-Next, create a `.env.local` file in the root of your project and set the `NEXT_PUBLIC_SITE_URL` environment variable to your site's public URL:
-
-```
-NEXT_PUBLIC_SITE_URL=https://example.com
-```
-
-Then start the development server:
-
-```bash
 npm run dev
 ```
 
-Finally, open [http://localhost:3000](http://localhost:3000) in your browser to view the website.
+## Build for GitHub Pages
 
-## Customizing
-
-We've tried to build this template exactly the same way we'd build it if it we were building a real website, so there's no weird configuration files or global variables like you might see in a product that has been built as a "theme" rather than as an actual site.
-
-Instead, you make changes by just opening the files you want to change, and changing whatever it is you want to change.
-
-We'll cover a lot of the fundamentals here to help you get going quickly, but at the end of the day the whole codebase is yours and you should feel free to edit everything directly as much as you need to.
-
-### Project structure
-
-The template is built as a pretty standard Next.js website, but using the `src` folder so things like the `app` directory are located at `./src/app` instead of being top-level.
-
-### Title and metadata
-
-You can update your site's metadata in `./src/app/layout.tsx`.
-
-### Hero content
-
-The main hero section for the site that includes your logo, headline, description, and links are all located in `./src/components/Intro.tsx`.
-
-### Adding changelog entries
-
-All of the changelog entries are stored in one big `./src/app/page.mdx` file. We were inspired to set it up this way by how projects commonly maintain plaintext `CHANGELOG` files, and thought it would be cool to parse this sort of format and turn it into a nicely designed site.
-
-Each changelog entry should be separated by a horizontal rule (`---`) and should include an `<h2>` with a date, specified as an [MDX annotation](https://github.com/bradlc/mdx-annotations):
-
-```md
----
-
-![](@/images/your-screenshot.png)
-
-## My new changelog entry {{ date: '2023-04-06T00:00Z' }}
-
-Your content...
+```bash
+npm run build:github
 ```
 
-### Newsletter
+## GitHub Pages Deployment
 
-You can find the newsletter sign up form in `./src/components/SignUpForm.tsx` — if you have a newsletter you'll want to wire this up with whatever mailing list software you use to get it to actually work.
+This project is configured to automatically deploy to GitHub Pages when changes are pushed to the main branch.
 
-## License
+### Setup Instructions
 
-This site template is a commercial product and is licensed under the [Tailwind Plus license](https://tailwindcss.com/plus/license).
+1. Go to your repository settings on GitHub
+2. Navigate to "Pages" in the left sidebar
+3. Under "Source", select "GitHub Actions"
+4. The deployment will happen automatically when you push to the main branch
 
-## Learn more
+The site will be available at: `https://yourusername.github.io/launch-site/`
 
-To learn more about the technologies used in this site template, see the following resources:
+### Custom Domain Setup
 
-- [Tailwind CSS](https://tailwindcss.com/docs) - the official Tailwind CSS documentation
-- [Next.js](https://nextjs.org/docs) - the official Next.js documentation
-- [Motion One](https://motion.dev/) - the official Motion One documentation
-- [MDX](https://mdxjs.com/) - the official MDX documentation
+To use a custom domain (subdomain) instead of the default GitHub Pages URL:
+
+1. **Update the CNAME file**: Edit `public/CNAME` and replace `your-subdomain.yourdomain.com` with your actual domain
+2. **Configure DNS**: Add a CNAME record pointing your subdomain to `yourusername.github.io`
+3. **Enable HTTPS**: GitHub Pages will automatically provision an SSL certificate
+4. **Update build script**: Use `CUSTOM_DOMAIN=true npm run build:github` for custom domain builds
+
+Example DNS configuration:
+```
+Type: CNAME
+Name: your-subdomain
+Value: yourusername.github.io
+```
+
+The site will then be available at: `https://your-subdomain.yourdomain.com`
