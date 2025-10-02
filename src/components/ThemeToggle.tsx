@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/contexts/ThemeContext'
 
 function ThemeIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -18,7 +18,7 @@ function ThemeIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 export function ThemeToggle() {
   let [mounted, setMounted] = useState(false)
   let { resolvedTheme, setTheme } = useTheme()
-  let otherTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
+  let otherTheme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'light' : 'dark'
 
   useEffect(() => {
     setMounted(true)

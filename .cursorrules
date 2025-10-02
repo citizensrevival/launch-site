@@ -1,0 +1,22 @@
+# Cursor Rules for Launch Site Project
+
+## Server Management
+- Always shutdown any development servers (npm run dev, npm start, etc.) after completing changes
+- Use `pkill -f "next dev"` or similar commands to ensure servers are properly terminated
+- Do not leave background processes running after task completion
+
+## Development Workflow
+- When testing builds or running development servers, always clean up processes
+- If a server is started for testing, explicitly stop it before considering the task complete
+- Use `jobs` command to check for running background processes and terminate them
+
+## Code Quality
+- Ensure all linting errors are resolved before completing tasks
+- Run builds to verify changes work correctly
+- Clean up any temporary files or processes created during development
+
+## Project Structure
+- This is a Next.js project with custom theme management
+- Uses TypeScript and Tailwind CSS
+- No MDX dependencies (removed)
+- Custom theme context replaces next-themes
