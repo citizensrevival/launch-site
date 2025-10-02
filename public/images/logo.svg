@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title>Citizens Revival dot icon</title>
+  <desc>Purple circle with yellow center</desc>
+  <!-- Outer circle (purple) -->
+  <circle cx="32" cy="32" r="32" fill="#7C3AED"/>
+  <!-- Inner circle (yellow) -->
+  <circle cx="32" cy="32" r="18" fill="#F59E0B"/>
+</svg>

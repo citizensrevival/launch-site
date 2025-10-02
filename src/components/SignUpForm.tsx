@@ -17,7 +17,7 @@ export function SignUpForm() {
         name="email"
         id={id}
         disabled
-        placeholder="Email address"
+        placeholder="Newsletter Coming Soon"
         className="peer w-0 flex-auto bg-transparent px-4 py-2.5 text-base text-white placeholder:text-gray-500 focus:outline-hidden sm:text-[0.8125rem]/6"
       />
       <Button type="submit" arrow disabled>

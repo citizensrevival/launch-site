@@ -1,16 +1,12 @@
 import { Button } from './Button'
+import { Logo } from './Logo'
 import { SignUpForm } from './SignUpForm'
 
 export function Intro() {
   return (
     <>
-      {/* <div>
-        <a href="/">
-          <Logo className="inline-block h-8 w-auto" />
-        </a>
-      </div> */}
-      <h1 className="font-display text-4xl/tight font-medium text-white">
-        2026
+      <h1 className="font-display text-4xl/tight font-medium text-white mb-2 flex items-center">
+        <Logo className="inline-block h-10 w-auto" /> <span className="pl-3">2026</span>
       </h1>
       <h1 className="font-display text-4xl/tight font-light text-white">
         Aztec Citizens Revival{' '}
