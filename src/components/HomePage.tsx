@@ -1,6 +1,7 @@
 import { SparkleIcon } from './SparkleIcon'
 import { Layout } from './Layout'
 import { Section } from './Section'
+import { Button } from './Button'
 
 export default function HomePage() {
   return (
@@ -36,7 +37,7 @@ export default function HomePage() {
         >
           <p className="font-medium">Friday August 28th, 2026</p>
           <p className="mb-6">
-            Get to know Aztec on Main Street.
+          Kick off with the Community Business Scavenger Hunt: explore Aztec, meet neighbors, and shop local. Street vibes continue with food trucks, live entertainment, and a bustling vendor fair.
           </p>
           
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -62,7 +63,7 @@ export default function HomePage() {
         >
           <p className="font-medium">Saturday August 29th, 2026</p>
           <p className="mb-6">
-            Hang out at Riverside Park and enjoy the performances.
+          Settle in by the Animas for a Community Concert featuring artists from across the Four Corners. Headliner announcements coming soon! Bring a chair or blanket and enjoy the park atmosphere.
           </p>
           
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -88,7 +89,7 @@ export default function HomePage() {
         >
           <p className="font-medium">Sunday August 30th, 2026</p>
           <p className="mb-4">
-            Celebrate the end of the weekend at the Community Center.
+          Gather for an Interfaith Spiritual Conversation on faith, values, and community growth—followed by a pancake breakfast and family fun day activities.
           </p>
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <SparkleIcon /> Activities
@@ -97,6 +98,45 @@ export default function HomePage() {
             <li>Interfaith Spiritual Conversation: faith, values, & community growth</li>
             <li>Followed by a community pancake breakfast & family fun day</li>
           </ul>
+        </Section>
+
+        <Section
+          id="sponsors"
+          title="Sponsors"
+          date="Sponsors"
+        >
+          <p>
+            Spotlight your brand where the community gathers. Flexible packages place your logo and messages in premium app and site locations and on the ground at key venues—plus options to promote offers that drive real foot traffic.
+          </p>
+          <Button type="submit" arrow disabled>
+            Get Involved
+          </Button>
+        </Section>
+
+        <Section
+          id="vendors"
+          title="Vendors"
+          date="Vendors"
+        >
+          <p>
+            Join the heartbeat of Main Street and the vendor fair. Get a directory listing with map pin, highlight your menu or goods, and attract attendees with simple, scannable deals.
+          </p>
+          <Button type="submit" arrow disabled>
+            Get Involved
+          </Button>
+        </Section>
+
+        <Section
+          id="volunteers"
+          title="Volunteers"
+          date="Volunteers"
+        >
+          <p>
+            Be part of the crew that makes the weekend sing. From welcoming guests to helping at stages and family activities, we'll match shifts to your interests and provide quick training.
+          </p>
+          <Button type="submit" arrow disabled>
+            Get Involved
+          </Button>
         </Section>
       </div>
     </Layout>

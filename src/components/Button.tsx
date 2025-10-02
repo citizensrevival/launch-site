@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { useTheme } from '../contexts/ThemeContext'
 
 function ButtonInner({
   arrow = false,
@@ -25,9 +26,12 @@ export function Button({
   | React.ComponentPropsWithoutRef<'a'>
   | ({ href?: undefined } & React.ComponentPropsWithoutRef<'button'>)
 )) {
+  const { resolvedTheme } = useTheme()
+  
   className = clsx(
     className,
-    'group relative isolate flex-none rounded-md py-1.5 text-[0.8125rem]/6 font-semibold text-white',
+    'group relative isolate flex-none rounded-md py-1.5 text-[0.8125rem]/6 font-semibold',
+    resolvedTheme === 'dark' ? 'text-white' : 'text-gray-900',
     arrow ? 'pl-2.5 pr-[calc(9/16*1rem)]' : 'px-2.5',
   )
 
