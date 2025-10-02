@@ -16,7 +16,7 @@ function Timeline() {
           <pattern id={id} width="6" height="8" patternUnits="userSpaceOnUse">
             <path
               d="M0 0H6M0 8H6"
-              className="stroke-sky-900/10 xl:stroke-white/10 dark:stroke-white/10"
+              className="stroke-purple-900/10 xl:stroke-white/10 dark:stroke-white/10"
               fill="none"
             />
           </pattern>
@@ -31,20 +31,20 @@ function Glow() {
   let id = useId()
 
   return (
-    <div className="absolute inset-0 -z-10 overflow-hidden bg-gray-950 lg:right-[calc(max(2rem,50%-38rem)+40rem)] lg:min-w-lg">
+    <div className="absolute inset-0 -z-10 overflow-hidden bg-purple-950 lg:right-[calc(max(2rem,50%-38rem)+40rem)] lg:min-w-lg">
       <svg
         className="absolute -bottom-48 left-[-40%] h-320 w-[180%] lg:top-[-40%] lg:-right-40 lg:bottom-auto lg:left-auto lg:h-[180%] lg:w-7xl"
         aria-hidden="true"
       >
         <defs>
           <radialGradient id={`${id}-desktop`} cx="100%">
-            <stop offset="0%" stopColor="rgba(56, 189, 248, 0.3)" />
-            <stop offset="53.95%" stopColor="rgba(0, 71, 255, 0.09)" />
+            <stop offset="0%" stopColor="rgba(147, 51, 234, 0.3)" />
+            <stop offset="53.95%" stopColor="rgba(88, 28, 135, 0.09)" />
             <stop offset="100%" stopColor="rgba(10, 14, 23, 0)" />
           </radialGradient>
           <radialGradient id={`${id}-mobile`} cy="100%">
-            <stop offset="0%" stopColor="rgba(56, 189, 248, 0.3)" />
-            <stop offset="53.95%" stopColor="rgba(0, 71, 255, 0.09)" />
+            <stop offset="0%" stopColor="rgba(147, 51, 234, 0.3)" />
+            <stop offset="53.95%" stopColor="rgba(88, 28, 135, 0.09)" />
             <stop offset="100%" stopColor="rgba(10, 14, 23, 0)" />
           </radialGradient>
         </defs>
