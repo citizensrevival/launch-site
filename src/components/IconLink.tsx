@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import clsx from 'clsx'
 
 export function IconLink({
@@ -7,12 +6,12 @@ export function IconLink({
   compact = false,
   icon: Icon,
   ...props
-}: React.ComponentPropsWithoutRef<typeof Link> & {
+}: React.ComponentPropsWithoutRef<'a'> & {
   compact?: boolean
   icon?: React.ComponentType<{ className?: string }>
 }) {
   return (
-    <Link
+    <a
       {...props}
       className={clsx(
         className,
@@ -23,6 +22,6 @@ export function IconLink({
       <span className="absolute inset-0 -z-10 scale-75 rounded-lg bg-white/5 opacity-0 transition group-hover:scale-100 group-hover:opacity-100" />
       {Icon && <Icon className="h-4 w-4 flex-none" />}
       <span className="self-baseline text-white">{children}</span>
-    </Link>
+    </a>
   )
 }

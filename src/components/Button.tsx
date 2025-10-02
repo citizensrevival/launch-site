@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import clsx from 'clsx'
 
 function ButtonInner({
@@ -23,7 +22,7 @@ export function Button({
   children,
   ...props
 }: { arrow?: boolean } & (
-  | React.ComponentPropsWithoutRef<typeof Link>
+  | React.ComponentPropsWithoutRef<'a'>
   | ({ href?: undefined } & React.ComponentPropsWithoutRef<'button'>)
 )) {
   className = clsx(
@@ -33,12 +32,12 @@ export function Button({
   )
 
   return typeof props.href === 'undefined' ? (
-    <button className={className} {...props}>
+    <button className={className} {...(props as React.ComponentPropsWithoutRef<'button'>)}>
       <ButtonInner arrow={arrow}>{children}</ButtonInner>
     </button>
   ) : (
-    <Link className={className} {...props}>
+    <a className={className} {...(props as React.ComponentPropsWithoutRef<'a'>)}>
       <ButtonInner arrow={arrow}>{children}</ButtonInner>
-    </Link>
+    </a>
   )
 }

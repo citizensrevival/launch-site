@@ -1,7 +1,5 @@
 import { SparkleIcon } from '@/components/SparkleIcon'
 import { Layout } from '@/components/Layout'
-import Image from 'next/image'
-import Link from 'next/link'
 
 export default function HomePage() {
   return (
@@ -11,22 +9,22 @@ export default function HomePage() {
         <article id="commit-suggestions" className="scroll-mt-16">
           <header className="relative mb-10 xl:mb-0">
             <div className="pointer-events-none absolute top-0 left-[max(-0.5rem,calc(50%-18.625rem))] z-50 flex h-4 items-center justify-end gap-x-2 lg:right-[calc(max(2rem,50%-38rem)+40rem)] lg:left-0 lg:min-w-lg xl:h-8">
-              <Link href="#commit-suggestions" className="inline-flex">
+              <a href="#commit-suggestions" className="inline-flex">
                 <time className="hidden xl:pointer-events-auto xl:block xl:text-2xs/4 xl:font-medium xl:text-white/50">
                   April 6, 2023
                 </time>
-              </Link>
+              </a>
               <div className="h-0.25 w-3.5 bg-gray-400 lg:-mr-3.5 xl:mr-0 xl:bg-gray-300" />
             </div>
             <div className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
               <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
                 <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto">
                   <div className="flex">
-                    <Link href="#commit-suggestions" className="inline-flex">
+                    <a href="#commit-suggestions" className="inline-flex">
                       <time className="text-2xs/4 font-medium text-gray-500 xl:hidden dark:text-white/50">
                         April 6, 2023
                       </time>
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -37,7 +35,7 @@ export default function HomePage() {
             <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
               <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto typography">
                 <div className="relative overflow-hidden rounded-xl bg-gray-50 dark:bg-gray-900 mb-8">
-                  <Image
+                  <img
                     src="/images/commit-suggestions.png"
                     alt="Commit suggestions feature"
                     width={800}
@@ -76,22 +74,22 @@ export default function HomePage() {
         <article id="project-configuration" className="scroll-mt-16">
           <header className="relative mb-10 xl:mb-0">
             <div className="pointer-events-none absolute top-0 left-[max(-0.5rem,calc(50%-18.625rem))] z-50 flex h-4 items-center justify-end gap-x-2 lg:right-[calc(max(2rem,50%-38rem)+40rem)] lg:left-0 lg:min-w-lg xl:h-8">
-              <Link href="#project-configuration" className="inline-flex">
+              <a href="#project-configuration" className="inline-flex">
                 <time className="hidden xl:pointer-events-auto xl:block xl:text-2xs/4 xl:font-medium xl:text-white/50">
                   March 17, 2023
                 </time>
-              </Link>
+              </a>
               <div className="h-0.25 w-3.5 bg-gray-400 lg:-mr-3.5 xl:mr-0 xl:bg-gray-300" />
             </div>
             <div className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
               <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
                 <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto">
                   <div className="flex">
-                    <Link href="#project-configuration" className="inline-flex">
+                    <a href="#project-configuration" className="inline-flex">
                       <time className="text-2xs/4 font-medium text-gray-500 xl:hidden dark:text-white/50">
                         March 17, 2023
                       </time>
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -102,7 +100,7 @@ export default function HomePage() {
             <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
               <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto typography">
                 <div className="relative overflow-hidden rounded-xl bg-gray-50 dark:bg-gray-900 mb-8">
-                  <Image
+                  <img
                     src="/images/configuration-files.png"
                     alt="Configuration files feature"
                     width={800}
@@ -136,22 +134,22 @@ export default function HomePage() {
         <article id="dark-mode" className="scroll-mt-16">
           <header className="relative mb-10 xl:mb-0">
             <div className="pointer-events-none absolute top-0 left-[max(-0.5rem,calc(50%-18.625rem))] z-50 flex h-4 items-center justify-end gap-x-2 lg:right-[calc(max(2rem,50%-38rem)+40rem)] lg:left-0 lg:min-w-lg xl:h-8">
-              <Link href="#dark-mode" className="inline-flex">
+              <a href="#dark-mode" className="inline-flex">
                 <time className="hidden xl:pointer-events-auto xl:block xl:text-2xs/4 xl:font-medium xl:text-white/50">
                   March 6, 2023
                 </time>
-              </Link>
+              </a>
               <div className="h-0.25 w-3.5 bg-gray-400 lg:-mr-3.5 xl:mr-0 xl:bg-gray-300" />
             </div>
             <div className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
               <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
                 <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto">
                   <div className="flex">
-                    <Link href="#dark-mode" className="inline-flex">
+                    <a href="#dark-mode" className="inline-flex">
                       <time className="text-2xs/4 font-medium text-gray-500 xl:hidden dark:text-white/50">
                         March 6, 2023
                       </time>
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -162,7 +160,7 @@ export default function HomePage() {
             <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
               <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto typography">
                 <div className="relative overflow-hidden rounded-xl bg-gray-50 dark:bg-gray-900 mb-8">
-                  <Image
+                  <img
                     src="/images/dark-mode.png"
                     alt="Dark mode feature"
                     width={800}
@@ -197,22 +195,22 @@ export default function HomePage() {
         <article id="first-release" className="scroll-mt-16">
           <header className="relative mb-10 xl:mb-0">
             <div className="pointer-events-none absolute top-0 left-[max(-0.5rem,calc(50%-18.625rem))] z-50 flex h-4 items-center justify-end gap-x-2 lg:right-[calc(max(2rem,50%-38rem)+40rem)] lg:left-0 lg:min-w-lg xl:h-8">
-              <Link href="#first-release" className="inline-flex">
+              <a href="#first-release" className="inline-flex">
                 <time className="hidden xl:pointer-events-auto xl:block xl:text-2xs/4 xl:font-medium xl:text-white/50">
                   March 3, 2023
                 </time>
-              </Link>
+              </a>
               <div className="h-0.25 w-3.5 bg-gray-400 lg:-mr-3.5 xl:mr-0 xl:bg-gray-300" />
             </div>
             <div className="mx-auto max-w-7xl px-6 lg:flex lg:px-8">
               <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
                 <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto">
                   <div className="flex">
-                    <Link href="#first-release" className="inline-flex">
+                    <a href="#first-release" className="inline-flex">
                       <time className="text-2xs/4 font-medium text-gray-500 xl:hidden dark:text-white/50">
                         March 3, 2023
                       </time>
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -223,7 +221,7 @@ export default function HomePage() {
             <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
               <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto typography">
                 <div className="relative overflow-hidden rounded-xl bg-gray-50 dark:bg-gray-900 mb-8">
-                  <Image
+                  <img
                     src="/images/first-release.png"
                     alt="First release"
                     width={800}
