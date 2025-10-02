@@ -80,7 +80,6 @@ function FixedSidebar({
         <div className="mx-auto max-w-lg lg:mx-0 lg:flex lg:w-96 lg:max-w-none lg:flex-col lg:before:flex-1 lg:before:pt-6">
           <div className="pt-20 pb-16 sm:pt-32 sm:pb-20 lg:py-20">
             <div className="relative">
-
               {main}
             </div>
           </div>
