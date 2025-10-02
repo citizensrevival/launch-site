@@ -1,0 +1,35 @@
+{
+  "name": "tailwind-plus-commit",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "browserslist": "defaults, not ie <= 11",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "@types/node": "^24.1.0",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "cheerio": "^1.1.2",
+    "clsx": "^2.1.1",
+    "feed": "^5.1.0",
+    "motion": "^10.18.0",
+    "next": "^15.4.4",
+    "next-themes": "^0.4.6",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "eslint": "^9.32.0",
+    "eslint-config-next": "^15.4.4",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "sharp": "0.34.3"
+  }
+}
