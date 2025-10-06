@@ -13,7 +13,7 @@ export default function HomePage() {
           title="What is Aztec Citizens Revival?"
           date="What is it?"
           image={{
-            src: "/images/purple_logo_splash.png",
+            src: "./images/purple_logo_splash.png",
             alt: "Commit suggestions feature",
             width: 800,
             height: 600
@@ -29,7 +29,7 @@ export default function HomePage() {
           title="Friday - Main Street"
           date="Friday"
           image={{
-            src: "/images/aztec-nm-main-street.jpg",
+            src: "./images/aztec-nm-main-street.jpg",
             alt: "Friday - Main Street",
             width: 800,
             height: 600
@@ -55,7 +55,7 @@ export default function HomePage() {
           title="Saturday - Riverside Park"
           date="Saturday"
           image={{
-            src: "/images/aztec-nm-riverside-park.jpg",
+            src: "./images/aztec-nm-riverside-park.jpg",
             alt: "Saturday - Riverside Park",
             width: 800,
             height: 600
@@ -81,7 +81,7 @@ export default function HomePage() {
           title="Sunday - Community Center"
           date="Sunday"
           image={{
-            src: "/images/aztec-nm-community-center.jpg",
+            src: "./images/aztec-nm-community-center.jpg",
             alt: "Sunday - Community Center",
             width: 800,
             height: 600
