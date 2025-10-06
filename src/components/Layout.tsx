@@ -2,6 +2,7 @@ import { useId } from 'react'
 
 import { Intro, IntroFooter } from './Intro'
 import { ColorThemeToggle } from './ThemeToggle'
+import { Menu } from './Menu'
 import { useTheme } from '../contexts/ThemeContext'
 
 function Timeline() {
@@ -139,8 +140,13 @@ function FixedSidebar({
             </div>
           </div>
           <div className="flex flex-1 items-end justify-center pb-4 lg:justify-start lg:pb-6">
-            {footer}
-            <ColorThemeToggle />
+            <div className="flex flex-col items-center lg:items-start space-y-4">
+              <div className="flex items-center space-x-4">
+                {footer}
+                <Menu />
+                <ColorThemeToggle />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -151,11 +157,13 @@ function FixedSidebar({
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <FixedSidebar main={<Intro />} footer={<IntroFooter />} />
+      <FixedSidebar 
+        main={<Intro />} 
+        footer={<IntroFooter />} 
+      />
       
       <div className="main-content relative flex-auto">
         <Timeline />
-        <ColorThemeToggle />
         <main className="space-y-20 py-20 sm:space-y-32 sm:py-32">
           {children}
         </main>

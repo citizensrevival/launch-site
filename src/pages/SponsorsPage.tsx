@@ -59,49 +59,63 @@ export default function SponsorsPage() {
         >
           <div className="max-w-4xl mx-auto">
             <p className="mb-6 text-lg">
-              Spotlight your brand where the community gathers. Flexible packages place your logo and messages in premium app and site locations and on the ground at key venues—plus options to promote offers that drive real foot traffic.
+              Support our community while gaining valuable exposure. Your sponsorship helps fund the Community Center expansion and connects you with thousands of engaged community members.
             </p>
-            
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
-              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">Digital Presence</h3>
-                <ul className="space-y-2">
-                  <li>Logo placement on website and app</li>
-                  <li>Featured in event announcements</li>
-                  <li>Social media recognition</li>
-                  <li>Email newsletter inclusion</li>
-                </ul>
-              </div>
+            <h3 className="text-xl font-semibold mb-4">Sponsorship Tiers</h3>
+            <div className={`${themeColors.bg} p-6 rounded-lg mb-8`}>
               
-              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">On-Ground Presence</h3>
-                <ul className="space-y-2">
-                  <li>Banner placement at key venues</li>
-                  <li>Booth space at vendor fair</li>
-                  <li>Recognition during announcements</li>
-                  <li>Networking opportunities</li>
-                </ul>
+              <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <div className="text-center">
+                  <h4 className="font-semibold text-lg">Legacy Partner</h4>
+                  <p className={`text-2xl font-bold ${themeColors.text}`}>$5,000+</p>
+                  <p className="text-sm mb-2">or equivalent in-kind</p>
+                  <ul className="text-xs text-center space-y-2 list-none">
+                    <li>"Presented by [YOUR BRAND]" on all event materials</li>
+                    <li>Top-tier logo placement</li>
+                    <li>2-3 minute on-stage remarks</li>
+                  </ul>
+                </div>
+                <div className="text-center">
+                  <h4 className="font-semibold text-lg">Community Champion</h4>
+                  <p className={`mb-6 text-2xl font-bold ${themeColors.text}`}>$2,000-$4,999</p>
+                  <ul className="text-xs text-center space-y-2 list-none">
+                    <li>Logo on signage</li>
+                    <li>Premium booth placement</li>
+                    <li>Public thank-you's during event</li>
+                  </ul>
+                </div>
+                <div className="text-center">
+                  <h4 className="font-semibold text-lg">Neighbor Ally</h4>
+                  <p className={`mb-6 text-2xl font-bold ${themeColors.text}`}>$500-$1,999</p>
+                  <ul className="text-xs text-center space-y-2 list-none">
+                    <li>Logo or name on signs and event site(s)</li>
+                    <li>Flyer/coupon placement at community table</li>
+                    <li>Group thank you and mention in printed program</li>
+                  </ul>
+                </div>
+                <div className="text-center">
+                  <h4 className="font-semibold text-lg">Friend of the Event</h4>
+                  <p className={`mb-6 text-2xl font-bold ${themeColors.text}`}>$100-$499</p>
+                  <ul className="text-xs text-center space-y-2 list-none">
+                    <li>Name listed online and in print program</li>
+                    <li>Coupons or small items in giveaway bags</li>
+                    <li>Verbal recognition during raffle or drawing</li>
+                  </ul>
+                </div>
               </div>
             </div>
             
-            <div className={`${themeColors.bg} p-6 rounded-lg mb-8`}>
-              <h3 className="text-xl font-semibold mb-4">Sponsorship Packages</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <h4 className="font-semibold text-lg">Community</h4>
-                  <p className={`text-2xl font-bold ${themeColors.text}`}>$500</p>
-                  <p className="text-sm">Basic digital presence</p>
-                </div>
-                <div className="text-center">
-                  <h4 className="font-semibold text-lg">Main Street</h4>
-                  <p className={`text-2xl font-bold ${themeColors.text}`}>$1,000</p>
-                  <p className="text-sm">Enhanced visibility</p>
-                </div>
-                <div className="text-center">
-                  <h4 className="font-semibold text-lg">Headline</h4>
-                  <p className={`text-2xl font-bold ${themeColors.text}`}>$2,500</p>
-                  <p className="text-sm">Premium placement</p>
-                </div>
+              <h3 className="text-xl font-semibold mb-4">Benefits of Sponsorship</h3>
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg mb-8">
+              <div className="grid md:grid-cols-2 gap-6">
+                <ul className="space-y-2">
+                  <li>Recognition on banners, programs, and social media</li>
+                  <li>Engagement with thousands of attendees face-to-face</li>
+                </ul>
+                <ul className="space-y-2">
+                  <li>Support for Community Center expansion</li>
+                  <li>Positive visibility as a community champion</li>
+                </ul>
               </div>
             </div>
             
