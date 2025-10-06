@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { Link } from 'react-router-dom'
 import { useTheme } from '../contexts/ThemeContext'
 
 function ButtonInner({
@@ -21,8 +22,9 @@ export function Button({
   className,
   arrow,
   children,
+  to,
   ...props
-}: { arrow?: boolean } & (
+}: { arrow?: boolean; to?: string } & (
   | React.ComponentPropsWithoutRef<'a'>
   | ({ href?: undefined } & React.ComponentPropsWithoutRef<'button'>)
 )) {
@@ -83,6 +85,14 @@ export function Button({
     'sidebar:!bg-white/10 sidebar:!backdrop-blur-sm sidebar:!border-white/20 sidebar:!text-white sidebar:!hover:bg-white/20',
     arrow ? 'pl-2.5 pr-[calc(9/16*1rem)]' : 'px-2.5',
   )
+
+  if (to) {
+    return (
+      <Link to={to} className={className}>
+        <ButtonInner arrow={arrow}>{children}</ButtonInner>
+      </Link>
+    )
+  }
 
   return typeof props.href === 'undefined' ? (
     <button className={className} {...(props as React.ComponentPropsWithoutRef<'button'>)}>
