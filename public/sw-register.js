@@ -2,12 +2,13 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     try {
-      const currentScript = document.currentScript;
-      const scriptUrl = currentScript && currentScript.src ? new URL(currentScript.src) : null;
-      const baseUrl = scriptUrl ? (scriptUrl.pathname.replace(/\/[^/]*$/, '/') || '/') : '/';
-      const swUrl = new URL('sw.js', window.location.origin + baseUrl);
+      // Get the base path from the current location
+      const pathname = window.location.pathname;
+      const basePath = pathname.includes('/launch-site/') ? '/launch-site/' : '/';
+      
+      const swUrl = new URL('sw.js', window.location.origin + basePath);
       navigator.serviceWorker
-        .register(swUrl, { scope: baseUrl })
+        .register(swUrl, { scope: basePath })
         .then((registration) => {
           console.log('SW registered:', registration);
         })

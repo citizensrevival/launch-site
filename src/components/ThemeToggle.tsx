@@ -3,22 +3,27 @@
 import { useEffect, useState } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 
-function ThemeIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
+type ColorTheme = 'purple' | 'green' | 'blue' | 'amber' | 'rose'
+
+const colorThemes: { theme: ColorTheme; color: string; bgColor: string }[] = [
+  { theme: 'purple', color: '#7C3AED', bgColor: 'bg-purple-950' },
+  { theme: 'green', color: '#047857', bgColor: 'bg-emerald-950' },
+  { theme: 'blue', color: '#2563EB', bgColor: 'bg-blue-950' },
+  { theme: 'amber', color: '#F59E0B', bgColor: 'bg-amber-950' },
+  { theme: 'rose', color: '#E11D48', bgColor: 'bg-rose-950' },
+]
+
+function ColorIcon({ color }: { color: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-5-8a5 5 0 0 0 5 5V7a5 5 0 0 0-5 5Z"
-      />
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
+      <circle cx="12" cy="12" r="10" fill={color} />
     </svg>
   )
 }
 
-export function ThemeToggle() {
+export function ColorThemeToggle() {
   let [mounted, setMounted] = useState(false)
-  let { resolvedTheme, setTheme } = useTheme()
-  let otherTheme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'light' : 'dark'
+  let { colorTheme, setColorTheme } = useTheme()
 
   useEffect(() => {
     setMounted(true)
@@ -29,13 +34,23 @@ export function ThemeToggle() {
   }
 
   return (
-    <button
-      type="button"
-      className="group absolute top-4 right-4 z-50 -m-2.5 p-2.5"
-      onClick={() => setTheme(otherTheme)}
-    >
-      <span className="sr-only">Switch to {otherTheme} theme</span>
-      <ThemeIcon className="h-6 w-6 fill-white opacity-50 transition-opacity group-hover:opacity-100 lg:fill-gray-900 lg:dark:fill-white" />
-    </button>
+    <div className="absolute top-4 right-4 z-50 flex gap-2">
+      {colorThemes.map(({ theme, color }) => (
+        <button
+          key={theme}
+          type="button"
+          className={`cursor-pointer group -m-1 p-1 rounded-md transition-all ${
+            colorTheme === theme
+              ? 'bg-white/20 backdrop-blur-sm'
+              : 'hover:bg-white/10'
+          }`}
+          onClick={() => setColorTheme(theme)}
+          title={`Switch to ${theme} theme`}
+        >
+          <span className="sr-only">Switch to {theme} theme</span>
+          <ColorIcon color={color} />
+        </button>
+      ))}
+    </div>
   )
 }

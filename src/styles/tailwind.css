@@ -15,6 +15,17 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Color theme variants */
+@custom-variant purple (&:where(.purple, .purple *));
+@custom-variant green (&:where(.green, .green *));
+@custom-variant blue (&:where(.blue, .blue *));
+@custom-variant amber (&:where(.amber, .amber *));
+@custom-variant rose (&:where(.rose, .rose *));
+
+/* Context variants for button styling */
+@custom-variant sidebar (&:where(.sidebar, .sidebar *));
+@custom-variant main-content (&:where(.main-content, .main-content *));
+
 @theme {
   --text-2xs: 0.6875rem;
 

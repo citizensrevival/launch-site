@@ -26,12 +26,61 @@ export function Button({
   | React.ComponentPropsWithoutRef<'a'>
   | ({ href?: undefined } & React.ComponentPropsWithoutRef<'button'>)
 )) {
-  const { resolvedTheme } = useTheme()
+  const { colorTheme } = useTheme()
+  
+  // Get theme-specific colors for main content area
+  const getThemeColors = (theme: string) => {
+    switch (theme) {
+      case 'green':
+        return {
+          bg: 'bg-emerald-500/20',
+          border: 'border-emerald-400/30',
+          text: 'text-emerald-900',
+          hover: 'hover:bg-emerald-500/30'
+        }
+      case 'blue':
+        return {
+          bg: 'bg-blue-500/20',
+          border: 'border-blue-400/30',
+          text: 'text-blue-900',
+          hover: 'hover:bg-blue-500/30'
+        }
+      case 'amber':
+        return {
+          bg: 'bg-amber-500/20',
+          border: 'border-amber-400/30',
+          text: 'text-amber-900',
+          hover: 'hover:bg-amber-500/30'
+        }
+      case 'rose':
+        return {
+          bg: 'bg-rose-500/20',
+          border: 'border-rose-400/30',
+          text: 'text-rose-900',
+          hover: 'hover:bg-rose-500/30'
+        }
+      default: // purple
+        return {
+          bg: 'bg-purple-500/20',
+          border: 'border-purple-400/30',
+          text: 'text-purple-900',
+          hover: 'hover:bg-purple-500/30'
+        }
+    }
+  }
+  
+  const themeColors = getThemeColors(colorTheme)
   
   className = clsx(
     className,
     'group relative isolate flex-none rounded-md py-1.5 text-[0.8125rem]/6 font-semibold',
-    resolvedTheme === 'dark' ? 'text-white' : 'text-gray-900',
+    // Default to theme colors (main content)
+    themeColors.bg,
+    themeColors.border,
+    themeColors.text,
+    themeColors.hover,
+    // Override for sidebar - white styling
+    'sidebar:!bg-white/10 sidebar:!backdrop-blur-sm sidebar:!border-white/20 sidebar:!text-white sidebar:!hover:bg-white/20',
     arrow ? 'pl-2.5 pr-[calc(9/16*1rem)]' : 'px-2.5',
   )
 

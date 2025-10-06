@@ -10,7 +10,7 @@ export default function App() {
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col bg-white dark:bg-gray-950">
-        <ThemeProvider attribute="class" disableTransitionOnChange>
+        <ThemeProvider disableTransitionOnChange>
           <HomePage />
         </ThemeProvider>
       </body>

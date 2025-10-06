@@ -2,12 +2,11 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type Theme = 'light' | 'dark' | 'system'
+type ColorTheme = 'purple' | 'green' | 'blue' | 'amber' | 'rose'
 
 interface ThemeContextType {
-  theme: Theme
-  resolvedTheme: 'light' | 'dark'
-  setTheme: (theme: Theme) => void
+  colorTheme: ColorTheme
+  setColorTheme: (theme: ColorTheme) => void
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -18,9 +17,8 @@ export function useTheme() {
     // Return default values during SSR to prevent hydration mismatch
     if (typeof window === 'undefined') {
       return {
-        theme: 'system' as Theme,
-        resolvedTheme: 'light' as const,
-        setTheme: () => {}
+        colorTheme: 'purple' as ColorTheme,
+        setColorTheme: () => {}
       }
     }
     throw new Error('useTheme must be used within a ThemeProvider')
@@ -30,7 +28,6 @@ export function useTheme() {
 
 interface ThemeProviderProps {
   children: React.ReactNode
-  attribute?: string
   disableTransitionOnChange?: boolean
 }
 
@@ -38,21 +35,12 @@ export function ThemeProvider({
   children, 
   disableTransitionOnChange = false 
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>('system')
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>('purple')
 
-  // Get system theme preference
-  const getSystemTheme = (): 'light' | 'dark' => {
-    if (typeof window === 'undefined') return 'light'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  }
-
-  // Get resolved theme (actual theme being applied)
-  const resolvedTheme = theme === 'system' ? getSystemTheme() : theme
-
-  // Set theme in localStorage and apply to document
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme)
-    localStorage.setItem('theme', newTheme)
+  // Set color theme in localStorage and apply to document
+  const setColorTheme = (newColorTheme: ColorTheme) => {
+    setColorThemeState(newColorTheme)
+    localStorage.setItem('colorTheme', newColorTheme)
     
     if (typeof window !== 'undefined') {
       const root = window.document.documentElement
@@ -61,16 +49,11 @@ export function ThemeProvider({
         root.style.setProperty('--color-transition', 'none')
       }
       
-      // Remove existing theme classes
-      root.classList.remove('light', 'dark')
+      // Remove existing color theme classes
+      root.classList.remove('purple', 'green', 'blue', 'amber', 'rose')
       
-      // Apply new theme
-      if (newTheme === 'system') {
-        const systemTheme = getSystemTheme()
-        root.classList.add(systemTheme)
-      } else {
-        root.classList.add(newTheme)
-      }
+      // Apply new color theme
+      root.classList.add(newColorTheme)
       
       // Re-enable transitions after a brief delay
       if (disableTransitionOnChange) {
@@ -81,47 +64,23 @@ export function ThemeProvider({
     }
   }
 
-  // Initialize theme from localStorage or system preference
+  // Initialize color theme from localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const storedTheme = localStorage.getItem('theme') as Theme | null
-    const initialTheme = storedTheme || 'system'
+    const storedColorTheme = localStorage.getItem('colorTheme') as ColorTheme | null
+    const initialColorTheme = storedColorTheme || 'purple'
     
-    setThemeState(initialTheme)
+    setColorThemeState(initialColorTheme)
     
-    // Apply initial theme
+    // Apply initial color theme
     const root = window.document.documentElement
-    root.classList.remove('light', 'dark')
-    
-    if (initialTheme === 'system') {
-      const systemTheme = getSystemTheme()
-      root.classList.add(systemTheme)
-    } else {
-      root.classList.add(initialTheme)
-    }
+    root.classList.remove('purple', 'green', 'blue', 'amber', 'rose')
+    root.classList.add(initialColorTheme)
   }, [])
 
-  // Listen for system theme changes when using 'system' theme
-  useEffect(() => {
-    if (typeof window === 'undefined' || theme !== 'system') return
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
-    const handleChange = () => {
-      if (theme === 'system') {
-        const root = window.document.documentElement
-        root.classList.remove('light', 'dark')
-        root.classList.add(getSystemTheme())
-      }
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [theme])
-
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+    <ThemeContext.Provider value={{ colorTheme, setColorTheme }}>
       {children}
     </ThemeContext.Provider>
   )

@@ -21,7 +21,7 @@ export function Intro() {
         <p className="mt-4 text-sm/6 text-gray-300">
           We are looking for volunteers, sponsors and vendors to help us make this event a success.
         </p>
-        <Button type="submit" arrow disabled>
+        <Button type="submit" arrow>
           Get Involved
         </Button>
       </div>

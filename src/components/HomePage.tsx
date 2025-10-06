@@ -108,7 +108,7 @@ export default function HomePage() {
           <p>
             Spotlight your brand where the community gathers. Flexible packages place your logo and messages in premium app and site locations and on the ground at key venues—plus options to promote offers that drive real foot traffic.
           </p>
-          <Button type="submit" arrow disabled>
+          <Button type="submit" arrow>
             Get Involved
           </Button>
         </Section>
@@ -121,7 +121,7 @@ export default function HomePage() {
           <p>
             Join the heartbeat of Main Street and the vendor fair. Get a directory listing with map pin, highlight your menu or goods, and attract attendees with simple, scannable deals.
           </p>
-          <Button type="submit" arrow disabled>
+          <Button type="submit" arrow>
             Get Involved
           </Button>
         </Section>
@@ -134,7 +134,7 @@ export default function HomePage() {
           <p>
             Be part of the crew that makes the weekend sing. From welcoming guests to helping at stages and family activities, we'll match shifts to your interests and provide quick training.
           </p>
-          <Button type="submit" arrow disabled>
+          <Button type="submit" arrow>
             Get Involved
           </Button>
         </Section>
