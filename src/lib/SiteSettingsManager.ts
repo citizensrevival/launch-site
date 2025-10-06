@@ -3,11 +3,11 @@
  * Manages site settings and state using Local Storage
  */
 
-export type ColorScheme = 'light' | 'dark' | 'auto';
+export type ColorTheme = 'purple' | 'green' | 'blue' | 'amber' | 'rose';
 export type GetInvolvedType = 'vendor' | 'sponsor' | 'volunteer';
 
 export interface SiteSettings {
-  colorScheme: ColorScheme;
+  colorTheme: ColorTheme;
   emailSubscribed: boolean;
   getInvolvedSubmissions: {
     vendor: boolean;
@@ -78,17 +78,17 @@ export class SiteSettingsManager {
   }
 
   /**
-   * Gets the current color scheme
+   * Gets the current color theme
    */
-  public getColorScheme(): ColorScheme {
-    return this.getSettings().colorScheme;
+  public getColorTheme(): ColorTheme {
+    return this.getSettings().colorTheme;
   }
 
   /**
-   * Sets the color scheme
+   * Sets the color theme
    */
-  public setColorScheme(colorScheme: ColorScheme): void {
-    this.updateSettings({ colorScheme });
+  public setColorTheme(colorTheme: ColorTheme): void {
+    this.updateSettings({ colorTheme });
   }
 
   /**
@@ -156,7 +156,7 @@ export class SiteSettingsManager {
    * Gets a summary of all settings
    */
   public getSettingsSummary(): {
-    colorScheme: ColorScheme;
+    colorTheme: ColorTheme;
     emailSubscribed: boolean;
     getInvolvedCount: number;
     hasAnySubmissions: boolean;
@@ -166,7 +166,7 @@ export class SiteSettingsManager {
     const getInvolvedCount = Object.values(getInvolvedSubmissions).filter(Boolean).length;
 
     return {
-      colorScheme: settings.colorScheme,
+      colorTheme: settings.colorTheme,
       emailSubscribed: settings.emailSubscribed,
       getInvolvedCount,
       hasAnySubmissions: getInvolvedCount > 0
@@ -202,7 +202,7 @@ export class SiteSettingsManager {
    */
   private getDefaultSettings(): SiteSettings {
     return {
-      colorScheme: 'auto',
+      colorTheme: 'purple',
       emailSubscribed: false,
       getInvolvedSubmissions: {
         vendor: false,
@@ -219,7 +219,7 @@ export class SiteSettingsManager {
     const defaults = this.getDefaultSettings();
     
     return {
-      colorScheme: stored.colorScheme || defaults.colorScheme,
+      colorTheme: stored.colorTheme || defaults.colorTheme,
       emailSubscribed: stored.emailSubscribed ?? defaults.emailSubscribed,
       getInvolvedSubmissions: {
         vendor: stored.getInvolvedSubmissions?.vendor ?? defaults.getInvolvedSubmissions.vendor,
@@ -246,8 +246,8 @@ export const useSiteSettings = () => {
   return {
     getSettings: () => settingsManager.getSettings(),
     updateSettings: (updates: Partial<SiteSettings>) => settingsManager.updateSettings(updates),
-    getColorScheme: () => settingsManager.getColorScheme(),
-    setColorScheme: (colorScheme: ColorScheme) => settingsManager.setColorScheme(colorScheme),
+    getColorTheme: () => settingsManager.getColorTheme(),
+    setColorTheme: (colorTheme: ColorTheme) => settingsManager.setColorTheme(colorTheme),
     getEmailSubscribed: () => settingsManager.getEmailSubscribed(),
     setEmailSubscribed: (subscribed: boolean) => settingsManager.setEmailSubscribed(subscribed),
     getGetInvolvedSubmission: (type: GetInvolvedType) => settingsManager.getGetInvolvedSubmission(type),

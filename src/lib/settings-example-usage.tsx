@@ -4,14 +4,14 @@
  */
 
 import { useState, useEffect } from 'react';
-import { SiteSettingsManager, ColorScheme, GetInvolvedType, useSiteSettings } from './SiteSettingsManager';
+import { SiteSettingsManager, ColorTheme, GetInvolvedType, useSiteSettings } from './SiteSettingsManager';
 
 // Example 1: Using the class directly
 export function DirectUsageExample() {
   const [settings, setSettings] = useState(SiteSettingsManager.getInstance().getSettings());
 
-  const handleColorSchemeChange = (colorScheme: ColorScheme) => {
-    SiteSettingsManager.getInstance().setColorScheme(colorScheme);
+  const handleColorThemeChange = (colorTheme: ColorTheme) => {
+    SiteSettingsManager.getInstance().setColorTheme(colorTheme);
     setSettings(SiteSettingsManager.getInstance().getSettings());
   };
 
@@ -29,17 +29,19 @@ export function DirectUsageExample() {
     <div className="p-6 space-y-4">
       <h2 className="text-2xl font-bold">Settings Manager - Direct Usage</h2>
       
-      {/* Color Scheme Selection */}
+      {/* Color Theme Selection */}
       <div>
-        <label className="block text-sm font-medium mb-2">Color Scheme</label>
+        <label className="block text-sm font-medium mb-2">Color Theme</label>
         <select
-          value={settings.colorScheme}
-          onChange={(e) => handleColorSchemeChange(e.target.value as ColorScheme)}
+          value={settings.colorTheme}
+          onChange={(e) => handleColorThemeChange(e.target.value as ColorTheme)}
           className="border rounded px-3 py-2"
         >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="auto">Auto</option>
+          <option value="purple">Purple</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue</option>
+          <option value="amber">Amber</option>
+          <option value="rose">Rose</option>
         </select>
       </div>
 
@@ -102,31 +104,47 @@ export function HookUsageExample() {
     <div className="p-6 space-y-4">
       <h2 className="text-2xl font-bold">Settings Manager - Hook Usage</h2>
       
-      {/* Color Scheme Toggle */}
+      {/* Color Theme Toggle */}
       <div className="flex space-x-2">
         <button
-          onClick={() => handleUpdate({ colorScheme: 'light' })}
+          onClick={() => handleUpdate({ colorTheme: 'purple' })}
           className={`px-4 py-2 rounded ${
-            currentSettings.colorScheme === 'light' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            currentSettings.colorTheme === 'purple' ? 'bg-purple-500 text-white' : 'bg-gray-200'
           }`}
         >
-          Light
+          Purple
         </button>
         <button
-          onClick={() => handleUpdate({ colorScheme: 'dark' })}
+          onClick={() => handleUpdate({ colorTheme: 'green' })}
           className={`px-4 py-2 rounded ${
-            currentSettings.colorScheme === 'dark' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            currentSettings.colorTheme === 'green' ? 'bg-green-500 text-white' : 'bg-gray-200'
           }`}
         >
-          Dark
+          Green
         </button>
         <button
-          onClick={() => handleUpdate({ colorScheme: 'auto' })}
+          onClick={() => handleUpdate({ colorTheme: 'blue' })}
           className={`px-4 py-2 rounded ${
-            currentSettings.colorScheme === 'auto' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            currentSettings.colorTheme === 'blue' ? 'bg-blue-500 text-white' : 'bg-gray-200'
           }`}
         >
-          Auto
+          Blue
+        </button>
+        <button
+          onClick={() => handleUpdate({ colorTheme: 'amber' })}
+          className={`px-4 py-2 rounded ${
+            currentSettings.colorTheme === 'amber' ? 'bg-amber-500 text-white' : 'bg-gray-200'
+          }`}
+        >
+          Amber
+        </button>
+        <button
+          onClick={() => handleUpdate({ colorTheme: 'rose' })}
+          className={`px-4 py-2 rounded ${
+            currentSettings.colorTheme === 'rose' ? 'bg-rose-500 text-white' : 'bg-gray-200'
+          }`}
+        >
+          Rose
         </button>
       </div>
 
@@ -180,7 +198,7 @@ export function HookUsageExample() {
       <div className="bg-gray-100 p-4 rounded">
         <h3 className="font-semibold mb-2">Current Status</h3>
         <div className="space-y-1 text-sm">
-          <div>Color Scheme: <span className="font-mono">{currentSettings.colorScheme}</span></div>
+          <div>Color Theme: <span className="font-mono">{currentSettings.colorTheme}</span></div>
           <div>Email Subscribed: <span className="font-mono">{currentSettings.emailSubscribed ? 'Yes' : 'No'}</span></div>
           <div>Vendor: <span className="font-mono">{currentSettings.getInvolvedSubmissions.vendor ? 'Yes' : 'No'}</span></div>
           <div>Sponsor: <span className="font-mono">{currentSettings.getInvolvedSubmissions.sponsor ? 'Yes' : 'No'}</span></div>

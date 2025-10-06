@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useSiteSettings } from '../lib/SiteSettingsManager'
 
 type ColorTheme = 'purple' | 'green' | 'blue' | 'amber' | 'rose'
 
@@ -35,12 +36,13 @@ export function ThemeProvider({
   children, 
   disableTransitionOnChange = false 
 }: ThemeProviderProps) {
+  const siteSettings = useSiteSettings()
   const [colorTheme, setColorThemeState] = useState<ColorTheme>('purple')
 
-  // Set color theme in localStorage and apply to document
+  // Set color theme using site settings and apply to document
   const setColorTheme = (newColorTheme: ColorTheme) => {
     setColorThemeState(newColorTheme)
-    localStorage.setItem('colorTheme', newColorTheme)
+    siteSettings.setColorTheme(newColorTheme)
     
     if (typeof window !== 'undefined') {
       const root = window.document.documentElement
@@ -64,20 +66,18 @@ export function ThemeProvider({
     }
   }
 
-  // Initialize color theme from localStorage
+  // Initialize color theme from site settings
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const storedColorTheme = localStorage.getItem('colorTheme') as ColorTheme | null
-    const initialColorTheme = storedColorTheme || 'purple'
-    
+    const initialColorTheme = siteSettings.getColorTheme()
     setColorThemeState(initialColorTheme)
     
     // Apply initial color theme
     const root = window.document.documentElement
     root.classList.remove('purple', 'green', 'blue', 'amber', 'rose')
     root.classList.add(initialColorTheme)
-  }, [])
+  }, [siteSettings])
 
   return (
     <ThemeContext.Provider value={{ colorTheme, setColorTheme }}>
