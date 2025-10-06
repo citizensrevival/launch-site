@@ -75,7 +75,7 @@ export function Button({
   
   className = clsx(
     className,
-    'group relative isolate flex-none rounded-md py-1.5 text-[0.8125rem]/6 font-semibold',
+    'group relative isolate flex-none rounded-md py-1.5 text-[0.8125rem]/6 font-semibold no-underline',
     // Default to theme colors (main content)
     themeColors.bg,
     themeColors.border,

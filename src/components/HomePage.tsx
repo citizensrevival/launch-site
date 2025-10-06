@@ -105,12 +105,14 @@ export default function HomePage() {
           title="Sponsors"
           date="Sponsors"
         >
-          <p>
+          <p className="mb-6">
             Spotlight your brand where the community gathers. Flexible packages place your logo and messages in premium app and site locations and on the ground at key venues—plus options to promote offers that drive real foot traffic.
           </p>
-          <Button to="/sponsors" arrow>
-            Learn More
-          </Button>
+          <div className="mt-6">
+            <Button to="/sponsors" arrow>
+              Learn More
+            </Button>
+          </div>
         </Section>
 
         <Section
@@ -118,12 +120,14 @@ export default function HomePage() {
           title="Vendors"
           date="Vendors"
         >
-          <p>
+          <p className="mb-6">
             Join the heartbeat of Main Street and the vendor fair. Get a directory listing with map pin, highlight your menu or goods, and attract attendees with simple, scannable deals.
           </p>
-          <Button to="/vendors" arrow>
-            Learn More
-          </Button>
+          <div className="mt-6">
+            <Button to="/vendors" arrow>
+              Learn More
+            </Button>
+          </div>
         </Section>
 
         <Section
@@ -131,12 +135,14 @@ export default function HomePage() {
           title="Volunteers"
           date="Volunteers"
         >
-          <p>
+          <p className="mb-6">
             Be part of the crew that makes the weekend sing. From welcoming guests to helping at stages and family activities, we'll match shifts to your interests and provide quick training.
           </p>
-          <Button to="/volunteers" arrow>
-            Learn More
-          </Button>
+          <p className="mt-6">
+            <Button to="/volunteers" arrow>
+              Learn More
+            </Button>
+          </p>
         </Section>
       </div>
     </Layout>

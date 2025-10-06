@@ -11,5 +11,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: true, // Allow external connections
+    hmr: {
+      port: 3001, // Use a different port for HMR to avoid conflicts
+    },
   },
 })
