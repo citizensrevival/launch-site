@@ -69,7 +69,7 @@ export default function SponsorsPage() {
                   <h4 className="font-semibold text-lg">Legacy Partner</h4>
                   <p className={`text-2xl font-bold ${themeColors.text}`}>$5,000+</p>
                   <p className="text-sm mb-2">or equivalent in-kind</p>
-                  <ul className="text-xs text-center space-y-2 list-none">
+                  <ul className="text-xs text-center space-y-2 list-none m-0 p-0">
                     <li>"Presented by [YOUR BRAND]" on all event materials</li>
                     <li>Top-tier logo placement</li>
                     <li>2-3 minute on-stage remarks</li>
@@ -78,7 +78,7 @@ export default function SponsorsPage() {
                 <div className="text-center">
                   <h4 className="font-semibold text-lg">Community Champion</h4>
                   <p className={`mb-6 text-2xl font-bold ${themeColors.text}`}>$2,000-$4,999</p>
-                  <ul className="text-xs text-center space-y-2 list-none">
+                  <ul className="text-xs text-center space-y-2 list-none m-0 p-0">
                     <li>Logo on signage</li>
                     <li>Premium booth placement</li>
                     <li>Public thank-you's during event</li>
@@ -87,7 +87,7 @@ export default function SponsorsPage() {
                 <div className="text-center">
                   <h4 className="font-semibold text-lg">Neighbor Ally</h4>
                   <p className={`mb-6 text-2xl font-bold ${themeColors.text}`}>$500-$1,999</p>
-                  <ul className="text-xs text-center space-y-2 list-none">
+                  <ul className="text-xs text-center space-y-2 list-none m-0 p-0">
                     <li>Logo or name on signs and event site(s)</li>
                     <li>Flyer/coupon placement at community table</li>
                     <li>Group thank you and mention in printed program</li>
