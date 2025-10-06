@@ -3,6 +3,13 @@ import { Layout } from './Layout'
 import { Section } from './Section'
 import { Button } from './Button'
 
+// Get the base path for images
+const getImagePath = (imageName: string) => {
+  const pathname = window.location.pathname;
+  const basePath = pathname.includes('/launch-site/') ? '/launch-site/' : '/';
+  return basePath + 'images/' + imageName;
+};
+
 export default function HomePage() {
   return (
     <Layout>
@@ -13,7 +20,7 @@ export default function HomePage() {
           title="What is Aztec Citizens Revival?"
           date="What is it?"
           image={{
-            src: "./images/purple_logo_splash.png",
+            src: getImagePath("purple_logo_splash.png"),
             alt: "Commit suggestions feature",
             width: 800,
             height: 600
@@ -29,7 +36,7 @@ export default function HomePage() {
           title="Friday - Main Street"
           date="Friday"
           image={{
-            src: "./images/aztec-nm-main-street.jpg",
+            src: getImagePath("aztec-nm-main-street.jpg"),
             alt: "Friday - Main Street",
             width: 800,
             height: 600
@@ -55,7 +62,7 @@ export default function HomePage() {
           title="Saturday - Riverside Park"
           date="Saturday"
           image={{
-            src: "./images/aztec-nm-riverside-park.jpg",
+            src: getImagePath("aztec-nm-riverside-park.jpg"),
             alt: "Saturday - Riverside Park",
             width: 800,
             height: 600
@@ -81,7 +88,7 @@ export default function HomePage() {
           title="Sunday - Community Center"
           date="Sunday"
           image={{
-            src: "./images/aztec-nm-community-center.jpg",
+            src: getImagePath("aztec-nm-community-center.jpg"),
             alt: "Sunday - Community Center",
             width: 800,
             height: 600
