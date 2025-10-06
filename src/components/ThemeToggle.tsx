@@ -43,7 +43,7 @@ export function ColorThemeToggle() {
           type="button"
           className={`cursor-pointer group -m-1 p-1 rounded-md transition-all ${
             colorTheme === theme
-              ? 'bg-white/20 backdrop-blur-sm'
+              ? 'bg-white/20 backdrop-blur-sm -webkit-backdrop-filter-blur-sm'
               : 'hover:bg-white/10'
           }`}
           onClick={() => setColorTheme(theme)}

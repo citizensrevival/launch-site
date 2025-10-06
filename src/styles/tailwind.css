@@ -11,6 +11,18 @@
   font-weight: 200 900;
   font-display: swap;
   font-style: normal;
+  font-variation-settings: 'wght' 400;
+}
+
+/* Safari fallback for variable fonts */
+@supports not (font-variation-settings: 'wght' 400) {
+  @font-face {
+    font-family: 'Mona Sans';
+    src: url('../fonts/Mona-Sans.var.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+    font-style: normal;
+  }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -31,4 +43,19 @@
 
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Mona Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Safari-specific fixes */
+@supports (-webkit-backdrop-filter: blur(8px)) {
+  .backdrop-blur-sm {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(8px)) and not (-webkit-backdrop-filter: blur(8px)) {
+  .backdrop-blur-sm {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
 }

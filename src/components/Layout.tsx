@@ -119,7 +119,7 @@ function Glow() {
           className="lg:hidden"
         />
       </svg>
-      <div className="absolute inset-x-0 right-0 bottom-0 h-px bg-white mix-blend-overlay lg:top-0 lg:left-auto lg:h-auto lg:w-px" />
+      <div className="absolute inset-x-0 right-0 bottom-0 h-px bg-white mix-blend-overlay lg:top-0 lg:left-auto lg:h-auto lg:w-px" style={{ mixBlendMode: 'overlay' }} />
     </div>
   )
 }
