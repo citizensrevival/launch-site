@@ -11,7 +11,6 @@ const basePath = getBasePath();
 const urlsToCache = [
   basePath,
   basePath + 'index.html',
-  basePath + 'assets/',
   basePath + 'images/purple_logo_splash.png',
   basePath + 'images/aztec-nm-main-street.jpg',
   basePath + 'images/aztec-nm-riverside-park.jpg',

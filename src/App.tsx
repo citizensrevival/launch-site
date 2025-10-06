@@ -5,10 +5,16 @@ import SponsorsPage from './pages/SponsorsPage'
 import VendorsPage from './pages/VendorsPage'
 import VolunteersPage from './pages/VolunteersPage'
 
+// Get the base path from the current location
+const getBasename = () => {
+  const pathname = window.location.pathname;
+  return pathname.includes('/launch-site/') ? '/launch-site' : '';
+};
+
 export default function App() {
   return (
     <ThemeProvider disableTransitionOnChange>
-      <Router>
+      <Router basename={getBasename()}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/sponsors" element={<SponsorsPage />} />
