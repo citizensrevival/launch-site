@@ -8,6 +8,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    target: 'es2015', // Better Safari compatibility
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
   server: {
     port: 3000,

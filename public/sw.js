@@ -1,9 +1,7 @@
 // Service Worker for Aztec Citizens Revival PWA
-const CACHE_NAME = 'aztec-revival-v1';
+const CACHE_NAME = 'aztec-revival-v2';
 
 const urlsToCache = [
-  '/',
-  '/index.html',
   '/images/purple_logo_splash.png',
   '/images/aztec-nm-main-street.jpg',
   '/images/aztec-nm-riverside-park.jpg',
@@ -25,6 +23,14 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  // Don't cache JavaScript, CSS, or HTML files to avoid blank screen issues
+  if (event.request.url.includes('.js') || 
+      event.request.url.includes('.css') || 
+      event.request.url.endsWith('.html') ||
+      event.request.url.endsWith('/')) {
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
