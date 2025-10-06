@@ -17,31 +17,19 @@ npm run build:github
 
 ## GitHub Pages Deployment
 
-This project is configured to automatically deploy to GitHub Pages when changes are pushed to the main branch.
+This project is configured to automatically deploy to GitHub Pages with a custom domain when changes are pushed to the main branch.
+
+### Current Configuration
+
+- **Custom Domain**: `citizens.fvcsolutions.com`
+- **Deployment**: Automatic via GitHub Actions
+- **Source**: GitHub Actions workflow
 
 ### Setup Instructions
 
-1. Go to your repository settings on GitHub
-2. Navigate to "Pages" in the left sidebar
-3. Under "Source", select "GitHub Actions"
-4. The deployment will happen automatically when you push to the main branch
+1. The repository is already configured for GitHub Pages deployment
+2. The custom domain `citizens.fvcsolutions.com` is configured in `public/CNAME`
+3. DNS should be configured to point to GitHub Pages IPs
+4. Enable "Enforce HTTPS" in GitHub Pages settings
 
-The site will be available at: `https://yourusername.github.io/launch-site/`
-
-### Custom Domain Setup
-
-To use a custom domain (subdomain) instead of the default GitHub Pages URL:
-
-1. **Update the CNAME file**: Edit `public/CNAME` and replace `your-subdomain.yourdomain.com` with your actual domain
-2. **Configure DNS**: Add a CNAME record pointing your subdomain to `yourusername.github.io`
-3. **Enable HTTPS**: GitHub Pages will automatically provision an SSL certificate
-4. **Update build script**: Use `CUSTOM_DOMAIN=true npm run build:github` for custom domain builds
-
-Example DNS configuration:
-```
-Type: CNAME
-Name: your-subdomain
-Value: yourusername.github.io
-```
-
-The site will then be available at: `https://your-subdomain.yourdomain.com`
+The site will be available at: `https://citizens.fvcsolutions.com`

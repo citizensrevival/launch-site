@@ -1,54 +1,59 @@
 # Deployment Guide
 
-This project is configured to work with both GitHub Pages subdirectory deployment and custom domain deployment.
+This project is configured for custom domain deployment on GitHub Pages.
 
-## Current Setup (GitHub Pages Subdirectory)
+## Current Setup (Custom Domain)
 
-- **URL**: `https://citizensrevival.github.io/launch-site/`
-- **Base Path**: `/launch-site/`
-- **Environment Variable**: `VITE_BASE_PATH=/launch-site/`
+- **URL**: `https://citizens.fvcsolutions.com`
+- **Base Path**: `/` (root domain)
+- **Custom Domain**: `citizens.fvcsolutions.com`
 
-## Switching to Custom Domain
+## GitHub Pages Configuration
 
-When you're ready to deploy to a custom domain (e.g., `azteccitizensrevival.com`):
+The project is configured to deploy to GitHub Pages with a custom domain:
 
-### 1. Update GitHub Actions Workflow
+### 1. GitHub Actions Workflow
 
-Edit `.github/workflows/deploy.yml` and change the environment variable:
+The `.github/workflows/deploy.yml` file automatically builds and deploys the site when changes are pushed to the main branch.
 
-```yaml
-- name: Build
-  run: npm run build
-  env:
-    VITE_BASE_PATH: /  # Change from /launch-site/ to /
-```
+### 2. Custom Domain Configuration
 
-### 2. Configure Custom Domain in GitHub Pages
+The `public/CNAME` file contains the custom domain: `citizens.fvcsolutions.com`
 
-1. Go to your repository Settings → Pages
-2. Under "Custom domain", enter your domain (e.g., `azteccitizensrevival.com`)
-3. Enable "Enforce HTTPS"
-
-### 3. Update DNS Records
+### 3. DNS Configuration
 
 Configure your domain's DNS to point to GitHub Pages:
-- **A Records**: Point to GitHub Pages IPs
+- **A Records**: Point to GitHub Pages IPs (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153)
 - **CNAME**: Point `www` subdomain to `citizensrevival.github.io`
 
-### 4. Test the Deployment
+### 4. GitHub Pages Settings
 
-The build will automatically use the new base path and all assets will be served from the root domain.
+1. Go to your repository Settings → Pages
+2. Under "Custom domain", enter `citizens.fvcsolutions.com`
+3. Enable "Enforce HTTPS"
 
 ## Local Development
 
-- **Default**: Uses `/launch-site/` base path
-- **Custom Domain**: Set `VITE_BASE_PATH=/` in your environment
+Run the development server with:
+
+```bash
+npm run dev
+```
+
+The site will be available at `http://localhost:3000`
+
+## Build and Deploy
+
+The site automatically builds and deploys when you push to the main branch. The build process:
+
+1. Installs dependencies
+2. Builds the React app with Vite
+3. Deploys to GitHub Pages
 
 ## Image References
 
-All image references in the code use relative paths (`./images/...`) which work with both deployment scenarios:
+All image references use absolute paths from the root domain:
 
-- **GitHub Pages**: `./images/logo.png` → `/launch-site/images/logo.png`
-- **Custom Domain**: `./images/logo.png` → `/images/logo.png`
-
-This ensures your images work correctly regardless of the deployment path.
+- Images are served from `/images/logo.png`
+- Assets are served from the root domain
+- No subdirectory path handling is needed

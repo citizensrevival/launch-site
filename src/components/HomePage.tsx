@@ -5,9 +5,7 @@ import { Button } from './Button'
 
 // Get the base path for images
 const getImagePath = (imageName: string) => {
-  const pathname = window.location.pathname;
-  const basePath = pathname.includes('/launch-site/') ? '/launch-site/' : '/';
-  return basePath + 'images/' + imageName;
+  return '/images/' + imageName;
 };
 
 export default function HomePage() {
