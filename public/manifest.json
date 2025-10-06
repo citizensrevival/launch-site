@@ -2,7 +2,7 @@
   "name": "Aztec Citizens Revival 2026",
   "short_name": "Aztec Revival",
   "description": "Three days of neighbors, music, and local flavor across Main Street, Riverside Park, and the Community Center in Aztec, New Mexico. August 28-30, 2026.",
-  "start_url": ".",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#581c87",
   "theme_color": "#581c87",
@@ -38,6 +38,6 @@
   ],
   "categories": ["entertainment", "lifestyle", "events"],
   "lang": "en-US",
-  "scope": ".",
+  "scope": "./",
   "id": "aztec-citizens-revival-2026"
 }

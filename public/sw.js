@@ -1,21 +1,23 @@
 // Service Worker for Aztec Citizens Revival PWA
 const CACHE_NAME = 'aztec-revival-v1';
+
+// Get the base path from the current location
+const getBasePath = () => {
+  const pathname = self.location.pathname;
+  return pathname.includes('/launch-site/') ? '/launch-site/' : '/';
+};
+
+const basePath = getBasePath();
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/src/index.tsx',
-  '/src/App.tsx',
-  '/src/components/HomePage.tsx',
-  '/src/components/Layout.tsx',
-  '/src/components/Intro.tsx',
-  '/src/styles/tailwind.css',
-  '/src/styles/typography.css',
-  '/images/purple_logo_splash.png',
-  '/images/aztec-nm-main-street.jpg',
-  '/images/aztec-nm-riverside-park.jpg',
-  '/images/aztec-nm-community-center.jpg',
-  '/favicon.ico',
-  '/manifest.json'
+  basePath,
+  basePath + 'index.html',
+  basePath + 'assets/',
+  basePath + 'images/purple_logo_splash.png',
+  basePath + 'images/aztec-nm-main-street.jpg',
+  basePath + 'images/aztec-nm-riverside-park.jpg',
+  basePath + 'images/aztec-nm-community-center.jpg',
+  basePath + 'favicon.ico',
+  basePath + 'manifest.json'
 ];
 
 // Install event - cache resources
