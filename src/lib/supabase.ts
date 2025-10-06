@@ -54,11 +54,23 @@ export interface ConfigProvider {
  */
 export class EnvironmentConfigProvider implements ConfigProvider {
   getSupabaseConfig(): SupabaseConfig {
-    const url = (import.meta as any).env?.VITE_SUPABASE_URL;
-    const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
-    const serviceRoleKey = (import.meta as any).env?.VITE_SUPABASE_SERVICE_ROLE_KEY;
+    const url = import.meta.env.VITE_SUPABASE_URL;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const serviceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+    // Temporary debug logging
+    console.log('=== Supabase Environment Variables Debug ===');
+    console.log('All import.meta.env:', import.meta.env);
+    console.log('VITE_SUPABASE_URL:', url);
+    console.log('VITE_SUPABASE_ANON_KEY:', anonKey ? `${anonKey.substring(0, 20)}...` : 'NOT SET');
+    console.log('VITE_SUPABASE_SERVICE_ROLE_KEY:', serviceRoleKey ? `${serviceRoleKey.substring(0, 20)}...` : 'NOT SET');
+    console.log('URL length:', url?.length);
+    console.log('Anon key length:', anonKey?.length);
+    console.log('Service role key length:', serviceRoleKey?.length);
+    console.log('=== End Debug ===');
 
     if (!url || !anonKey) {
+      console.error('Missing required Supabase configuration:', { url, anonKey });
       throw new Error('Missing required Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
     }
 
@@ -80,3 +92,8 @@ export class CustomConfigProvider implements ConfigProvider {
     return this.config;
   }
 }
+
+// Create a default client instance
+const configProvider = new EnvironmentConfigProvider();
+const config = configProvider.getSupabaseConfig();
+export const supabase = SupabaseClientFactory.createClient(config);

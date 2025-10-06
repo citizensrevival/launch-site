@@ -28,7 +28,8 @@ export function Button({
   | React.ComponentPropsWithoutRef<'a'>
   | ({ href?: undefined } & React.ComponentPropsWithoutRef<'button'>)
 )) {
-  const { colorTheme } = useTheme()
+  const theme = useTheme()
+  const colorTheme = theme?.colorTheme || 'purple'
   
   // Get theme-specific colors for main content area
   const getThemeColors = (theme: string) => {

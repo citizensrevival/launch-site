@@ -9,7 +9,7 @@ import { createLeadsPublicService, createLeadsAdminService, CreateLeadInput, Lea
 // Example React component for lead submission
 export function LeadSubmissionForm() {
   const [formData, setFormData] = useState<CreateLeadInput>({
-    lead_kind: 'general',
+    lead_kind: 'subscriber',
     email: '',
     contact_name: '',
     business_name: '',
@@ -33,7 +33,7 @@ export function LeadSubmissionForm() {
       if (result.success) {
         setMessage('Lead submitted successfully!');
         setFormData({
-          lead_kind: 'general',
+          lead_kind: 'subscriber',
           email: '',
           contact_name: '',
           business_name: '',

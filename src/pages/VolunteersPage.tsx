@@ -2,41 +2,59 @@ import { Layout } from '../components/Layout'
 import { Section } from '../components/Section'
 import { Button } from '../components/Button'
 import { useTheme } from '../contexts/ThemeContext'
+import { useSiteSettings } from '../lib/SiteSettingsManager'
+import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 
 export default function VolunteersPage() {
-  const { colorTheme } = useTheme()
+  const theme = useTheme()
+  const colorTheme = theme?.colorTheme || 'purple'
+  const siteSettings = useSiteSettings()
+  const { openDialog } = useGetInvolvedDialog()
 
   const getThemeColors = (theme: string) => {
     switch (theme) {
       case 'green':
         return {
           shifts: 'bg-emerald-50 dark:bg-emerald-900/20',
-          mission: 'bg-emerald-50 dark:bg-emerald-900/20'
+          mission: 'bg-emerald-50 dark:bg-emerald-900/20',
+          border: 'border-emerald-200 dark:border-emerald-800',
+          text: 'text-emerald-600'
         }
       case 'blue':
         return {
           shifts: 'bg-blue-50 dark:bg-blue-900/20',
-          mission: 'bg-blue-50 dark:bg-blue-900/20'
+          mission: 'bg-blue-50 dark:bg-blue-900/20',
+          border: 'border-blue-200 dark:border-blue-800',
+          text: 'text-blue-600'
         }
       case 'amber':
         return {
           shifts: 'bg-amber-50 dark:bg-amber-900/20',
-          mission: 'bg-amber-50 dark:bg-amber-900/20'
+          mission: 'bg-amber-50 dark:bg-amber-900/20',
+          border: 'border-amber-200 dark:border-amber-800',
+          text: 'text-amber-600'
         }
       case 'rose':
         return {
           shifts: 'bg-rose-50 dark:bg-rose-900/20',
-          mission: 'bg-rose-50 dark:bg-rose-900/20'
+          mission: 'bg-rose-50 dark:bg-rose-900/20',
+          border: 'border-rose-200 dark:border-rose-800',
+          text: 'text-rose-600'
         }
       default: // purple
         return {
           shifts: 'bg-purple-50 dark:bg-purple-900/20',
-          mission: 'bg-purple-50 dark:bg-purple-900/20'
+          mission: 'bg-purple-50 dark:bg-purple-900/20',
+          border: 'border-purple-200 dark:border-purple-800',
+          text: 'text-purple-600'
         }
     }
   }
 
   const themeColors = getThemeColors(colorTheme)
+  
+  // Check if user has already submitted as a volunteer
+  const hasSubmittedAsVolunteer = siteSettings.getGetInvolvedSubmission('volunteer')
 
   return (
     <Layout>
@@ -139,9 +157,21 @@ export default function VolunteersPage() {
             </div>
             
             <div className="text-center">
-              <Button type="submit" arrow>
-                Get Involved
-              </Button>
+              {hasSubmittedAsVolunteer ? (
+                <div className={`${themeColors.mission} p-6 rounded-lg border ${themeColors.border}`}>
+                  <h3 className={`text-lg font-semibold mb-2 ${themeColors.text}`}>You're Already Involved!</h3>
+                  <p className="text-sm mb-4">
+                    Thank you for your interest in volunteering at our community event. We've received your submission and will be in touch soon with volunteer assignments and schedule details.
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Keep an eye on your email for updates about your volunteer role, shift times, and event coordination. We're grateful for your community spirit!
+                  </p>
+                </div>
+              ) : (
+                <Button type="button" arrow onClick={() => openDialog('volunteer')}>
+                  Get Involved
+                </Button>
+              )}
             </div>
           </div>
         </Section>

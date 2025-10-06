@@ -7,7 +7,8 @@ import { useTheme } from '../contexts/ThemeContext'
 
 function Timeline() {
   let id = useId()
-  let { colorTheme } = useTheme()
+  let theme = useTheme()
+  let colorTheme = theme?.colorTheme || 'purple'
 
   const getTimelineColor = (theme: string) => {
     switch (theme) {
@@ -47,7 +48,8 @@ function Timeline() {
 
 function Glow() {
   let id = useId()
-  let { colorTheme } = useTheme()
+  let theme = useTheme()
+  let colorTheme = theme?.colorTheme || 'purple'
 
   const getThemeColors = (theme: string) => {
     switch (theme) {

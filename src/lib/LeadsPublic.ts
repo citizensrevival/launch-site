@@ -86,11 +86,15 @@ export class LeadsPublic {
       };
 
       // Insert into database
+      console.log('Attempting to insert lead with data:', leadData);
+      
       const { data, error } = await this.supabase
         .from('leads')
         .insert([leadData])
         .select()
         .single();
+      
+      console.log('Insert result:', { data, error });
 
       if (error) {
         return {

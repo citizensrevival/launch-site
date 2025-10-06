@@ -2,7 +2,7 @@
  * TypeScript types for the leads table schema
  */
 
-export type LeadType = 'vendor' | 'sponsor' | 'volunteer' | 'general';
+export type LeadType = 'subscriber' | 'vendor' | 'sponsor' | 'volunteer';
 
 export interface Lead {
   id: string;

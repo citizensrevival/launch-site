@@ -2,9 +2,14 @@ import { Layout } from '../components/Layout'
 import { Section } from '../components/Section'
 import { Button } from '../components/Button'
 import { useTheme } from '../contexts/ThemeContext'
+import { useSiteSettings } from '../lib/SiteSettingsManager'
+import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 
 export default function SponsorsPage() {
-  const { colorTheme } = useTheme()
+  const theme = useTheme()
+  const colorTheme = theme?.colorTheme || 'purple'
+  const siteSettings = useSiteSettings()
+  const { openDialog } = useGetInvolvedDialog()
   
   // Get theme-specific colors
   const getThemeColors = (theme: string) => {
@@ -43,6 +48,9 @@ export default function SponsorsPage() {
   }
   
   const themeColors = getThemeColors(colorTheme)
+  
+  // Check if user has already submitted as a sponsor
+  const hasSubmittedAsSponsor = siteSettings.getGetInvolvedSubmission('sponsor')
   
   return (
     <Layout>
@@ -120,9 +128,21 @@ export default function SponsorsPage() {
             </div>
             
             <div className="text-center">
-              <Button type="submit" arrow>
-                Get Involved
-              </Button>
+              {hasSubmittedAsSponsor ? (
+                <div className={`${themeColors.bg} p-6 rounded-lg border ${themeColors.border}`}>
+                  <h3 className={`text-lg font-semibold mb-2 ${themeColors.text}`}>You're Already Involved!</h3>
+                  <p className="text-sm mb-4">
+                    Thank you for your interest in sponsoring our community event. We've received your submission and will be in touch soon with next steps.
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Keep an eye on your email for updates and contact information. We appreciate your support!
+                  </p>
+                </div>
+              ) : (
+                <Button type="button" arrow onClick={() => openDialog('sponsor')}>
+                  Get Involved
+                </Button>
+              )}
             </div>
           </div>
         </Section>

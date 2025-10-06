@@ -7,7 +7,8 @@
     "build": "tsc && vite build",
     "build:github": "NODE_ENV=production tsc && vite build",
     "preview": "vite preview",
-    "lint": "echo 'Linting disabled for now'"
+    "lint": "echo 'Linting disabled for now'",
+    "clean": "rm -rf node_modules && rm -rf dist && rm -rf .vite"
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
@@ -17,7 +18,7 @@
     "motion": "^10.18.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.3",
+    "react-router-dom": "^6.28.0",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {

@@ -1,8 +1,11 @@
 import { Button } from './Button'
 import { Logo } from './Logo'
 import { SignUpForm } from './SignUpForm'
+import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 
 export function Intro() {
+  const { openDialog } = useGetInvolvedDialog();
+
   return (
     <>
       <h1 className="font-display text-4xl/tight font-medium text-white mb-2 flex items-center">
@@ -21,7 +24,7 @@ export function Intro() {
         <p className="mt-4 text-sm/6 text-gray-300">
           We are looking for volunteers, sponsors and vendors to help us make this event a success.
         </p>
-        <Button type="submit" arrow>
+        <Button type="button" arrow onClick={() => openDialog()}>
           Get Involved
         </Button>
       </div>

@@ -23,7 +23,9 @@ function ColorIcon({ color }: { color: string }) {
 
 export function ColorThemeToggle() {
   let [mounted, setMounted] = useState(false)
-  let { colorTheme, setColorTheme } = useTheme()
+  let theme = useTheme()
+  let colorTheme = theme?.colorTheme || 'purple'
+  let setColorTheme = theme?.setColorTheme || (() => {})
 
   useEffect(() => {
     setMounted(true)
