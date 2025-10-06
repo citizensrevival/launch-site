@@ -1,5 +1,5 @@
 // Service Worker for Aztec Citizens Revival PWA
-const CACHE_NAME = 'aztec-revival-v2';
+const CACHE_NAME = 'aztec-revival-v3';
 
 const urlsToCache = [
   '/images/purple_logo_splash.png',

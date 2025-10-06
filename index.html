@@ -98,6 +98,18 @@
   <body class="flex min-h-full flex-col bg-white dark:bg-gray-950">
     <div id="root"></div>
     
+    <!-- Cache busting script -->
+    <script>
+      // Force clear any cached service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+    </script>
+    
     <!-- Service Worker Registration for PWA -->
     <script type="module" src="/sw-register.js"></script>
   </body>
