@@ -44,10 +44,12 @@ export default function LeadsPage() {
   const [drawerLead, setDrawerLead] = useState<Lead | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [exporting, setExporting] = useState(false)
-  const [selectedLeadTypes, setSelectedLeadTypes] = useState<Set<string>>(new Set())
-
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
   const search = (searchParams.get('search') || '').trim()
+  const typeParam = searchParams.getAll('type')
+  const initialTypes = typeParam.length > 0 ? typeParam : (searchParams.get('type') ? [String(searchParams.get('type'))] : [])
+  
+  const [selectedLeadTypes, setSelectedLeadTypes] = useState<Set<string>>(new Set(initialTypes))
 
   const toggleSelectAll = () => {
     if (selectedIds.size === leads.length) {
@@ -65,6 +67,15 @@ export default function LeadsPage() {
       } else {
         next.add(leadType)
       }
+      
+      // Update URL to reflect the current filter state
+      const url = new URL(window.location.href)
+      url.searchParams.delete('type')
+      if (next.size > 0) {
+        Array.from(next).forEach(type => url.searchParams.append('type', type))
+      }
+      window.history.replaceState({}, '', url.pathname + (url.search ? `?${url.searchParams.toString()}` : ''))
+      
       return next
     })
   }
