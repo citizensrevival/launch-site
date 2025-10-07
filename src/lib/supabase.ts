@@ -56,18 +56,7 @@ export class EnvironmentConfigProvider implements ConfigProvider {
   getSupabaseConfig(): SupabaseConfig {
     const url = import.meta.env.VITE_SUPABASE_URL;
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const serviceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
-
-    // Temporary debug logging
-    console.log('=== Supabase Environment Variables Debug ===');
-    console.log('All import.meta.env:', import.meta.env);
-    console.log('VITE_SUPABASE_URL:', url);
-    console.log('VITE_SUPABASE_ANON_KEY:', anonKey ? `${anonKey.substring(0, 20)}...` : 'NOT SET');
-    console.log('VITE_SUPABASE_SERVICE_ROLE_KEY:', serviceRoleKey ? `${serviceRoleKey.substring(0, 20)}...` : 'NOT SET');
-    console.log('URL length:', url?.length);
-    console.log('Anon key length:', anonKey?.length);
-    console.log('Service role key length:', serviceRoleKey?.length);
-    console.log('=== End Debug ===');
+    const serviceRoleKey = undefined;
 
     if (!url || !anonKey) {
       console.warn('Missing Supabase configuration. App will run without Supabase features.');
