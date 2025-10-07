@@ -8,6 +8,8 @@ import HomePage from './components/HomePage'
 import SponsorsPage from './pages/SponsorsPage'
 import VendorsPage from './pages/VendorsPage'
 import VolunteersPage from './pages/VolunteersPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage'
 
 function AppContent() {
   const { isDialogOpen, preselectedType } = useGetInvolvedDialog();
@@ -19,6 +21,8 @@ function AppContent() {
         <Route path="/sponsors" element={<SponsorsPage />} />
         <Route path="/vendors" element={<VendorsPage />} />
         <Route path="/volunteers" element={<VolunteersPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsAndConditionsPage />} />
         <Route path="/manage/*" element={<AdminRoute />} />
       </Routes>
       {isDialogOpen && <GetInvolvedDialog preselectedType={preselectedType || undefined} />}

@@ -34,8 +34,24 @@ export function Intro() {
 
 export function IntroFooter() {
   return (
-    <p className="flex items-baseline gap-x-2 text-[0.8125rem]/6 text-gray-500">
-      &copy; 2025 Aztec Citizens Revival
-    </p>
+    <div className="flex flex-col gap-2 text-[0.8125rem]/6 text-gray-500">
+      <p className="flex items-baseline gap-x-2">
+        &copy; 2025 Aztec Citizens Revival
+      </p>
+      <div className="flex gap-x-4">
+        <a 
+          href="/privacy" 
+          className="hover:text-gray-300 transition-colors"
+        >
+          Privacy Policy
+        </a>
+        <a 
+          href="/terms" 
+          className="hover:text-gray-300 transition-colors"
+        >
+          Terms & Conditions
+        </a>
+      </div>
+    </div>
   )
 }
