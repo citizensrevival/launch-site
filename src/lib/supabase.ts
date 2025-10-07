@@ -18,10 +18,10 @@ export class SupabaseClientFactory {
    * Creates a Supabase client with service role key for admin operations
    */
   static createAdminClient(config: SupabaseConfig): SupabaseClient {
-    if (!config.serviceRoleKey) {
+    if (!config.anonKey) {
       throw new Error('Service role key is required for admin operations');
     }
-    return createClient(config.url, config.serviceRoleKey);
+    return createClient(config.url, config.anonKey);
   }
 
   /**

@@ -1,6 +1,8 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLoginForm } from './AdminLoginForm';
-import AdminPage from '../../pages/AdminPage';
+import AdminDashboard from './AdminDashboard';
+import LeadsPage from './LeadsPage.tsx';
 
 export function AdminRoute() {
   const { user, loading } = useAuth();
@@ -17,5 +19,11 @@ export function AdminRoute() {
     return <AdminLoginForm />;
   }
 
-  return <AdminPage />;
+  return (
+    <Routes>
+      <Route path="/" element={<AdminDashboard />} />
+      <Route path="leads" element={<LeadsPage />} />
+      <Route path="*" element={<Navigate to="/manage" replace />} />
+    </Routes>
+  );
 }

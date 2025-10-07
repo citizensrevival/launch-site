@@ -10,15 +10,13 @@ export function AdminLoginForm({ onSuccess }: AdminLoginFormProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPasswordChange, setShowPasswordChange] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
 
-  const { signIn, signUp, updatePassword, resendVerification } = useAuth();
+  const { signIn, signUp, resendVerification, resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,29 +41,16 @@ export function AdminLoginForm({ onSuccess }: AdminLoginFormProps) {
     }
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPasswordError(null);
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      return;
-    }
-
     setLoading(true);
-    const { error } = await updatePassword(newPassword);
-    
+    setError(null);
+
+    const { error } = await resetPassword(resetEmail || email);
     if (error) {
-      setPasswordError(error.message);
+      setError(error.message);
     } else {
-      setShowPasswordChange(false);
-      setNewPassword('');
-      setConfirmPassword('');
+      setError('Password reset email sent! Check your inbox.');
     }
     setLoading(false);
   };
@@ -85,51 +70,30 @@ export function AdminLoginForm({ onSuccess }: AdminLoginFormProps) {
     setLoading(false);
   };
 
-  if (showPasswordChange) {
+  if (showForgotPassword) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-              Change Password
-            </h2>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-white">Forgot Password</h2>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handlePasswordChange}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300">
-                  New Password
-                </label>
-                <input
-                  id="newPassword"
-                  name="newPassword"
-                  type="password"
-                  required
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter new password"
-                />
-              </div>
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Confirm new password"
-                />
-              </div>
+          <form className="mt-8 space-y-6" onSubmit={handleForgotPassword}>
+            <div>
+              <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-300">Email Address</label>
+              <input
+                id="resetEmail"
+                name="resetEmail"
+                type="email"
+                required
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-600 placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Enter your email"
+              />
             </div>
 
-            {passwordError && (
-              <div className="text-red-400 text-sm">{passwordError}</div>
+            {error && (
+              <div className={`text-sm ${error.includes('sent') ? 'text-green-400' : 'text-red-400'}`}>{error}</div>
             )}
 
             <div className="flex space-x-4">
@@ -138,11 +102,11 @@ export function AdminLoginForm({ onSuccess }: AdminLoginFormProps) {
                 disabled={loading}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
-                {loading ? 'Updating...' : 'Update Password'}
+                {loading ? 'Sending...' : 'Send Reset Email'}
               </button>
               <button
                 type="button"
-                onClick={() => setShowPasswordChange(false)}
+                onClick={() => setShowForgotPassword(false)}
                 className="group relative w-full flex justify-center py-2 px-4 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Cancel
@@ -278,10 +242,10 @@ export function AdminLoginForm({ onSuccess }: AdminLoginFormProps) {
             <div className="flex justify-center space-x-4 text-sm">
               <button
                 type="button"
-                onClick={() => setShowPasswordChange(true)}
+                onClick={() => setShowForgotPassword(true)}
                 className="text-indigo-400 hover:text-indigo-300"
               >
-                Change Password
+                Forgot Password?
               </button>
               <button
                 type="button"

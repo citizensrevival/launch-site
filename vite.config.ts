@@ -15,5 +15,14 @@ export default defineConfig({
     hmr: {
       port: 3001, // Use a different port for HMR to avoid conflicts
     },
+    // Configure SPA fallback for development
+    historyApiFallback: true,
+  },
+  // Configure preview server for production builds
+  preview: {
+    port: 3000,
+    host: true,
+    // Configure SPA fallback for preview
+    historyApiFallback: true,
   },
 })
