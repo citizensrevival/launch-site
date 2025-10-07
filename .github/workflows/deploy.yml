@@ -5,100 +5,61 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
+    # Use env-scoped secrets in this job:
+    environment: github-pages
     env:
+      # Only expose values meant for the client build
       VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      VITE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-          
+
+      # Avoid trying to use secrets on PRs from forks
       - name: Install dependencies
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
         run: npm ci
-        
-      - name: Debug Secrets and Environment Variables
+
+      - name: Debug env
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
         run: |
-          echo "=== Debugging GitHub Secrets ==="
-          echo "Checking if secrets are available..."
-          echo "SUPABASE_URL secret length: ${#SUPABASE_URL}"
-          echo "SUPABASE_ANON_KEY secret length: ${#SUPABASE_ANON_KEY}"
-          echo "SUPABASE_SERVICE_ROLE_KEY secret length: ${#SUPABASE_SERVICE_ROLE_KEY}"
-          
-          echo ""
-          echo "=== Debugging Environment Variables ==="
           echo "VITE_SUPABASE_URL length: ${#VITE_SUPABASE_URL}"
           echo "VITE_SUPABASE_ANON_KEY length: ${#VITE_SUPABASE_ANON_KEY}"
-          echo "VITE_SUPABASE_SERVICE_ROLE_KEY length: ${#VITE_SUPABASE_SERVICE_ROLE_KEY}"
-          
-          echo ""
-          echo "=== Checking if secrets exist ==="
-          if [ -n "$SUPABASE_URL" ]; then
-            echo "✅ SUPABASE_URL secret is available"
-          else
-            echo "❌ SUPABASE_URL secret is NOT available"
-          fi
-          if [ -n "$SUPABASE_ANON_KEY" ]; then
-            echo "✅ SUPABASE_ANON_KEY secret is available"
-          else
-            echo "❌ SUPABASE_ANON_KEY secret is NOT available"
-          fi
-          if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo "✅ SUPABASE_SERVICE_ROLE_KEY secret is available"
-          else
-            echo "❌ SUPABASE_SERVICE_ROLE_KEY secret is NOT available"
-          fi
-          
-          echo ""
-          echo "=== Checking environment variables ==="
-          if [ -n "$VITE_SUPABASE_URL" ]; then
-            echo "✅ VITE_SUPABASE_URL is set"
-          else
-            echo "❌ VITE_SUPABASE_URL is not set"
-          fi
-          if [ -n "$VITE_SUPABASE_ANON_KEY" ]; then
-            echo "✅ VITE_SUPABASE_ANON_KEY is set"
-          else
-            echo "❌ VITE_SUPABASE_ANON_KEY is not set"
-          fi
-        
+
       - name: Build
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
         run: npm run build
-        
+
       - name: Setup Pages
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
         uses: actions/configure-pages@v4
-        
+
       - name: Upload artifact
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
         uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
 
-  # Deployment job
   deploy:
     environment:
       name: github-pages
