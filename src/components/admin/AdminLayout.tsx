@@ -1,18 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '@mdi/react';
+import { Tooltip } from '../Tooltip';
 import { 
   mdiClock,
   mdiAccountGroup,
-  mdiCog,
   mdiHome,
   mdiClose,
   mdiChevronDown,
   mdiMenu,
-  mdiMagnify,
-  mdiBell,
-  mdiHelpCircle,
-  mdiPlus
+  mdiMagnify
 } from '@mdi/js';
 
 interface AdminLayoutProps {
@@ -69,14 +66,6 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
     ) },
   ];
 
-  const settingsItems = [
-    { name: 'Users / Roles', href: '/manage/users', icon: (
-      <Icon path={mdiAccountGroup} className="h-5 w-5" />
-    ) },
-    { name: 'Site Settings', href: '/manage/settings', icon: (
-      <Icon path={mdiCog} className="h-5 w-5" />
-    ) },
-  ];
 
   const initials = getInitialsFromEmail(user?.email);
 
@@ -98,18 +87,21 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700 lg:hidden">
             <div className="flex items-center">
-              <button
-                onClick={() => (window.location.href = '/')}
-                className="mr-3 p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200"
-                title="Go to Home"
-              >
-                <Icon path={mdiHome} className="h-5 w-5" />
-              </button>
+              <Tooltip content="Go to Home">
+                <button
+                  onClick={() => (window.location.href = '/')}
+                  className="mr-3 p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200"
+                >
+                  <Icon path={mdiHome} className="h-5 w-5" />
+                </button>
+              </Tooltip>
               <h1 className="text-lg font-semibold text-white">Admin</h1>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md">
-              <Icon path={mdiClose} className="h-5 w-5" />
-            </button>
+            <Tooltip content="Close sidebar">
+              <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md">
+                <Icon path={mdiClose} className="h-5 w-5" />
+              </button>
+            </Tooltip>
           </div>
 
           <div className="flex-1 flex flex-col pt-4 pb-4 overflow-y-auto">
@@ -162,14 +154,16 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
         <div className="bg-gray-800 shadow-sm sticky top-0 z-30">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Open sidebar"
-              >
-                <Icon path={mdiMenu} className="h-6 w-6" />
-              </button>
+              <Tooltip content="Open sidebar">
+                <button
+                  type="button"
+                  className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 lg:hidden"
+                  onClick={() => setSidebarOpen(true)}
+                  aria-label="Open sidebar"
+                >
+                  <Icon path={mdiMenu} className="h-6 w-6" />
+                </button>
+              </Tooltip>
               <div className="hidden lg:block">
                 <a href="/" className="text-gray-300 hover:text-white text-sm">Home</a>
               </div>
@@ -193,18 +187,20 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 className="block w-full bg-gray-700 border border-transparent rounded-md py-2 pl-2 pr-9 text-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               />
               <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
-                <button
-                  type="button"
-                  aria-label="Search"
-                  className="p-1 rounded text-gray-300 hover:text-white hover:bg-gray-700"
-                  onClick={() => {
-                    const q = globalSearch.trim();
-                    const url = q ? `/manage/leads?search=${encodeURIComponent(q)}` : '/manage/leads';
-                    window.location.href = url;
-                  }}
-                >
-                  <Icon path={mdiMagnify} className="h-5 w-5" />
-                </button>
+                <Tooltip content="Search leads">
+                  <button
+                    type="button"
+                    aria-label="Search"
+                    className="p-1 rounded text-gray-300 hover:text-white hover:bg-gray-700"
+                    onClick={() => {
+                      const q = globalSearch.trim();
+                      const url = q ? `/manage/leads?search=${encodeURIComponent(q)}` : '/manage/leads';
+                      window.location.href = url;
+                    }}
+                  >
+                    <Icon path={mdiMagnify} className="h-5 w-5" />
+                  </button>
+                </Tooltip>
               </div>
               </div>
             </div>
@@ -234,7 +230,9 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                   <div className="absolute right-0 mt-2 w-48 rounded-md bg-gray-800 border border-gray-700 shadow-lg p-1">
                     <div className="px-3 py-2 text-xs text-gray-400">{user?.email}</div>
                     {/* <a href="/manage/profile" className="block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Profile</a> */}
-                    <button onClick={signOut} className="w-full text-left block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Sign out</button>
+                    <Tooltip content="Sign out of admin">
+                      <button onClick={signOut} className="w-full text-left block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Sign out</button>
+                    </Tooltip>
                   </div>
                 </details>
               </div>

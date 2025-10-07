@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLoginForm } from './AdminLoginForm';
 import AdminDashboard from './AdminDashboard';
-import LeadsPage from '../../pages/LeadsPage.tsx';
+import LeadsPage from './LeadsPage.tsx';
 
 export function AdminRoute() {
   const { user, loading } = useAuth();

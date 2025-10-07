@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AdminLayout } from '../components/admin/AdminLayout'
-import { createLeadsAdminService } from '../lib'
-import type { Lead } from '../lib/types'
+import { AdminLayout } from './AdminLayout'
+import { createLeadsAdminService } from '../../lib'
+import type { Lead } from '../../lib/types'
 import { formatDistanceToNow } from 'date-fns'
 import { Icon } from '@mdi/react'
+import { Tooltip } from '../Tooltip'
 import { 
   mdiMagnify, 
   mdiClose, 
@@ -21,7 +22,8 @@ import {
   mdiCheckCircleOutline,
   mdiEmail,
   mdiPhone,
-  mdiWeb
+  mdiWeb,
+  mdiContentDuplicate
 } from '@mdi/js'
 
 type SortKey = 'lead_kind' | 'contact_name' | 'business_name' | 'phone' | 'email' | 'website' | 'created_at'
@@ -44,6 +46,7 @@ export default function LeadsPage() {
   const [drawerLead, setDrawerLead] = useState<Lead | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [showMergeDialog, setShowMergeDialog] = useState(false)
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
   const search = (searchParams.get('search') || '').trim()
   const typeParam = searchParams.getAll('type')
@@ -168,82 +171,100 @@ export default function LeadsPage() {
           <span className="inline-flex items-center gap-2 rounded-full bg-gray-800 px-3 py-1 text-sm text-white">
             <Icon path={mdiMagnify} className="h-4 w-4" />
             <span className="max-w-[20ch] truncate">{search}</span>
-            <button
-              className="rounded-full p-1 hover:bg-gray-700"
-              aria-label="Clear search"
-              onClick={() => {
-                const url = new URL(window.location.href)
-                url.searchParams.delete('search')
-                window.location.href = url.pathname + (url.search ? `?${url.searchParams.toString()}` : '')
-              }}
-            >
-              <Icon path={mdiClose} className="h-4 w-4" />
-            </button>
+            <Tooltip content="Clear search">
+              <button
+                className="rounded-full p-1 hover:bg-gray-700"
+                aria-label="Clear search"
+                onClick={() => {
+                  const url = new URL(window.location.href)
+                  url.searchParams.delete('search')
+                  window.location.href = url.pathname + (url.search ? `?${url.searchParams.toString()}` : '')
+                }}
+              >
+                <Icon path={mdiClose} className="h-4 w-4" />
+              </button>
+            </Tooltip>
           </span>
         )}
         {LEAD_TYPES.map((leadType) => (
-          <button
-            key={leadType.key}
-            onClick={() => toggleLeadType(leadType.key)}
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm transition-colors ${
-              selectedLeadTypes.has(leadType.key)
-                ? 'bg-purple-600 text-white hover:bg-purple-700'
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
-            }`}
-          >
-            <Icon path={leadType.icon} className="h-4 w-4" />
-            <span>{leadType.label}</span>
-          </button>
+          <Tooltip key={leadType.key} content={`Filter by ${leadType.label.toLowerCase()}`}>
+            <button
+              onClick={() => toggleLeadType(leadType.key)}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm transition-colors ${
+                selectedLeadTypes.has(leadType.key)
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+            >
+              <Icon path={leadType.icon} className="h-4 w-4" />
+              <span>{leadType.label}</span>
+            </button>
+          </Tooltip>
         ))}
       </div>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={refresh}
-          aria-label="Refresh"
-          title="Refresh"
-          disabled={refreshing}
-          className="rounded-md bg-purple-600 p-2 text-sm text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Icon path={mdiRefresh} className={`h-5 w-5 text-white ${refreshing ? 'animate-spin' : ''}`} />
-        </button>
-        <a href="/manage/leads/import" className="rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700">Import&nbsp;CSV</a>
-        <button
-          type="button"
-          disabled={exporting}
-          onClick={async () => {
-            setExporting(true)
-            try {
-              const service = createLeadsAdminService()
-              const res = await service.exportLeadsToCSV({
-                filters: {
-                  ...(selectedLeadTypes.size > 0 ? { lead_kind_in: Array.from(selectedLeadTypes) } : {}),
-                  ...(search ? { search } : {}),
-                } as any,
-              })
-              if (res.success && res.data) {
-                const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' })
-                const url = URL.createObjectURL(blob)
-                const link = document.createElement('a')
-                link.href = url
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-                link.setAttribute('download', `leads-export-${timestamp}.csv`)
-                document.body.appendChild(link)
-                link.click()
-                document.body.removeChild(link)
-                URL.revokeObjectURL(url)
+        <Tooltip content="Merge Duplicates">
+          <button
+            type="button"
+            onClick={() => setShowMergeDialog(true)}
+            aria-label="Merge Duplicates"
+            className="rounded-md bg-purple-600 p-2 text-sm text-white hover:bg-purple-700"
+          >
+            <Icon path={mdiContentDuplicate} className="h-5 w-5 text-white" />
+          </button>
+        </Tooltip>
+        <Tooltip content="Refresh data">
+          <button
+            type="button"
+            onClick={refresh}
+            aria-label="Refresh"
+            disabled={refreshing}
+            className="rounded-md bg-purple-600 p-2 text-sm text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Icon path={mdiRefresh} className={`h-5 w-5 text-white ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Import leads from CSV file">
+          <a href="/manage/leads/import" className="rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700">Import&nbsp;CSV</a>
+        </Tooltip>
+        <Tooltip content="Download leads as CSV file">
+          <button
+            type="button"
+            disabled={exporting}
+            onClick={async () => {
+              setExporting(true)
+              try {
+                const service = createLeadsAdminService()
+                const res = await service.exportLeadsToCSV({
+                  filters: {
+                    ...(selectedLeadTypes.size > 0 ? { lead_kind_in: Array.from(selectedLeadTypes) } : {}),
+                    ...(search ? { search } : {}),
+                  } as any,
+                })
+                if (res.success && res.data) {
+                  const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' })
+                  const url = URL.createObjectURL(blob)
+                  const link = document.createElement('a')
+                  link.href = url
+                  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+                  link.setAttribute('download', `leads-export-${timestamp}.csv`)
+                  document.body.appendChild(link)
+                  link.click()
+                  document.body.removeChild(link)
+                  URL.revokeObjectURL(url)
+                }
+              } finally {
+                setExporting(false)
               }
-            } finally {
-              setExporting(false)
-            }
-          }}
-          className="rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
-        >
-          {exporting ? (
-            <Icon path={mdiDownload} className="h-4 w-4 animate-spin text-white" />
-          ) : null}
-          <span>Download&nbsp;CSV</span>
-        </button>
+            }}
+            className="rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+          >
+            {exporting ? (
+              <Icon path={mdiDownload} className="h-4 w-4 animate-spin text-white" />
+            ) : null}
+            <span>Download&nbsp;CSV</span>
+          </button>
+        </Tooltip>
       </div>
     </div>
   )
@@ -258,12 +279,14 @@ export default function LeadsPage() {
 
   const headerCell = (label: string, key: SortKey) => (
     <th className="sticky top-0 z-10 bg-gray-800 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">
-      <button className="inline-flex items-center gap-1 hover:text-white" onClick={() => changeSort(key)}>
-        <span>{label}</span>
-        {sortKey === key ? (
-          <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} className="h-3 w-3" />
-        ) : null}
-      </button>
+      <Tooltip content={`Sort by ${label.toLowerCase()}`}>
+        <button className="inline-flex items-center gap-1 hover:text-white" onClick={() => changeSort(key)}>
+          <span>{label}</span>
+          {sortKey === key ? (
+            <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} className="h-3 w-3" />
+          ) : null}
+        </button>
+      </Tooltip>
     </th>
   )
 
@@ -351,16 +374,18 @@ export default function LeadsPage() {
             <thead>
               <tr>
                 <th className="sticky left-0 top-0 z-20 bg-gray-800 px-3 py-2">
-                  <button
-                    onClick={toggleSelectAll}
-                    aria-label="Select all"
-                    className="p-1 rounded hover:bg-gray-700"
-                  >
-                    <Icon 
-                      path={selectedIds.size === leads.length && leads.length > 0 ? mdiCheckCircleOutline : mdiCheckboxBlankCircleOutline} 
-                      className="h-5 w-5 text-white" 
-                    />
-                  </button>
+                  <Tooltip content={selectedIds.size === leads.length && leads.length > 0 ? "Deselect all" : "Select all"}>
+                    <button
+                      onClick={toggleSelectAll}
+                      aria-label="Select all"
+                      className="p-1 rounded hover:bg-gray-700"
+                    >
+                      <Icon 
+                        path={selectedIds.size === leads.length && leads.length > 0 ? mdiCheckCircleOutline : mdiCheckboxBlankCircleOutline} 
+                        className="h-5 w-5 text-white" 
+                      />
+                    </button>
+                  </Tooltip>
                 </th>
                 {headerCell('Type', 'lead_kind')}
                 {headerCell('Contact', 'contact_name')}
@@ -376,25 +401,27 @@ export default function LeadsPage() {
               {leads.map((lead) => (
                 <tr key={lead.id} className="hover:bg-gray-800/60">
                   <td className="sticky left-0 z-10 bg-gray-900 px-3 py-2" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const next = new Set(selectedIds)
-                        if (selectedIds.has(lead.id)) {
-                          next.delete(lead.id)
-                        } else {
-                          next.add(lead.id)
-                        }
-                        setSelectedIds(next)
-                      }}
-                      aria-label={`Select ${lead.contact_name || lead.business_name || lead.email}`}
-                      className="p-1 rounded hover:bg-gray-800"
-                    >
-                      <Icon 
-                        path={selectedIds.has(lead.id) ? mdiCheckCircleOutline : mdiCheckboxBlankCircleOutline} 
-                        className="h-5 w-5 text-white" 
-                      />
-                    </button>
+                    <Tooltip content={selectedIds.has(lead.id) ? "Deselect lead" : "Select lead"}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const next = new Set(selectedIds)
+                          if (selectedIds.has(lead.id)) {
+                            next.delete(lead.id)
+                          } else {
+                            next.add(lead.id)
+                          }
+                          setSelectedIds(next)
+                        }}
+                        aria-label={`Select ${lead.contact_name || lead.business_name || lead.email}`}
+                        className="p-1 rounded hover:bg-gray-800"
+                      >
+                        <Icon 
+                          path={selectedIds.has(lead.id) ? mdiCheckCircleOutline : mdiCheckboxBlankCircleOutline} 
+                          className="h-5 w-5 text-white" 
+                        />
+                      </button>
+                    </Tooltip>
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
@@ -432,13 +459,15 @@ export default function LeadsPage() {
                     <DateWithTooltip dateString={lead.created_at} />
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <button 
-                      className="p-2 rounded hover:bg-gray-800" 
-                      aria-label="View details"
-                      onClick={() => setDrawerLead(lead)}
-                    >
-                      <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
-                    </button>
+                    <Tooltip content="View lead details">
+                      <button 
+                        className="p-2 rounded hover:bg-gray-800" 
+                        aria-label="View details"
+                        onClick={() => setDrawerLead(lead)}
+                      >
+                        <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
+                      </button>
+                    </Tooltip>
                   </td>
                 </tr>
               ))}
@@ -497,16 +526,18 @@ export default function LeadsPage() {
               </div>
               <div className="flex items-center gap-2 ml-3">
                 <DateWithTooltip dateString={lead.created_at} />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setDrawerLead(lead)
-                  }}
-                  className="p-2 rounded hover:bg-gray-700"
-                  aria-label="View details"
-                >
-                  <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
-                </button>
+                <Tooltip content="View lead details">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDrawerLead(lead)
+                    }}
+                    className="p-2 rounded hover:bg-gray-700"
+                    aria-label="View details"
+                  >
+                    <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
+                  </button>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -521,9 +552,11 @@ export default function LeadsPage() {
           <div className="absolute right-0 top-0 h-full w-full sm:w-[480px] bg-gray-900 border-l border-gray-800 shadow-xl overflow-y-auto">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
               <div className="text-white font-semibold">Lead Details</div>
-              <button className="p-2 rounded hover:bg-gray-800" onClick={() => setDrawerLead(null)} aria-label="Close">
-                <Icon path={mdiClose} className="h-5 w-5 text-white" />
-              </button>
+              <Tooltip content="Close details">
+                <button className="p-2 rounded hover:bg-gray-800" onClick={() => setDrawerLead(null)} aria-label="Close">
+                  <Icon path={mdiClose} className="h-5 w-5 text-white" />
+                </button>
+              </Tooltip>
             </div>
             <div className="p-4 space-y-4">
               <div>
@@ -545,6 +578,33 @@ export default function LeadsPage() {
                 <pre className="bg-gray-800 text-white text-xs rounded p-3 overflow-auto">
 {JSON.stringify(drawerLead.meta, null, 2)}
                 </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Merge Duplicates Dialog */}
+      {showMergeDialog && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowMergeDialog(false)} />
+          <div className="absolute inset-0 bg-gray-900 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+              <div className="text-white font-semibold text-lg">Merge Duplicates</div>
+              <Tooltip content="Close merge dialog">
+                <button 
+                  className="p-2 rounded hover:bg-gray-800" 
+                  onClick={() => setShowMergeDialog(false)} 
+                  aria-label="Close"
+                >
+                  <Icon path={mdiClose} className="h-5 w-5 text-white" />
+                </button>
+              </Tooltip>
+            </div>
+            <div className="flex-1 p-4">
+              {/* Content will be added later */}
+              <div className="text-white text-center py-8">
+                Merge duplicates functionality will be implemented here.
               </div>
             </div>
           </div>
