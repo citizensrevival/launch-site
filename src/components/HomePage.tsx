@@ -24,7 +24,7 @@ export default function HomePage() {
           }}
         >
           <p className="mb-4">
-            Aztec Citizens Revival is a homegrown weekend celebrating the people, places, and stories of the Four Corners. Expect live performances, local businesses on display, good food, and gatherings that bring all ages together—spread across our downtown, riverside, and community spaces.
+            Aztec Citizens Revival is a homegrown weekend celebrating the people, places, and stories of the Four Corners. An event designed to honor the resiliency of the great City of Aztec, by fostering a joyous jubilee among all its residents. Expect live performances, local businesses on display, good food, and gatherings that bring all ages together—spread across our downtown, riverside, and community spaces.
           </p>
         </Section>
 
@@ -41,7 +41,7 @@ export default function HomePage() {
         >
           <p className="font-medium">Friday August 28th, 2026</p>
           <p className="mb-6">
-          Kick off with the Community Business Scavenger Hunt: explore Aztec, meet neighbors, and shop local. Street vibes continue with food trucks, live entertainment, and a bustling vendor fair.
+          Kick off with the Community Scavenger Hunt: From Kare Drug to Minium Park, solve the clues that will introduce you and your family to the local businesses and organizations who have helped keep Aztec a thriving community. It's the perfect opportunity to explore Aztec, meet neighbors, and shop locally. Street vibes continue with food trucks, live entertainment, and a bustling vendor fair.
           </p>
           
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -56,18 +56,18 @@ export default function HomePage() {
 
         <Section
           id="saturday"
-          title="Saturday - Riverside Park"
+          title="Saturday - Jubilee Concert"
           date="Saturday"
           image={{
             src: getImagePath("aztec-nm-riverside-park.jpg"),
-            alt: "Saturday - Riverside Park",
+            alt: "Saturday - Jubilee Concert",
             width: 800,
             height: 600
           }}
         >
           <p className="font-medium">Saturday August 29th, 2026</p>
           <p className="mb-6">
-          Settle in by the Animas for a Community Concert featuring artists from across the Four Corners. Headliner announcements coming soon! Bring a chair or blanket and enjoy the park atmosphere.
+          Gather at the beautiful Riverside park for the all day Jubilee Concert, featuring live bands from across the Four Corners. Great local music to dance and vibe to in the late summer, with a groovy headliner to be announced soon. Bring a blanket or chair and enjoy the wonderful atmosphere next to the Animas River. Local food trucks on site.
           </p>
           
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -75,8 +75,9 @@ export default function HomePage() {
           </h3>
           
           <ul className="list-disc list-inside space-y-2 mb-8">
-            <li>Community Concert featuring artists from across the Four Corners Region</li>
-            <li>Headliner announcements coming soon</li>
+            <li>Jubilee Concert featuring live bands from across the Four Corners</li>
+            <li>Groovy headliner to be announced soon</li>
+            <li>Local food trucks on site</li>
           </ul>
         </Section>
 
