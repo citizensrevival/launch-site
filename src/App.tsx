@@ -19,7 +19,7 @@ function AppContent() {
         <Route path="/sponsors" element={<SponsorsPage />} />
         <Route path="/vendors" element={<VendorsPage />} />
         <Route path="/volunteers" element={<VolunteersPage />} />
-        <Route path="/manage" element={<AdminRoute />} />
+        <Route path="/manage/*" element={<AdminRoute />} />
       </Routes>
       {isDialogOpen && <GetInvolvedDialog preselectedType={preselectedType || undefined} />}
     </>

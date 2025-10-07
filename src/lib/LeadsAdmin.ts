@@ -40,6 +40,12 @@ export class LeadsAdmin {
         query = query.eq('lead_kind', filters.lead_kind);
       }
 
+      // Support multiple kinds via lead_kind_in: string[]
+      const leadKindIn = (filters as any).lead_kind_in as string[] | undefined;
+      if (!filters.lead_kind && Array.isArray(leadKindIn) && leadKindIn.length > 0) {
+        query = query.in('lead_kind', leadKindIn);
+      }
+
       if (filters.business_name) {
         query = query.ilike('business_name', `%${filters.business_name}%`);
       }
@@ -62,6 +68,22 @@ export class LeadsAdmin {
 
       if (filters.created_before) {
         query = query.lte('created_at', filters.created_before);
+      }
+
+      // Free-text search across common fields
+      // filters as any to allow optional 'search' key without changing exported types
+      const anyFilters = (filters as any) || {};
+      if (anyFilters.search && typeof anyFilters.search === 'string') {
+        const pattern = `%${anyFilters.search}%`;
+        query = query.or(
+          [
+            `ilike(business_name,${pattern})`,
+            `ilike(contact_name,${pattern})`,
+            `ilike(email,${pattern})`,
+            `ilike(phone,${pattern})`,
+            `ilike(website,${pattern})`,
+          ].join(',')
+        );
       }
 
       // Apply ordering
