@@ -1,6 +1,6 @@
 # Terms and Conditions
 
-**Effective Date:** January 7, 2025
+**Effective Date:** October 7, 2025
 
 ## Acceptance of Terms
 
@@ -37,10 +37,6 @@ Aztec Citizens Revival has not reviewed all of the sites linked to our website a
 
 Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Website, to understand our practices.
 
-## User Accounts
-
-When you create an account with us, you must provide information that is accurate, complete, and current at all times. You are responsible for safeguarding the password and for all activities that occur under your account.
-
 ## Prohibited Uses
 
 You may not use our website:
@@ -53,10 +49,6 @@ You may not use our website:
 - To spam, phish, pharm, pretext, spider, crawl, or scrape
 - For any obscene or immoral purpose
 - To interfere with or circumvent the security features of the website
-
-## Content
-
-Our website may allow you to post, link, store, share and otherwise make available certain information, text, graphics, videos, or other material ("Content"). You are responsible for the Content that you post to the website, including its legality, reliability, and appropriateness.
 
 ## Intellectual Property Rights
 
@@ -76,10 +68,7 @@ We reserve the right, at our sole discretion, to modify or replace these Terms a
 
 ## Contact Information
 
-If you have any questions about these Terms and Conditions, please contact us at:
-
-**Aztec Citizens Revival**
-Email: [Contact information to be provided]
+If you have any questions about these Terms and Conditions, please contact us.
 
 ## Severability
 
@@ -91,4 +80,4 @@ These Terms constitute the sole and entire agreement between you and Aztec Citiz
 
 ---
 
-*These Terms and Conditions are effective as of January 7, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*
+*These Terms and Conditions are effective as of October 7, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*

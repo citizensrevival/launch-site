@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective Date:** January 7, 2025
+**Effective Date:** October 7, 2025
 
 ## Introduction
 
@@ -9,7 +9,7 @@ Aztec Citizens Revival ("we," "our," or "us") is committed to protecting your pr
 ## Information We Collect
 
 ### Personal Information
-We collect the following personal information when you interact with our website:
+When you request to "Stay Informed" or "Get Involved", we collect the following personal information when you interact with our website:
 - Name
 - Business Name
 - Email Address
@@ -33,7 +33,7 @@ We use Local Storage and Cookies to:
 ## How We Use Your Information
 
 We use the collected information to:
-- Communicate with sponsors, vendors, volunteers, community leaders, organizers, and attendees
+- Communicate with you
 - Send newsletters and event updates via email and/or phone
 - Provide customer support and respond to inquiries
 - Improve our website and services
@@ -75,10 +75,7 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 
 ## Contact Us
 
-If you have any questions about this Privacy Policy or our data practices, please contact us at:
-
-**Aztec Citizens Revival**
-Email: [Contact information to be provided]
+If you have any questions about this Privacy Policy or our data practices, please contact us.
 
 ## Legal Basis for Processing
 
@@ -89,4 +86,4 @@ We process your personal information based on:
 
 ---
 
-*This Privacy Policy is effective as of January 7, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*
+*This Privacy Policy is effective as of October 7, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*

@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import { LoadingScreen } from './components/LoadingScreen'
 import './styles/tailwind.css'
 
 console.log('React app starting...')
@@ -15,7 +16,14 @@ console.log('Root element found:', container)
 try {
   const root = createRoot(container)
   console.log('React root created')
-  root.render(<App />)
+  
+  // Render the app with loading screen
+  root.render(
+    <>
+      <LoadingScreen />
+      <App />
+    </>
+  )
   console.log('React app rendered')
 } catch (error) {
   console.error('Error rendering React app:', error)
