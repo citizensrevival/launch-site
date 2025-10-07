@@ -72,7 +72,7 @@ export default function AdminDashboard() {
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="text-xl font-semibold text-white sm:text-2xl">
-          Dashboard
+          Leads
         </h1>
       </div>
       <div className="flex items-center gap-2">
@@ -141,37 +141,52 @@ export default function AdminDashboard() {
   return (
     <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="rounded-lg bg-gray-800 p-4">
+        <a
+          href="/manage/leads?type=subscriber"
+          className="rounded-lg bg-gray-800 p-4 hover:bg-gray-700 transition-colors cursor-pointer"
+        >
           <div className="text-xs text-gray-400">Subscribers</div>
           <div className="mt-1 text-2xl font-semibold text-white">
             {renderValue(counts?.subscribers)}
           </div>
-        </div>
-        <div className="rounded-lg bg-gray-800 p-4">
+        </a>
+        <a
+          href="/manage/leads?type=sponsor"
+          className="rounded-lg bg-gray-800 p-4 hover:bg-gray-700 transition-colors cursor-pointer"
+        >
           <div className="text-xs text-gray-400">Sponsors</div>
           <div className="mt-1 text-2xl font-semibold text-white">
             {renderValue(counts?.sponsors)}
           </div>
-        </div>
+        </a>
 
-        <div className="rounded-lg bg-gray-800 p-4">
+        <a
+          href="/manage/leads?type=vendor"
+          className="rounded-lg bg-gray-800 p-4 hover:bg-gray-700 transition-colors cursor-pointer"
+        >
           <div className="text-xs text-gray-400">Vendors</div>
           <div className="mt-1 text-2xl font-semibold text-white">
             {renderValue(counts?.vendors)}
           </div>
-        </div>
-        <div className="rounded-lg bg-gray-800 p-4">
+        </a>
+        <a
+          href="/manage/leads?type=volunteer"
+          className="rounded-lg bg-gray-800 p-4 hover:bg-gray-700 transition-colors cursor-pointer"
+        >
           <div className="text-xs text-gray-400">Volunteers</div>
           <div className="mt-1 text-2xl font-semibold text-white">
             {renderValue(counts?.volunteers)}
           </div>
-        </div>
-        <div className="rounded-lg bg-gray-800 p-4">
+        </a>
+        <a
+          href="/manage/leads"
+          className="rounded-lg bg-gray-800 p-4 hover:bg-gray-700 transition-colors cursor-pointer"
+        >
           <div className="text-xs text-gray-400">Total Leads</div>
           <div className="mt-1 text-2xl font-semibold text-white">
             {renderValue(counts?.total)}
           </div>
-        </div>
+        </a>
       </div>
     </AdminLayout>
   )

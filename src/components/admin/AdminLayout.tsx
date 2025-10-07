@@ -24,6 +24,7 @@ function getInitialsFromEmail(email?: string | null): string {
 export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const [globalSearch, setGlobalSearch] = useState('');
 
   const storageKey = useMemo(() => `admin_sidebar_groups_${user?.email || 'anon'}`, [user?.email]);
   const [openGroups, setOpenGroups] = useState<Record<SidebarGroupKey, boolean>>({ primary: true, settings: true });
@@ -178,10 +179,35 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
             <div className="flex-1 max-w-xl mx-4 hidden sm:block">
               <label htmlFor="global-search" className="sr-only">Search leads</label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
-                  <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/></svg>
-                </div>
-                <input id="global-search" name="search" placeholder="Search leads" className="block w-full bg-gray-700 border border-transparent rounded-md py-2 pl-10 pr-3 text-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
+              <input
+                id="global-search"
+                name="search"
+                placeholder="Search leads"
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const q = globalSearch.trim();
+                    const url = q ? `/manage/leads?search=${encodeURIComponent(q)}` : '/manage/leads';
+                    window.location.href = url;
+                  }
+                }}
+                className="block w-full bg-gray-700 border border-transparent rounded-md py-2 pl-2 pr-9 text-sm placeholder-gray-400 text-gray-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              />
+              <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
+                <button
+                  type="button"
+                  aria-label="Search"
+                  className="p-1 rounded text-gray-300 hover:text-white hover:bg-gray-700"
+                  onClick={() => {
+                    const q = globalSearch.trim();
+                    const url = q ? `/manage/leads?search=${encodeURIComponent(q)}` : '/manage/leads';
+                    window.location.href = url;
+                  }}
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/></svg>
+                </button>
+              </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
