@@ -77,11 +77,11 @@ export class LeadsAdmin {
         const pattern = `%${anyFilters.search}%`;
         query = query.or(
           [
-            `ilike(business_name,${pattern})`,
-            `ilike(contact_name,${pattern})`,
-            `ilike(email,${pattern})`,
-            `ilike(phone,${pattern})`,
-            `ilike(website,${pattern})`,
+            `business_name.ilike.${pattern}`,
+            `contact_name.ilike.${pattern}`,
+            `email.ilike.${pattern}`,
+            `phone.ilike.${pattern}`,
+            `website.ilike.${pattern}`,
           ].join(',')
         );
       }

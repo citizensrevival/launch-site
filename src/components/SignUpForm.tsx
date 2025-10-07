@@ -5,6 +5,8 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useSiteSettings } from '../lib/SiteSettingsManager'
 import { LeadsPublic } from '../lib/LeadsPublic'
 import { EnvironmentConfigProvider } from '../lib/supabase'
+import { Icon } from '@mdi/react'
+import { mdiCheck } from '@mdi/js'
 
 export function SignUpForm() {
   let id = useId()
@@ -108,9 +110,7 @@ export function SignUpForm() {
         <div className="relative isolate flex items-center justify-center pr-1">
           <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-sm rounded-lg px-6 py-4 border border-white/20">
             <div className="flex-shrink-0">
-              <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <Icon path={mdiCheck} className="w-5 h-5 text-green-400" />
             </div>
             <div className="text-sm">
               <p className="text-white font-medium">You're already subscribed for updates!</p>

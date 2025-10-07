@@ -1,5 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { Icon } from '@mdi/react';
+import { 
+  mdiClock,
+  mdiAccountGroup,
+  mdiCog,
+  mdiHome,
+  mdiClose,
+  mdiChevronDown,
+  mdiMenu,
+  mdiMagnify,
+  mdiBell,
+  mdiHelpCircle,
+  mdiPlus
+} from '@mdi/js';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -48,19 +62,19 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
 
   const primaryItems = [
     { name: 'Dashboard', href: '/manage', icon: (
-      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm9-4a1 1 0 10-2 0v4a1 1 0 00.553.894l3 1.5a1 1 0 10.894-1.788L11 9.382V6z"/></svg>
+      <Icon path={mdiClock} className="h-5 w-5" />
     ) },
     { name: 'Leads', href: '/manage/leads', icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M8 7a4 4 0 118 0 4 4 0 01-8 0z"/></svg>
+      <Icon path={mdiAccountGroup} className="h-5 w-5" />
     ) },
   ];
 
   const settingsItems = [
     { name: 'Users / Roles', href: '/manage/users', icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <Icon path={mdiAccountGroup} className="h-5 w-5" />
     ) },
     { name: 'Site Settings', href: '/manage/settings', icon: (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M11.983 13.95a1.967 1.967 0 100-3.933 1.967 1.967 0 000 3.933z"/><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.341a8 8 0 10-14.856-6.682m-.243 6.981l1.4 2.424a1 1 0 00.866.5h2.8a1 1 0 01.866.5l1.4 2.424a1 1 0 001.732 0l1.4-2.424a1 1 0 01.866-.5h2.8a1 1 0 00.866-.5l1.4-2.424"/></svg>
+      <Icon path={mdiCog} className="h-5 w-5" />
     ) },
   ];
 
@@ -89,14 +103,12 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 className="mr-3 p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200"
                 title="Go to Home"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
+                <Icon path={mdiHome} className="h-5 w-5" />
               </button>
               <h1 className="text-lg font-semibold text-white">Admin</h1>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <Icon path={mdiClose} className="h-5 w-5" />
             </button>
           </div>
 
@@ -110,7 +122,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 onClick={() => setOpenGroups((s) => ({ ...s, primary: !s.primary }))}
               >
                 <span className="font-medium">Sections</span>
-                <svg className={classNames('h-4 w-4 transform transition-transform', openGroups.primary && 'rotate-180')} viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.38a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"/></svg>
+                <Icon path={mdiChevronDown} className={classNames('h-4 w-4 transform transition-transform', openGroups.primary && 'rotate-180')} />
               </button>
               <nav className={classNames('px-2 space-y-1', openGroups.primary ? 'block' : 'hidden')}>
                 {primaryItems.map((item) => (
@@ -170,7 +182,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 onClick={() => setSidebarOpen(true)}
                 aria-label="Open sidebar"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                <Icon path={mdiMenu} className="h-6 w-6" />
               </button>
               <div className="hidden lg:block">
                 <a href="/" className="text-gray-300 hover:text-white text-sm">Home</a>
@@ -205,20 +217,20 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                     window.location.href = url;
                   }}
                 >
-                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/></svg>
+                  <Icon path={mdiMagnify} className="h-5 w-5" />
                 </button>
               </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700" aria-label="Notifications">
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5"/></svg>
+                <Icon path={mdiBell} className="h-5 w-5" />
               </button>
               <div className="relative">
                 <details className="group">
                   <summary className="list-none flex items-center gap-2 cursor-pointer select-none rounded-full p-1 hover:bg-gray-700">
                     <span className="sr-only">Help</span>
-                    <svg className="h-5 w-5 text-gray-300 group-open:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M8 10a4 4 0 118 0c0 2-4 2-4 4m0 4h.01"/></svg>
+                    <Icon path={mdiHelpCircle} className="h-5 w-5 text-gray-300 group-open:text-white" />
                   </summary>
                   <div className="absolute right-0 mt-2 w-48 rounded-md bg-gray-800 border border-gray-700 shadow-lg p-1">
                     <a href="/manage/help" className="block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Help Center</a>
@@ -274,11 +286,11 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-gray-800 border-t border-gray-700">
           <div className="grid grid-cols-2">
             <a href="/manage" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6"/></svg>
+              <Icon path={mdiHome} className="h-5 w-5" />
               <span>Dashboard</span>
             </a>
             <a href="/manage/leads" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M8 7a4 4 0 118 0 4 4 0 01-8 0z"/></svg>
+              <Icon path={mdiAccountGroup} className="h-5 w-5" />
               <span>Leads</span>
             </a>
           </div>
@@ -290,7 +302,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
           aria-label="Add Lead"
           onClick={() => (window.location.href = '/manage/leads/new')}
         >
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
+          <Icon path={mdiPlus} className="h-6 w-6" />
         </button>
       </div>
     </div>

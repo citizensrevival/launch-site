@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { createLeadsAdminService } from '../../lib'
 import { AdminLayout } from './AdminLayout'
+import { Icon } from '@mdi/react'
+import { mdiRefresh, mdiDownload } from '@mdi/js'
 
 interface CountsState {
   total: number
@@ -84,20 +86,7 @@ export default function AdminDashboard() {
           disabled={loading}
           className="rounded-md bg-gray-800 p-2 text-sm text-gray-100 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className={`h-5 w-5 ${loading ? 'animate-spin text-gray-300' : ''}`}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.023 9.348h4.992V4.355m-2.496 9.638a8.25 8.25 0 11-1.745-5.148m0 0V4.355"
-            />
-          </svg>
+          <Icon path={mdiRefresh} className={`h-5 w-5 ${loading ? 'animate-spin text-gray-300' : ''}`} />
         </button>
         <a
           href="/manage/leads/import"
@@ -112,20 +101,7 @@ export default function AdminDashboard() {
           className="rounded-md bg-gray-800 px-3 py-2 text-sm text-gray-100 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
           {exporting ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="h-4 w-4 animate-spin text-gray-300"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M16.023 9.348h4.992V4.355m-2.496 9.638a8.25 8.25 0 11-1.745-5.148m0 0V4.355"
-              />
-            </svg>
+            <Icon path={mdiDownload} className="h-4 w-4 animate-spin text-gray-300" />
           ) : null}
           <span>Download CSV</span>
         </button>

@@ -5,6 +5,8 @@ import { EnvironmentConfigProvider } from '../lib/supabase';
 import { CreateLeadInput, LeadType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSiteSettings } from '../lib/SiteSettingsManager';
+import { Icon } from '@mdi/react';
+import { mdiClose, mdiCheck } from '@mdi/js';
 
 interface GetInvolvedDialogProps {
   preselectedType?: LeadType;
@@ -337,9 +339,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
             onClick={closeDialog}
             className={`p-2 rounded-lg ${themeColors.buttonSecondary} hover:opacity-80 transition-opacity`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <Icon path={mdiClose} className="w-5 h-5" />
           </button>
         </div>
 
@@ -348,9 +348,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
           {submitStatus === 'success' ? (
             <div className="p-6 text-center">
               <div className="mb-4">
-                <svg className="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                <Icon path={mdiCheck} className="w-16 h-16 mx-auto text-green-500" />
               </div>
               <h3 className={`text-lg font-semibold mb-2 ${themeColors.text}`}>
                 Thank you for your interest!
@@ -392,9 +390,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
                         </div>
                         {hasSubmitted && (
                           <div className="flex items-center gap-2">
-                            <svg className={`w-4 h-4 ${themeColors.accent}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
+                            <Icon path={mdiCheck} className={`w-4 h-4 ${themeColors.accent}`} />
                             <span className={`${themeColors.accent} text-xs font-medium`}>Already Submitted</span>
                           </div>
                         )}
