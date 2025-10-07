@@ -207,7 +207,7 @@ export default function LeadsPage() {
         >
           <Icon path={mdiRefresh} className={`h-5 w-5 text-white ${refreshing ? 'animate-spin' : ''}`} />
         </button>
-        <a href="/manage/leads/import" className="rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700">Import CSV</a>
+        <a href="/manage/leads/import" className="rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700">Import&nbsp;CSV</a>
         <button
           type="button"
           disabled={exporting}
@@ -242,7 +242,7 @@ export default function LeadsPage() {
           {exporting ? (
             <Icon path={mdiDownload} className="h-4 w-4 animate-spin text-white" />
           ) : null}
-          <span>Download CSV</span>
+          <span>Download&nbsp;CSV</span>
         </button>
       </div>
     </div>
@@ -344,7 +344,8 @@ export default function LeadsPage() {
 
   return (
     <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
-      <div className="rounded-lg overflow-hidden border border-gray-800">
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-lg overflow-hidden border border-gray-800">
         <div className="overflow-auto">
           <table className="min-w-full divide-y divide-gray-800">
             <thead>
@@ -445,6 +446,72 @@ export default function LeadsPage() {
           </table>
           <div ref={loaderRef} />
         </div>
+      </div>
+
+      {/* Mobile List View */}
+      <div className="md:hidden space-y-2">
+        {leads.map((lead) => (
+          <div
+            key={lead.id}
+            className="bg-gray-900 rounded-lg border border-gray-800 p-4 hover:bg-gray-800/60 transition-colors"
+            onClick={() => setDrawerLead(lead)}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  {leadKindIcon(lead.lead_kind)}
+                  <span className="text-xs text-gray-300 uppercase">{lead.lead_kind}</span>
+                </div>
+                <div className="text-white font-medium truncate">
+                  {lead.business_name || lead.contact_name || lead.email}
+                </div>
+                {lead.business_name && lead.contact_name && (
+                  <div className="text-gray-300 text-sm truncate">
+                    {lead.contact_name}
+                  </div>
+                )}
+                <div className="text-gray-400 text-sm truncate">
+                  {lead.email}
+                </div>
+                <div className="flex items-center gap-3 mt-2">
+                  {lead.phone && (
+                    <ContactIcon 
+                      value={lead.phone} 
+                      href={`tel:${lead.phone}`}
+                      icon={mdiPhone}
+                    />
+                  )}
+                  <ContactIcon 
+                    value={lead.email} 
+                    href={`mailto:${lead.email}`}
+                    icon={mdiEmail}
+                  />
+                  {lead.website && (
+                    <ContactIcon 
+                      value={lead.website} 
+                      href={lead.website}
+                      icon={mdiWeb}
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 ml-3">
+                <DateWithTooltip dateString={lead.created_at} />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDrawerLead(lead)
+                  }}
+                  className="p-2 rounded hover:bg-gray-700"
+                  aria-label="View details"
+                >
+                  <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        <div ref={loaderRef} />
       </div>
 
       {/* Drawer */}
