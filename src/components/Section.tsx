@@ -30,7 +30,7 @@ export function Section({ id, title, date, image, children }: SectionProps) {
             <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto">
               <div className="flex">
                 <a href={`#${id}`} className="inline-flex">
-                  <time className="text-2xs/4 font-medium text-gray-500 xl:hidden dark:text-white/50">
+                  <time className="text-2xs/4 font-medium text-gray-500 xl:hidden">
                     {date || title}
                   </time>
                 </a>
@@ -44,7 +44,7 @@ export function Section({ id, title, date, image, children }: SectionProps) {
         <div className="lg:ml-96 lg:flex lg:w-full lg:justify-end lg:pl-32">
           <div className="mx-auto max-w-lg lg:mx-0 lg:w-0 lg:max-w-xl lg:flex-auto typography">
             {image && (
-              <div className="relative overflow-hidden rounded-xl bg-gray-50 dark:bg-gray-900 mb-8">
+              <div className="relative overflow-hidden rounded-xl bg-gray-50 mb-8">
                 <img
                   src={image.src}
                   alt={image.alt}
@@ -52,7 +52,7 @@ export function Section({ id, title, date, image, children }: SectionProps) {
                   height={image.height || 600}
                   className="w-full h-auto"
                 />
-                <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-gray-900/10 ring-inset dark:ring-white/10" />
+                <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-gray-900/10 ring-inset" />
               </div>
             )}
             

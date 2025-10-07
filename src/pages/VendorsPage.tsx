@@ -15,38 +15,38 @@ export default function VendorsPage() {
     switch (theme) {
       case 'green':
         return {
-          benefits: 'bg-emerald-50 dark:bg-emerald-900/20',
-          pricing: 'bg-emerald-50 dark:bg-emerald-900/20',
+          benefits: 'bg-emerald-50',
+          pricing: 'bg-emerald-50',
           priceText: 'text-emerald-600',
-          border: 'border-emerald-200 dark:border-emerald-800'
+          border: 'border-emerald-200'
         }
       case 'blue':
         return {
-          benefits: 'bg-blue-50 dark:bg-blue-900/20',
-          pricing: 'bg-blue-50 dark:bg-blue-900/20',
+          benefits: 'bg-blue-50',
+          pricing: 'bg-blue-50',
           priceText: 'text-blue-600',
-          border: 'border-blue-200 dark:border-blue-800'
+          border: 'border-blue-200'
         }
       case 'amber':
         return {
-          benefits: 'bg-amber-50 dark:bg-amber-900/20',
-          pricing: 'bg-amber-50 dark:bg-amber-900/20',
+          benefits: 'bg-amber-50',
+          pricing: 'bg-amber-50',
           priceText: 'text-amber-600',
-          border: 'border-amber-200 dark:border-amber-800'
+          border: 'border-amber-200'
         }
       case 'rose':
         return {
-          benefits: 'bg-rose-50 dark:bg-rose-900/20',
-          pricing: 'bg-rose-50 dark:bg-rose-900/20',
+          benefits: 'bg-rose-50',
+          pricing: 'bg-rose-50',
           priceText: 'text-rose-600',
-          border: 'border-rose-200 dark:border-rose-800'
+          border: 'border-rose-200'
         }
       default: // purple
         return {
-          benefits: 'bg-purple-50 dark:bg-purple-900/20',
-          pricing: 'bg-purple-50 dark:bg-purple-900/20',
+          benefits: 'bg-purple-50',
+          pricing: 'bg-purple-50',
           priceText: 'text-purple-600',
-          border: 'border-purple-200 dark:border-purple-800'
+          border: 'border-purple-200'
         }
     }
   }
@@ -75,7 +75,7 @@ export default function VendorsPage() {
             </p>
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
-              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
+              <div className="bg-gray-50  p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-4">Food Vendors</h3>
                 <ul className="space-y-2">
                   <li>Prime Main Street locations</li>
@@ -85,7 +85,7 @@ export default function VendorsPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
+              <div className="bg-gray-50  p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-4">Craft & Retail</h3>
                 <ul className="space-y-2">
                   <li>Vendor fair booth space</li>
@@ -148,7 +148,7 @@ export default function VendorsPage() {
                   <p className="text-sm mb-4">
                     Thank you for your interest in being a vendor at our community event. We've received your submission and will be in touch soon with vendor details and next steps.
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 ">
                     Keep an eye on your email for updates about booth assignments, setup times, and event logistics. We're excited to have you join us!
                   </p>
                 </div>

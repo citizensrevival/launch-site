@@ -16,33 +16,33 @@ export default function SponsorsPage() {
     switch (theme) {
       case 'green':
         return {
-          bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+          bg: 'bg-emerald-50',
           text: 'text-emerald-600',
-          border: 'border-emerald-200 dark:border-emerald-800'
+          border: 'border-emerald-200'
         }
       case 'blue':
         return {
-          bg: 'bg-blue-50 dark:bg-blue-900/20',
+          bg: 'bg-blue-50',
           text: 'text-blue-600',
-          border: 'border-blue-200 dark:border-blue-800'
+          border: 'border-blue-200'
         }
       case 'amber':
         return {
-          bg: 'bg-amber-50 dark:bg-amber-900/20',
+          bg: 'bg-amber-50',
           text: 'text-amber-600',
-          border: 'border-amber-200 dark:border-amber-800'
+          border: 'border-amber-200'
         }
       case 'rose':
         return {
-          bg: 'bg-rose-50 dark:bg-rose-900/20',
+          bg: 'bg-rose-50',
           text: 'text-rose-600',
-          border: 'border-rose-200 dark:border-rose-800'
+          border: 'border-rose-200'
         }
       default: // purple
         return {
-          bg: 'bg-purple-50 dark:bg-purple-900/20',
+          bg: 'bg-purple-50',
           text: 'text-purple-600',
-          border: 'border-purple-200 dark:border-purple-800'
+          border: 'border-purple-200'
         }
     }
   }
@@ -114,7 +114,7 @@ export default function SponsorsPage() {
             </div>
             
               <h3 className="text-xl font-semibold mb-4">Benefits of Sponsorship</h3>
-            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg mb-8">
+            <div className="bg-gray-50  p-6 rounded-lg mb-8">
               <div className="grid md:grid-cols-2 gap-6">
                 <ul className="space-y-2">
                   <li>Recognition on banners, programs, and social media</li>
@@ -134,7 +134,7 @@ export default function SponsorsPage() {
                   <p className="text-sm mb-4">
                     Thank you for your interest in sponsoring our community event. We've received your submission and will be in touch soon with next steps.
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 ">
                     Keep an eye on your email for updates and contact information. We appreciate your support!
                   </p>
                 </div>

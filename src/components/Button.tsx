@@ -2,22 +2,6 @@ import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { useTheme } from '../contexts/ThemeContext'
 
-function ButtonInner({
-  arrow = false,
-  children,
-}: {
-  arrow?: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <>
-      <span className="absolute inset-0 rounded-md bg-linear-to-b from-white/80 to-white opacity-10 transition-opacity group-hover:opacity-15" />
-      <span className="absolute inset-0 rounded-md opacity-7.5 shadow-[inset_0_1px_1px_white] transition-opacity group-hover:opacity-10" />
-      {children} {arrow ? <span aria-hidden="true">&rarr;</span> : null}
-    </>
-  )
-}
-
 export function Button({
   className,
   arrow,
@@ -82,26 +66,26 @@ export function Button({
     themeColors.border,
     themeColors.text,
     themeColors.hover,
-    // Override for sidebar - white styling
-    'sidebar:!bg-white/10 sidebar:!backdrop-blur-sm sidebar:!border-white/20 sidebar:!text-white sidebar:!hover:bg-white/20',
+    // Override for sidebar - clean white styling with white text
+    'sidebar:!bg-white/15 sidebar:!backdrop-blur-sm sidebar:!border-white/40 sidebar:!text-white sidebar:!hover:bg-white/25 sidebar:!hover:border-white/50',
     arrow ? 'pl-2.5 pr-[calc(9/16*1rem)]' : 'px-2.5',
   )
 
   if (to) {
     return (
       <Link to={to} className={className}>
-        <ButtonInner arrow={arrow}>{children}</ButtonInner>
+        {children} {arrow ? <span aria-hidden="true">&rarr;</span> : null}
       </Link>
     )
   }
 
   return typeof props.href === 'undefined' ? (
     <button className={className} {...(props as React.ComponentPropsWithoutRef<'button'>)}>
-      <ButtonInner arrow={arrow}>{children}</ButtonInner>
+      {children} {arrow ? <span aria-hidden="true">&rarr;</span> : null}
     </button>
   ) : (
     <a className={className} {...(props as React.ComponentPropsWithoutRef<'a'>)}>
-      <ButtonInner arrow={arrow}>{children}</ButtonInner>
+      {children} {arrow ? <span aria-hidden="true">&rarr;</span> : null}
     </a>
   )
 }

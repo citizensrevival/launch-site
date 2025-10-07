@@ -15,37 +15,37 @@ export default function VolunteersPage() {
     switch (theme) {
       case 'green':
         return {
-          shifts: 'bg-emerald-50 dark:bg-emerald-900/20',
-          mission: 'bg-emerald-50 dark:bg-emerald-900/20',
-          border: 'border-emerald-200 dark:border-emerald-800',
+          shifts: 'bg-emerald-50',
+          mission: 'bg-emerald-50',
+          border: 'border-emerald-200',
           text: 'text-emerald-600'
         }
       case 'blue':
         return {
-          shifts: 'bg-blue-50 dark:bg-blue-900/20',
-          mission: 'bg-blue-50 dark:bg-blue-900/20',
-          border: 'border-blue-200 dark:border-blue-800',
+          shifts: 'bg-blue-50',
+          mission: 'bg-blue-50',
+          border: 'border-blue-200',
           text: 'text-blue-600'
         }
       case 'amber':
         return {
-          shifts: 'bg-amber-50 dark:bg-amber-900/20',
-          mission: 'bg-amber-50 dark:bg-amber-900/20',
-          border: 'border-amber-200 dark:border-amber-800',
+          shifts: 'bg-amber-50',
+          mission: 'bg-amber-50',
+          border: 'border-amber-200',
           text: 'text-amber-600'
         }
       case 'rose':
         return {
-          shifts: 'bg-rose-50 dark:bg-rose-900/20',
-          mission: 'bg-rose-50 dark:bg-rose-900/20',
-          border: 'border-rose-200 dark:border-rose-800',
+          shifts: 'bg-rose-50',
+          mission: 'bg-rose-50',
+          border: 'border-rose-200',
           text: 'text-rose-600'
         }
       default: // purple
         return {
-          shifts: 'bg-purple-50 dark:bg-purple-900/20',
-          mission: 'bg-purple-50 dark:bg-purple-900/20',
-          border: 'border-purple-200 dark:border-purple-800',
+          shifts: 'bg-purple-50',
+          mission: 'bg-purple-50',
+          border: 'border-purple-200',
           text: 'text-purple-600'
         }
     }
@@ -75,7 +75,7 @@ export default function VolunteersPage() {
             </p>
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
-              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
+              <div className="bg-gray-50  p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-4">Community Connection</h3>
                 <ul className="space-y-2">
                   <li>Scavenger hunt support and guidance</li>
@@ -85,7 +85,7 @@ export default function VolunteersPage() {
                 </ul>
               </div>
               
-              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
+              <div className="bg-gray-50  p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-4">Event Support</h3>
                 <ul className="space-y-2">
                   <li>Concert setup and management</li>
@@ -163,7 +163,7 @@ export default function VolunteersPage() {
                   <p className="text-sm mb-4">
                     Thank you for your interest in volunteering at our community event. We've received your submission and will be in touch soon with volunteer assignments and schedule details.
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 ">
                     Keep an eye on your email for updates about your volunteer role, shift times, and event coordination. We're grateful for your community spirit!
                   </p>
                 </div>

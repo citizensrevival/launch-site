@@ -26,7 +26,6 @@
   }
 }
 
-@custom-variant dark (&:where(.dark, .dark *));
 
 /* Color theme variants */
 @custom-variant purple (&:where(.purple, .purple *));
@@ -59,4 +58,10 @@
   .backdrop-blur-sm {
     background-color: rgba(255, 255, 255, 0.8);
   }
+}
+
+/* Force white text for buttons in sidebar */
+.sidebar button,
+.sidebar a {
+  color: white !important;
 }

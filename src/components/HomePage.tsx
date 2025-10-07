@@ -1,4 +1,3 @@
-import { SparkleIcon } from './SparkleIcon'
 import { Layout } from './Layout'
 import { Section } from './Section'
 import { Button } from './Button'
@@ -46,7 +45,7 @@ export default function HomePage() {
           </p>
           
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <SparkleIcon /> Activities
+            Activities
           </h3>
           
           <ul className="list-disc list-inside space-y-2 mb-8">
@@ -72,7 +71,7 @@ export default function HomePage() {
           </p>
           
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <SparkleIcon /> Activities
+            Activities
           </h3>
           
           <ul className="list-disc list-inside space-y-2 mb-8">
@@ -97,7 +96,7 @@ export default function HomePage() {
           Gather for an Interfaith Spiritual Conversation on faith, values, and community growth—followed by a pancake breakfast and family fun day activities.
           </p>
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <SparkleIcon /> Activities
+            Activities
           </h3>
           <ul className="list-disc list-inside space-y-2 mb-8">
             <li>Interfaith Spiritual Conversation: faith, values, & community growth</li>

@@ -28,26 +28,6 @@
   --shiki-token-string-expression: var(--color-emerald-300);
   --shiki-token-punctuation: var(--color-gray-200);
 
-  .dark & {
-    --typography-body: var(--color-gray-300);
-    --typography-headings: var(--color-white);
-    --typography-quotes: var(--color-gray-400);
-    --typography-quotes-border: var(--color-gray-800);
-    --typography-links: var(--color-purple-400);
-    --typography-link-hover: var(--color-white);
-    --typography-link-underline: rgba(168, 85, 247, 0.4);
-    --typography-link-hover-underline: rgba(255, 255, 255, 0.4);
-    --typography-pre: var(--color-gray-400);
-    --typography-pre-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-    --typography-bold: var(--color-white);
-    --typography-kbd: var(--color-white);
-    --typography-kbd-border: var(--color-gray-800);
-    --typography-kbd-bg: var(--color-gray-900);
-    --typography-code: var(--color-white);
-    --typography-hr: rgba(255, 255, 255, 0.1);
-    --typography-th-borders: rgba(255, 255, 255, 0.1);
-    --typography-td-borders: rgba(255, 255, 255, 0.05);
-  }
 
   color: var(--typography-body);
   font-size: var(--text-sm);
