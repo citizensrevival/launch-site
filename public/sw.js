@@ -23,11 +23,18 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-  // Don't cache JavaScript, CSS, or HTML files to avoid blank screen issues
+  const url = new URL(event.request.url);
+  
+  // Don't cache JavaScript, CSS, HTML files, or Vite dev server URLs
   if (event.request.url.includes('.js') || 
       event.request.url.includes('.css') || 
       event.request.url.endsWith('.html') ||
-      event.request.url.endsWith('/')) {
+      event.request.url.endsWith('/') ||
+      event.request.url.includes('@vite') ||
+      event.request.url.includes('@react-refresh') ||
+      event.request.url.includes('node_modules') ||
+      event.request.url.includes('src/') ||
+      url.pathname.startsWith('/@')) {
     return;
   }
   

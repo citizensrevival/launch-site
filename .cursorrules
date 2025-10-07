@@ -20,3 +20,6 @@
 - Uses TypeScript and Tailwind CSS
 - No MDX dependencies (removed)
 - Custom theme context replaces next-themes
+
+## Package Dependencies
+- Do not downgrade package dependencies

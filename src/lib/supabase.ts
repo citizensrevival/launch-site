@@ -70,8 +70,13 @@ export class EnvironmentConfigProvider implements ConfigProvider {
     console.log('=== End Debug ===');
 
     if (!url || !anonKey) {
-      console.error('Missing required Supabase configuration:', { url, anonKey });
-      throw new Error('Missing required Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+      console.warn('Missing Supabase configuration. App will run without Supabase features.');
+      // Return dummy config for development
+      return {
+        url: 'https://dummy.supabase.co',
+        anonKey: 'dummy-key',
+        serviceRoleKey: undefined,
+      };
     }
 
     return {

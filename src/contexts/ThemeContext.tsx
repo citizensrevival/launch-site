@@ -1,5 +1,3 @@
-'use client'
-
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useSiteSettings } from '../lib/SiteSettingsManager'
 

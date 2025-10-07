@@ -2,9 +2,21 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import './styles/tailwind.css'
 
-const container = document.getElementById('root')
-if (!container) throw new Error('Failed to find the root element')
+console.log('React app starting...')
 
-const root = createRoot(container)
-root.render(<App />)
-// Force rebuild
+const container = document.getElementById('root')
+if (!container) {
+  console.error('Failed to find the root element')
+  throw new Error('Failed to find the root element')
+}
+
+console.log('Root element found:', container)
+
+try {
+  const root = createRoot(container)
+  console.log('React root created')
+  root.render(<App />)
+  console.log('React app rendered')
+} catch (error) {
+  console.error('Error rendering React app:', error)
+}
