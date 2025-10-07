@@ -51,6 +51,14 @@ export default function LeadsPage() {
   
   const [selectedLeadTypes, setSelectedLeadTypes] = useState<Set<string>>(new Set(initialTypes))
 
+  // Reset state when component mounts to prevent duplication
+  useEffect(() => {
+    setLeads([])
+    setHasMore(true)
+    setLoading(false)
+    setSelectedIds(new Set())
+  }, [])
+
   const toggleSelectAll = () => {
     if (selectedIds.size === leads.length) {
       setSelectedIds(new Set())
@@ -107,9 +115,12 @@ export default function LeadsPage() {
   }
 
   useEffect(() => {
+    // Reset all state when filters change
     setLeads([])
     setHasMore(true)
     setLoading(true)
+    setSelectedIds(new Set())
+    
     fetchPage(0).then((res) => {
       if (res.success && res.data) {
         setLeads(res.data.leads)
@@ -126,7 +137,7 @@ export default function LeadsPage() {
     const node = loaderRef.current
     const observer = new IntersectionObserver((entries) => {
       const first = entries[0]
-      if (first.isIntersecting && hasMore && !loading) {
+      if (first.isIntersecting && hasMore && !loading && leads.length > 0) {
         setLoading(true)
         fetchPage(leads.length).then((res) => {
           if (res.success && res.data) {
@@ -306,6 +317,31 @@ export default function LeadsPage() {
     )
   }
 
+  const DateWithTooltip = ({ dateString }: { dateString: string }) => {
+    const date = new Date(dateString)
+    const relativeTime = formatDistanceToNow(date, { addSuffix: true })
+    const fullDateTime = date.toLocaleString(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
+    })
+    
+    return (
+      <div className="relative group">
+        <span className="text-white cursor-help">{relativeTime}</span>
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {fullDateTime}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
       <div className="rounded-lg overflow-hidden border border-gray-800">
@@ -391,8 +427,8 @@ export default function LeadsPage() {
                       icon={mdiWeb}
                     />
                   </td>
-                  <td className="px-3 py-2 text-white">
-                    {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
+                  <td className="px-3 py-2">
+                    <DateWithTooltip dateString={lead.created_at} />
                   </td>
                   <td className="px-3 py-2 text-right">
                     <button 
