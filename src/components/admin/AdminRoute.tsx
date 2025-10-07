@@ -1,6 +1,6 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLoginForm } from './AdminLoginForm';
-import AdminPage from '../../pages/AdminPage';
+import AdminDashboard from './AdminDashboard';
 
 export function AdminRoute() {
   const { user, loading } = useAuth();
@@ -17,5 +17,5 @@ export function AdminRoute() {
     return <AdminLoginForm />;
   }
 
-  return <AdminPage />;
+  return <AdminDashboard />;
 }

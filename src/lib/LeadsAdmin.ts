@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Lead, LeadSearchOptions, LeadSearchResult, UpdateLeadInput, DatabaseError } from './types';
+import { Lead, LeadSearchOptions, LeadSearchResult, UpdateLeadInput, DatabaseError, LeadType } from './types';
 import { ConfigProvider, SupabaseClientFactory } from './supabase';
 
 /**
@@ -12,7 +12,10 @@ export class LeadsAdmin {
 
   constructor(configProvider: ConfigProvider) {
     const config = configProvider.getSupabaseConfig();
-    this.supabase = SupabaseClientFactory.createAdminClient(config);
+    // Use admin client if service role key is available; otherwise fall back to regular client
+    this.supabase = config.serviceRoleKey
+      ? SupabaseClientFactory.createAdminClient(config)
+      : SupabaseClientFactory.createClient(config);
   }
 
   /**
@@ -88,6 +91,116 @@ export class LeadsAdmin {
           leads: (data as Lead[]) || [],
           total,
           hasMore,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Unknown error occurred',
+        },
+      };
+    }
+  }
+
+  /**
+   * Returns total count of leads
+   */
+  async countTotalLeads(): Promise<{ success: boolean; data?: number; error?: DatabaseError }> {
+    try {
+      const { count, error } = await this.supabase
+        .from('leads')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+          },
+        };
+      }
+
+      return {
+        success: true,
+        data: count || 0,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Unknown error occurred',
+        },
+      };
+    }
+  }
+
+  /**
+   * Returns count of leads by a specific kind
+   */
+  async countByLeadKind(kind: LeadType): Promise<{ success: boolean; data?: number; error?: DatabaseError }> {
+    try {
+      const { count, error } = await this.supabase
+        .from('leads')
+        .select('*', { count: 'exact', head: true })
+        .eq('lead_kind', kind);
+
+      if (error) {
+        return {
+          success: false,
+          error: {
+            message: error.message,
+            code: error.code,
+          },
+        };
+      }
+
+      return {
+        success: true,
+        data: count || 0,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: error instanceof Error ? error.message : 'Unknown error occurred',
+        },
+      };
+    }
+  }
+
+  /**
+   * Convenience method to get all dashboard counts
+   */
+  async getDashboardCounts(): Promise<{
+    success: boolean;
+    data?: { total: number; vendors: number; sponsors: number; volunteers: number; subscribers: number };
+    error?: DatabaseError;
+  }> {
+    try {
+      const [totalRes, vendorsRes, sponsorsRes, volunteersRes, subscribersRes] = await Promise.all([
+        this.countTotalLeads(),
+        this.countByLeadKind('vendor'),
+        this.countByLeadKind('sponsor'),
+        this.countByLeadKind('volunteer'),
+        this.countByLeadKind('subscriber'),
+      ]);
+
+      if (!totalRes.success) return { success: false, error: totalRes.error };
+      if (!vendorsRes.success) return { success: false, error: vendorsRes.error };
+      if (!sponsorsRes.success) return { success: false, error: sponsorsRes.error };
+      if (!volunteersRes.success) return { success: false, error: volunteersRes.error };
+      if (!subscribersRes.success) return { success: false, error: subscribersRes.error };
+
+      return {
+        success: true,
+        data: {
+          total: totalRes.data || 0,
+          vendors: vendorsRes.data || 0,
+          sponsors: sponsorsRes.data || 0,
+          volunteers: volunteersRes.data || 0,
+          subscribers: subscribersRes.data || 0,
         },
       };
     } catch (error) {

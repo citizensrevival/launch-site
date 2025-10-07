@@ -1,0 +1,136 @@
+import { useEffect, useState } from 'react'
+import { createLeadsAdminService } from '../../lib'
+import { AdminLayout } from './AdminLayout'
+
+interface CountsState {
+  total: number
+  vendors: number
+  sponsors: number
+  volunteers: number
+  subscribers: number
+}
+
+export default function AdminDashboard() {
+  const [counts, setCounts] = useState<CountsState | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchCounts = async () => {
+    setLoading(true)
+    const leadsAdmin = createLeadsAdminService()
+    const res = await leadsAdmin.getDashboardCounts()
+    if (res.success && res.data) {
+      setCounts(res.data)
+    } else {
+      setCounts({
+        total: 0,
+        vendors: 0,
+        sponsors: 0,
+        volunteers: 0,
+        subscribers: 0,
+      })
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchCounts()
+  }, [])
+
+  const breadcrumb = (
+    <div className="flex items-center gap-2">
+      <a href="/manage" className="hover:text-gray-200">
+        Dashboard
+      </a>
+    </div>
+  )
+
+  const pageHeader = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 className="text-xl font-semibold text-white sm:text-2xl">
+          Dashboard
+        </h1>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={fetchCounts}
+          aria-label="Refresh counts"
+          title="Refresh counts"
+          disabled={loading}
+          className="rounded-md bg-gray-800 p-2 text-sm text-gray-100 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+       >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className={`h-5 w-5 ${loading ? 'animate-spin text-gray-300' : ''}`}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.023 9.348h4.992V4.355m-2.496 9.638a8.25 8.25 0 11-1.745-5.148m0 0V4.355"
+            />
+          </svg>
+        </button>
+        <a
+          href="/manage/leads/import"
+          className="rounded-md bg-gray-800 px-3 py-2 text-sm text-gray-100 hover:bg-gray-700"
+        >
+          Import CSV
+        </a>
+        <a
+          href="/manage/leads/export"
+          className="rounded-md bg-gray-800 px-3 py-2 text-sm text-gray-100 hover:bg-gray-700"
+        >
+          Download CSV
+        </a>
+      </div>
+    </div>
+  )
+
+  const renderValue = (value?: number) => {
+    if (loading) return '…'
+    return value ?? 0
+  }
+
+  return (
+    <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="rounded-lg bg-gray-800 p-4">
+          <div className="text-xs text-gray-400">Subscribers</div>
+          <div className="mt-1 text-2xl font-semibold text-white">
+            {renderValue(counts?.subscribers)}
+          </div>
+        </div>
+        <div className="rounded-lg bg-gray-800 p-4">
+          <div className="text-xs text-gray-400">Sponsors</div>
+          <div className="mt-1 text-2xl font-semibold text-white">
+            {renderValue(counts?.sponsors)}
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-gray-800 p-4">
+          <div className="text-xs text-gray-400">Vendors</div>
+          <div className="mt-1 text-2xl font-semibold text-white">
+            {renderValue(counts?.vendors)}
+          </div>
+        </div>
+        <div className="rounded-lg bg-gray-800 p-4">
+          <div className="text-xs text-gray-400">Volunteers</div>
+          <div className="mt-1 text-2xl font-semibold text-white">
+            {renderValue(counts?.volunteers)}
+          </div>
+        </div>
+        <div className="rounded-lg bg-gray-800 p-4">
+          <div className="text-xs text-gray-400">Total Leads</div>
+          <div className="mt-1 text-2xl font-semibold text-white">
+            {renderValue(counts?.total)}
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
+  )
+}
