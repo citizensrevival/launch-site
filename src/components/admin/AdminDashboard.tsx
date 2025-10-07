@@ -13,6 +13,7 @@ interface CountsState {
 export default function AdminDashboard() {
   const [counts, setCounts] = useState<CountsState | null>(null)
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
 
   const fetchCounts = async () => {
     setLoading(true)
@@ -35,6 +36,29 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchCounts()
   }, [])
+
+  const handleExportCSV = async () => {
+    if (exporting) return
+    setExporting(true)
+    try {
+      const leadsAdmin = createLeadsAdminService()
+      const res = await leadsAdmin.exportLeadsToCSV()
+      if (res.success && res.data) {
+        const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        link.setAttribute('download', `leads-export-${timestamp}.csv`)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      }
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -81,12 +105,30 @@ export default function AdminDashboard() {
         >
           Import CSV
         </a>
-        <a
-          href="/manage/leads/export"
-          className="rounded-md bg-gray-800 px-3 py-2 text-sm text-gray-100 hover:bg-gray-700"
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          disabled={exporting}
+          className="rounded-md bg-gray-800 px-3 py-2 text-sm text-gray-100 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
-          Download CSV
-        </a>
+          {exporting ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="h-4 w-4 animate-spin text-gray-300"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.023 9.348h4.992V4.355m-2.496 9.638a8.25 8.25 0 11-1.745-5.148m0 0V4.355"
+              />
+            </svg>
+          ) : null}
+          <span>Download CSV</span>
+        </button>
       </div>
     </div>
   )
