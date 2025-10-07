@@ -113,15 +113,12 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
           </div>
 
           <div className="flex-1 flex flex-col pt-4 pb-4 overflow-y-auto">
-            <div className="px-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Primary</h2>
-            </div>
             <div className="mt-2">
               <button
                 className="w-full flex items-center justify-between px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-gray-700"
                 onClick={() => setOpenGroups((s) => ({ ...s, primary: !s.primary }))}
               >
-                <span className="font-medium">Sections</span>
+                <span className="font-medium">Manage</span>
                 <Icon path={mdiChevronDown} className={classNames('h-4 w-4 transform transition-transform', openGroups.primary && 'rotate-180')} />
               </button>
               <nav className={classNames('px-2 space-y-1', openGroups.primary ? 'block' : 'hidden')}>
@@ -134,7 +131,8 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
               </nav>
             </div>
 
-            <div className="mt-6 px-4">
+            {/* Settings section commented out for now */}
+            {/* <div className="mt-6 px-4">
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</h2>
             </div>
             <div className="mt-2">
@@ -153,19 +151,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                   </a>
                 ))}
               </nav>
-            </div>
-          </div>
-
-          <div className="mt-auto border-t border-gray-700 p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-semibold text-white">
-                {initials}
-              </div>
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-white">{user?.email}</div>
-                <div className="text-xs text-gray-400">Administrator</div>
-              </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -223,10 +209,10 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700" aria-label="Notifications">
+              {/* <button className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700" aria-label="Notifications">
                 <Icon path={mdiBell} className="h-5 w-5" />
-              </button>
-              <div className="relative">
+              </button> */}
+              {/* <div className="relative">
                 <details className="group">
                   <summary className="list-none flex items-center gap-2 cursor-pointer select-none rounded-full p-1 hover:bg-gray-700">
                     <span className="sr-only">Help</span>
@@ -237,7 +223,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                     <a href="/manage/shortcuts" className="block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Keyboard Shortcuts</a>
                   </div>
                 </details>
-              </div>
+              </div> */}
               <div className="relative">
                 <details className="group">
                   <summary className="list-none flex items-center gap-2 cursor-pointer select-none">
@@ -247,7 +233,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                   </summary>
                   <div className="absolute right-0 mt-2 w-48 rounded-md bg-gray-800 border border-gray-700 shadow-lg p-1">
                     <div className="px-3 py-2 text-xs text-gray-400">{user?.email}</div>
-                    <a href="/manage/profile" className="block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Profile</a>
+                    {/* <a href="/manage/profile" className="block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Profile</a> */}
                     <button onClick={signOut} className="w-full text-left block px-3 py-2 text-sm text-gray-200 hover:bg-gray-700 rounded">Sign out</button>
                   </div>
                 </details>
@@ -297,13 +283,13 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
         </div>
 
         {/* Mobile FAB */}
-        <button
+        {/* <button
           className="lg:hidden fixed bottom-16 right-4 z-30 h-12 w-12 rounded-full bg-indigo-600 text-white shadow-lg flex items-center justify-center hover:bg-indigo-500"
           aria-label="Add Lead"
           onClick={() => (window.location.href = '/manage/leads/new')}
         >
           <Icon path={mdiPlus} className="h-6 w-6" />
-        </button>
+        </button> */}
       </div>
     </div>
   );
