@@ -23,7 +23,7 @@ import {
   mdiEmail,
   mdiPhone,
   mdiWeb,
-  mdiContentDuplicate
+  // mdiContentDuplicate
 } from '@mdi/js'
 
 type SortKey = 'lead_kind' | 'contact_name' | 'business_name' | 'phone' | 'email' | 'website' | 'created_at'
@@ -46,7 +46,7 @@ export default function LeadsPage() {
   const [drawerLead, setDrawerLead] = useState<Lead | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [exporting, setExporting] = useState(false)
-  const [showMergeDialog, setShowMergeDialog] = useState(false)
+  // const [showMergeDialog, setShowMergeDialog] = useState(false)
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
   const search = (searchParams.get('search') || '').trim()
   const typeParam = searchParams.getAll('type')
@@ -203,7 +203,7 @@ export default function LeadsPage() {
         ))}
       </div>
       <div className="flex items-center gap-2">
-        <Tooltip content="Merge Duplicates">
+        {/* <Tooltip content="Merge Duplicates">
           <button
             type="button"
             onClick={() => setShowMergeDialog(true)}
@@ -212,7 +212,7 @@ export default function LeadsPage() {
           >
             <Icon path={mdiContentDuplicate} className="h-5 w-5 text-white" />
           </button>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip content="Refresh data">
           <button
             type="button"
@@ -224,9 +224,9 @@ export default function LeadsPage() {
             <Icon path={mdiRefresh} className={`h-5 w-5 text-white ${refreshing ? 'animate-spin' : ''}`} />
           </button>
         </Tooltip>
-        <Tooltip content="Import leads from CSV file">
+        {/* <Tooltip content="Import leads from CSV file">
           <a href="/manage/leads/import" className="rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700">Import&nbsp;CSV</a>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip content="Download leads as CSV file">
           <button
             type="button"
@@ -585,7 +585,7 @@ export default function LeadsPage() {
       )}
 
       {/* Merge Duplicates Dialog */}
-      {showMergeDialog && (
+      {/* {showMergeDialog && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowMergeDialog(false)} />
           <div className="absolute inset-0 bg-gray-900 flex flex-col">
@@ -602,14 +602,14 @@ export default function LeadsPage() {
               </Tooltip>
             </div>
             <div className="flex-1 p-4">
-              {/* Content will be added later */}
+              Content will be added later
               <div className="text-white text-center py-8">
                 Merge duplicates functionality will be implemented here.
               </div>
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </AdminLayout>
   )
 }

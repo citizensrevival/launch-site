@@ -88,12 +88,12 @@ export default function AdminDashboard() {
        >
           <Icon path={mdiRefresh} className={`h-5 w-5 ${loading ? 'animate-spin text-gray-300' : ''}`} />
         </button>
-        <a
+        {/* <a
           href="/manage/leads/import"
           className="rounded-md bg-gray-800 px-3 py-2 text-sm text-gray-100 hover:bg-gray-700"
         >
           Import CSV
-        </a>
+        </a> */}
         <button
           type="button"
           onClick={handleExportCSV}
