@@ -15,10 +15,13 @@ import {
   mdiShoppingOutline,
   mdiHandshakeOutline,
   mdiTriangle,
-  mdiEye,
+  mdiCardAccountDetailsOutline,
   mdiDownload,
   mdiCheckboxBlankCircleOutline,
-  mdiCheckCircleOutline
+  mdiCheckCircleOutline,
+  mdiEmail,
+  mdiPhone,
+  mdiWeb
 } from '@mdi/js'
 
 type SortKey = 'lead_kind' | 'contact_name' | 'business_name' | 'phone' | 'email' | 'website' | 'created_at'
@@ -243,18 +246,53 @@ export default function LeadsPage() {
   )
 
   const leadKindIcon = (kind: string) => {
-    switch (kind) {
-      case 'subscriber':
-        return <Icon path={mdiAccountOutline} className="h-4 w-4 text-white" />
-      case 'sponsor':
-        return <Icon path={mdiDomain} className="h-4 w-4 text-white" />
-      case 'vendor':
-        return <Icon path={mdiShoppingOutline} className="h-4 w-4 text-white" />
-      case 'volunteer':
-        return <Icon path={mdiHandshakeOutline} className="h-4 w-4 text-white" />
-      default:
-        return <Icon path={mdiTriangle} className="h-4 w-4 text-white" />
+    const getKindInfo = (kind: string) => {
+      switch (kind) {
+        case 'subscriber':
+          return { icon: mdiAccountOutline, label: 'Subscriber' }
+        case 'sponsor':
+          return { icon: mdiDomain, label: 'Sponsor' }
+        case 'vendor':
+          return { icon: mdiShoppingOutline, label: 'Vendor' }
+        case 'volunteer':
+          return { icon: mdiHandshakeOutline, label: 'Volunteer' }
+        default:
+          return { icon: mdiTriangle, label: 'Unknown' }
+      }
     }
+
+    const { icon, label } = getKindInfo(kind)
+    
+    return (
+      <div className="relative group">
+        <Icon path={icon} className="h-4 w-4 text-white" />
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {label}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+        </div>
+      </div>
+    )
+  }
+
+  const ContactIcon = ({ value, href, icon }: { value?: string | null; href?: string; icon: string }) => {
+    if (!value) return null
+    
+    return (
+      <div className="relative group">
+        <a 
+          href={href} 
+          className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-800 transition-colors"
+          target={href?.startsWith('http') ? '_blank' : undefined}
+          rel={href?.startsWith('http') ? 'noreferrer' : undefined}
+        >
+          <Icon path={icon} className="h-5 w-5 text-purple-300 hover:text-purple-200" />
+        </a>
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {value}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -321,14 +359,26 @@ export default function LeadsPage() {
                   <td className="px-3 py-2 text-white">
                     {lead.business_name || ''}
                   </td>
-                  <td className="px-3 py-2 text-white">
-                    {lead.phone ? (<a className="text-purple-300 hover:text-purple-200" href={`tel:${lead.phone}`}>{lead.phone}</a>) : ''}
+                  <td className="px-3 py-2 text-center">
+                    <ContactIcon 
+                      value={lead.phone} 
+                      href={lead.phone ? `tel:${lead.phone}` : undefined}
+                      icon={mdiPhone}
+                    />
                   </td>
-                  <td className="px-3 py-2 text-white">
-                    <a className="text-purple-300 hover:text-purple-200" href={`mailto:${lead.email}`}>{lead.email}</a>
+                  <td className="px-3 py-2 text-center">
+                    <ContactIcon 
+                      value={lead.email} 
+                      href={`mailto:${lead.email}`}
+                      icon={mdiEmail}
+                    />
                   </td>
-                  <td className="px-3 py-2 text-white">
-                    {lead.website ? (<a className="text-purple-300 hover:text-purple-200" href={lead.website} target="_blank" rel="noreferrer">{lead.website}</a>) : ''}
+                  <td className="px-3 py-2 text-center">
+                    <ContactIcon 
+                      value={lead.website} 
+                      href={lead.website || undefined}
+                      icon={mdiWeb}
+                    />
                   </td>
                   <td className="px-3 py-2 text-white">
                     {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}
@@ -339,7 +389,7 @@ export default function LeadsPage() {
                       aria-label="View details"
                       onClick={() => setDrawerLead(lead)}
                     >
-                      <Icon path={mdiEye} className="h-5 w-5 text-white" />
+                      <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
                     </button>
                   </td>
                 </tr>
