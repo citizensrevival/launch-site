@@ -1,40 +1,30 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar } from '../../components/admin/TimeRangeToolbar'
+import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
+import { ChartCard, MetricCard, TimeSeriesLineChart, TimeSeriesBarChart, SimplePieChart, CHART_COLORS } from '../../components/admin/analytics/ChartComponents'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
+import type { RootState } from '../../store'
+
+// Create typed selectors to avoid TypeScript issues
+const selectTimeRange = (state: RootState) => (state as any).admin.timeRange
+const selectLoading = (state: RootState) => (state as any).admin.analytics.loading
+const selectRefreshing = (state: RootState) => (state as any).admin.analytics.refreshing
+const selectCache = (state: RootState) => (state as any).cache
 import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../../store/slices/adminSlice'
 import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
-import { 
-  mdiAccountGroup,
-  mdiEye,
-  mdiMouse,
-  mdiTrendingUp,
-  mdiRefresh
-} from '@mdi/js'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { analyticsService, AnalyticsOverviewData } from '../../lib/AnalyticsService'
+import { mdiRefresh } from '@mdi/js'
 
-interface AnalyticsData {
-  uniqueUsers: number
-  totalSessions: number
-  totalPageviews: number
-  totalEvents: number
-  uniqueUsersOverTime: Array<{ day: string; unique_users: number }>
-  sessionsOverTime: Array<{ day: string; sessions: number }>
-  topPages: Array<{ path: string; views: number }>
-  deviceBreakdown: Array<{ category: string; count: number }>
-  newVsReturning: Array<{ type: string; count: number }>
-}
-
-const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444']
+// Remove the interface since we're importing it from AnalyticsService
 
 export default function AnalyticsOverview() {
   const dispatch = useAppDispatch()
-  const timeRange = useAppSelector((state) => state.admin.timeRange)
-  const loading = useAppSelector((state) => state.admin.analytics.loading)
-  const refreshing = useAppSelector((state) => state.admin.analytics.refreshing)
-  const cache = useAppSelector((state) => state.cache)
-  const [data, setData] = useState<AnalyticsData | null>(null)
+  const timeRange = useAppSelector(selectTimeRange)
+  const loading = useAppSelector(selectLoading)
+  const refreshing = useAppSelector(selectRefreshing)
+  const cache = useAppSelector(selectCache)
+  const [data, setData] = useState<AnalyticsOverviewData | null>(null)
 
   const getCacheKey = () => `analytics-overview-${timeRange}`
 
@@ -43,7 +33,7 @@ export default function AnalyticsOverview() {
     
     // Check cache first (unless force refresh)
     if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
-      const cachedData = getCacheData<AnalyticsData>(cache, 'analytics', cacheKey)
+      const cachedData = getCacheData<AnalyticsOverviewData>(cache, 'analytics', cacheKey)
       if (cachedData) {
         setData(cachedData)
         return
@@ -52,56 +42,16 @@ export default function AnalyticsOverview() {
 
     try {
       dispatch(setAnalyticsLoading(true))
-      // TODO: Replace with actual Supabase queries
-      // For now, using mock data
-      const mockData: AnalyticsData = {
-        uniqueUsers: 1247,
-        totalSessions: 2156,
-        totalPageviews: 8943,
-        totalEvents: 3421,
-        uniqueUsersOverTime: [
-          { day: '2024-01-01', unique_users: 45 },
-          { day: '2024-01-02', unique_users: 52 },
-          { day: '2024-01-03', unique_users: 38 },
-          { day: '2024-01-04', unique_users: 67 },
-          { day: '2024-01-05', unique_users: 89 },
-          { day: '2024-01-06', unique_users: 76 },
-          { day: '2024-01-07', unique_users: 94 }
-        ],
-        sessionsOverTime: [
-          { day: '2024-01-01', sessions: 78 },
-          { day: '2024-01-02', sessions: 89 },
-          { day: '2024-01-03', sessions: 65 },
-          { day: '2024-01-04', sessions: 112 },
-          { day: '2024-01-05', sessions: 134 },
-          { day: '2024-01-06', sessions: 98 },
-          { day: '2024-01-07', sessions: 145 }
-        ],
-        topPages: [
-          { path: '/', views: 2341 },
-          { path: '/about', views: 892 },
-          { path: '/contact', views: 567 },
-          { path: '/events', views: 445 },
-          { path: '/volunteer', views: 334 }
-        ],
-        deviceBreakdown: [
-          { category: 'desktop', count: 1247 },
-          { category: 'mobile', count: 678 },
-          { category: 'tablet', count: 231 }
-        ],
-        newVsReturning: [
-          { type: 'New Users', count: 892 },
-          { type: 'Returning Users', count: 355 }
-        ]
-      }
       
-      setData(mockData)
+      // Fetch data from analytics service
+      const analyticsData = await analyticsService.getAnalyticsOverview(timeRange)
+      setData(analyticsData)
       
       // Cache the data
       dispatch(setCacheData({
         type: 'analytics',
         key: cacheKey,
-        data: mockData
+        data: analyticsData
       }))
     } catch (error) {
       console.error('Failed to fetch analytics data:', error)
@@ -178,29 +128,25 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
           title="Unique Users"
-          value={data.uniqueUsers.toLocaleString()}
-          icon={mdiAccountGroup}
+          value={data.uniqueUsers}
           trend="+12%"
           trendUp={true}
         />
         <MetricCard
           title="Total Sessions"
-          value={data.totalSessions.toLocaleString()}
-          icon={mdiEye}
+          value={data.totalSessions}
           trend="+8%"
           trendUp={true}
         />
         <MetricCard
           title="Page Views"
-          value={data.totalPageviews.toLocaleString()}
-          icon={mdiMouse}
+          value={data.totalPageviews}
           trend="+15%"
           trendUp={true}
         />
         <MetricCard
           title="Events"
-          value={data.totalEvents.toLocaleString()}
-          icon={mdiTrendingUp}
+          value={data.totalEvents}
           trend="+23%"
           trendUp={true}
         />
@@ -220,120 +166,40 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Unique Users Over Time */}
         <ChartCard title="Unique Users Over Time">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.uniqueUsersOverTime}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="day" 
-                stroke="#9CA3AF"
-                fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString()}
-              />
-              <YAxis stroke="#9CA3AF" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F9FAFB'
-                }}
-                labelFormatter={(value) => new Date(value).toLocaleDateString()}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="unique_users" 
-                stroke="#8B5CF6" 
-                strokeWidth={2}
-                dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <TimeSeriesLineChart 
+            data={data.uniqueUsersOverTime}
+            dataKey="unique_users"
+            color={CHART_COLORS.primary}
+          />
         </ChartCard>
 
         {/* Sessions Over Time */}
         <ChartCard title="Sessions Over Time">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.sessionsOverTime}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="day" 
-                stroke="#9CA3AF"
-                fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString()}
-              />
-              <YAxis stroke="#9CA3AF" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F9FAFB'
-                }}
-                labelFormatter={(value) => new Date(value).toLocaleDateString()}
-              />
-              <Bar dataKey="sessions" fill="#06B6D4" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <TimeSeriesBarChart 
+            data={data.sessionsOverTime}
+            dataKey="sessions"
+            color={CHART_COLORS.secondary}
+          />
         </ChartCard>
 
         {/* Device Breakdown */}
         <ChartCard title="Device Breakdown">
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={data.deviceBreakdown}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ category, percent }: any) => `${category} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="count"
-              >
-                {data.deviceBreakdown.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F9FAFB'
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <SimplePieChart 
+            data={data.deviceBreakdown}
+            dataKey="count"
+            nameKey="category"
+            valueKey="count"
+          />
         </ChartCard>
 
         {/* New vs Returning Users */}
         <ChartCard title="New vs Returning Users">
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={data.newVsReturning}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ type, percent }: any) => `${type} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="count"
-              >
-                {data.newVsReturning.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F9FAFB'
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <SimplePieChart 
+            data={data.newVsReturning}
+            dataKey="count"
+            nameKey="type"
+            valueKey="count"
+          />
         </ChartCard>
       </div>
 
@@ -364,42 +230,4 @@ export default function AnalyticsOverview() {
   )
 }
 
-function MetricCard({ 
-  title, 
-  value, 
-  icon, 
-  trend, 
-  trendUp 
-}: { 
-  title: string
-  value: string
-  icon: string
-  trend: string
-  trendUp: boolean
-}) {
-  return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-400 text-sm">{title}</p>
-          <p className="text-2xl font-bold text-white">{value}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Icon path={icon} className="h-8 w-8 text-purple-500" />
-          <span className={`text-sm font-medium ${trendUp ? 'text-green-400' : 'text-red-400'}`}>
-            {trend}
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
-      {children}
-    </div>
-  )
-}
+// Removed MetricCard and ChartCard functions - now using reusable components
