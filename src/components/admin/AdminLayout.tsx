@@ -9,7 +9,8 @@ import {
   mdiClose,
   mdiChevronDown,
   mdiMenu,
-  mdiMagnify
+  mdiMagnify,
+  mdiChartLine
 } from '@mdi/js';
 
 interface AdminLayoutProps {
@@ -18,7 +19,7 @@ interface AdminLayoutProps {
   pageHeader?: React.ReactNode;
 }
 
-type SidebarGroupKey = 'primary' | 'settings';
+type SidebarGroupKey = 'primary' | 'analytics' | 'settings';
 
 function classNames(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(' ');
@@ -38,14 +39,14 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
   const [globalSearch, setGlobalSearch] = useState('');
 
   const storageKey = useMemo(() => `admin_sidebar_groups_${user?.email || 'anon'}`, [user?.email]);
-  const [openGroups, setOpenGroups] = useState<Record<SidebarGroupKey, boolean>>({ primary: true, settings: true });
+  const [openGroups, setOpenGroups] = useState<Record<SidebarGroupKey, boolean>>({ primary: true, analytics: true, settings: true });
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw) as Record<SidebarGroupKey, boolean>;
-        setOpenGroups({ primary: parsed.primary ?? true, settings: parsed.settings ?? true });
+        setOpenGroups({ primary: parsed.primary ?? true, analytics: parsed.analytics ?? true, settings: parsed.settings ?? true });
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,6 +64,21 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
     ) },
     { name: 'Leads', href: '/manage/leads', icon: (
       <Icon path={mdiAccountGroup} className="h-5 w-5" />
+    ) },
+  ];
+
+  const analyticsItems = [
+    { name: 'Overview', href: '/manage/analytics', icon: (
+      <Icon path={mdiChartLine} className="h-5 w-5" />
+    ) },
+    { name: 'Users', href: '/manage/analytics/users', icon: (
+      <Icon path={mdiAccountGroup} className="h-5 w-5" />
+    ) },
+    { name: 'Sessions', href: '/manage/analytics/sessions', icon: (
+      <Icon path={mdiClock} className="h-5 w-5" />
+    ) },
+    { name: 'Events', href: '/manage/analytics/events', icon: (
+      <Icon path={mdiChartLine} className="h-5 w-5" />
     ) },
   ];
 
@@ -115,6 +131,24 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
               </button>
               <nav className={classNames('px-2 space-y-1', openGroups.primary ? 'block' : 'hidden')}>
                 {primaryItems.map((item) => (
+                  <a key={item.name} href={item.href} className="group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <span className="text-gray-400 group-hover:text-gray-200">{item.icon}</span>
+                    {item.name}
+                  </a>
+                ))}
+              </nav>
+            </div>
+
+            <div className="mt-6">
+              <button
+                className="w-full flex items-center justify-between px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-gray-700"
+                onClick={() => setOpenGroups((s) => ({ ...s, analytics: !s.analytics }))}
+              >
+                <span className="font-medium">Analytics</span>
+                <Icon path={mdiChevronDown} className={classNames('h-4 w-4 transform transition-transform', openGroups.analytics && 'rotate-180')} />
+              </button>
+              <nav className={classNames('px-2 space-y-1', openGroups.analytics ? 'block' : 'hidden')}>
+                {analyticsItems.map((item) => (
                   <a key={item.name} href={item.href} className="group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white">
                     <span className="text-gray-400 group-hover:text-gray-200">{item.icon}</span>
                     {item.name}
@@ -268,7 +302,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
 
         {/* Mobile bottom bar */}
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-gray-800 border-t border-gray-700">
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-3">
             <a href="/manage" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
               <Icon path={mdiHome} className="h-5 w-5" />
               <span>Dashboard</span>
@@ -276,6 +310,10 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
             <a href="/manage/leads" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
               <Icon path={mdiAccountGroup} className="h-5 w-5" />
               <span>Leads</span>
+            </a>
+            <a href="/manage/analytics" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
+              <Icon path={mdiChartLine} className="h-5 w-5" />
+              <span>Analytics</span>
             </a>
           </div>
         </div>

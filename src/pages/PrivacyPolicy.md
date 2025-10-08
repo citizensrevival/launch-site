@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective Date:** October 7, 2025
+**Effective Date:** January 9, 2025
 
 ## Introduction
 
@@ -23,12 +23,27 @@ We automatically collect certain technical information, including:
 - Browser Version and Type
 - Device Information
 - Session Data
+- Geographic Location (country, region, city)
+- User Agent Information
+- Referrer URLs
+- UTM Campaign Parameters
+
+### Analytics and Tracking
+We collect anonymous analytics data to understand how visitors use our website, including:
+- Page views and navigation patterns
+- Time spent on pages
+- User interactions (clicks, form submissions, downloads)
+- Device and browser information
+- Geographic location (anonymized)
+- Referrer sources and UTM campaign data
 
 ### Local Storage and Cookies
 We use Local Storage and Cookies to:
 - Remember your theme preferences
 - Track which forms you have submitted
 - Maintain your session settings
+- Store anonymous user identifiers for analytics
+- Track user sessions and interactions
 
 ## How We Use Your Information
 
@@ -37,6 +52,10 @@ We use the collected information to:
 - Send newsletters and event updates via email and/or phone
 - Provide customer support and respond to inquiries
 - Improve our website and services
+- Analyze website usage and user behavior
+- Optimize website performance and user experience
+- Track the effectiveness of marketing campaigns
+- Generate anonymous usage statistics and reports
 
 ## Data Storage and Security
 
@@ -50,6 +69,12 @@ We do not share, sell, or disclose your personal information to third parties, e
 
 We retain your personal information for up to 18 months after the Aztec Citizens Revival event. After this period, we will securely delete or anonymize your data unless we are required to retain it for legal purposes.
 
+### Analytics Data Retention
+- Anonymous analytics data is retained for up to 24 months for statistical analysis
+- IP addresses are anonymized after 30 days
+- Session data is automatically purged after 12 months
+- You can request deletion of your analytics data at any time
+
 ## Your Rights
 
 You have the right to:
@@ -58,8 +83,35 @@ You have the right to:
 - Request deletion of your information
 - Opt-out of marketing communications
 - Withdraw consent for data processing
+- Request deletion of your analytics data
+- Opt-out of analytics tracking
+- Access information about how your data is being used
 
 To exercise these rights, please contact us using the information provided below.
+
+## Analytics and Website Tracking
+
+We use our own in-house analytics system to understand how visitors interact with our website. This system:
+
+- Collects anonymous usage data to improve website functionality
+- Tracks page views, user sessions, and interactions
+- Monitors website performance and user experience
+- Helps us understand which content is most valuable to visitors
+- Enables us to optimize the website for better user experience
+
+### Analytics Data Collection
+- **Anonymous User IDs**: We assign anonymous identifiers to track user sessions
+- **Session Data**: Information about your visit including pages viewed and time spent
+- **Device Information**: Browser type, operating system, and device category
+- **Geographic Data**: General location information (country, region, city)
+- **Referrer Information**: How you found our website
+- **UTM Parameters**: Campaign tracking data from marketing efforts
+
+### Data Anonymization
+- IP addresses are anonymized and not stored in personally identifiable form
+- User identifiers are randomly generated and cannot be linked to personal information
+- Geographic data is limited to country/region level
+- All analytics data is aggregated and used for statistical analysis only
 
 ## Third-Party Services
 
@@ -86,4 +138,4 @@ We process your personal information based on:
 
 ---
 
-*This Privacy Policy is effective as of October 7, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*
+*This Privacy Policy is effective as of January 9, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*

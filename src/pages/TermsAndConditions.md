@@ -1,6 +1,6 @@
 # Terms and Conditions
 
-**Effective Date:** October 7, 2025
+**Effective Date:** January 9, 2025
 
 ## Acceptance of Terms
 
@@ -33,9 +33,18 @@ The materials appearing on Aztec Citizens Revival's website could include techni
 
 Aztec Citizens Revival has not reviewed all of the sites linked to our website and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by Aztec Citizens Revival of the site. Use of any such linked website is at the user's own risk.
 
-## Privacy Policy
+## Privacy Policy and Data Collection
 
 Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Website, to understand our practices.
+
+### Website Analytics and Tracking
+By using our website, you consent to our collection and use of anonymous analytics data to improve our services. This includes:
+- Anonymous tracking of website usage and user interactions
+- Collection of technical information (browser type, device information, geographic location)
+- Session tracking and user behavior analysis
+- Performance monitoring and website optimization
+
+You may opt-out of analytics tracking at any time by contacting us or adjusting your browser settings.
 
 ## Prohibited Uses
 
@@ -49,6 +58,21 @@ You may not use our website:
 - To spam, phish, pharm, pretext, spider, crawl, or scrape
 - For any obscene or immoral purpose
 - To interfere with or circumvent the security features of the website
+- To attempt to disable or interfere with our analytics tracking systems
+- To use automated tools to access or scrape our website without permission
+
+## Data Processing and User Consent
+
+### Analytics Data Processing
+By using our website, you acknowledge and consent to our processing of anonymous analytics data for the following purposes:
+- Website performance monitoring and optimization
+- User experience improvement
+- Content effectiveness analysis
+- Technical troubleshooting and support
+- Statistical analysis and reporting
+
+### Data Protection
+We are committed to protecting your privacy and ensuring that all data collection and processing complies with applicable privacy laws and regulations. Our analytics system is designed to collect only anonymous, non-personally identifiable information.
 
 ## Intellectual Property Rights
 
@@ -80,4 +104,4 @@ These Terms constitute the sole and entire agreement between you and Aztec Citiz
 
 ---
 
-*These Terms and Conditions are effective as of October 7, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*
+*These Terms and Conditions are effective as of January 9, 2025, and will remain in effect except with respect to any changes in its provisions in the future, which will be in effect immediately after being posted on this page.*
