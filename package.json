@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "vite",
+    "start": "npm run start:local",
+    "start:local": "npm run db:ensure && cross-env VITE_SUPABASE_URL=http://127.0.0.1:54321 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0 vite --mode development",
+    "start:remote": "vite",
     "build": "tsc && vite build",
     "build:github": "NODE_ENV=production tsc && vite build",
     "preview": "vite preview",
@@ -17,7 +19,8 @@
     "db:diff": "supabase db diff",
     "db:generate": "supabase gen types typescript --local > src/lib/database.types.ts",
     "db:studio": "supabase studio",
-    "db:logs": "supabase logs"
+    "db:logs": "supabase logs",
+    "db:ensure": "supabase status || supabase start"
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
@@ -40,6 +43,7 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
