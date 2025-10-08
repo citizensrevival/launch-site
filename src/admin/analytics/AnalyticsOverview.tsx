@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { TimeRangeToolbar } from '../../components/admin/TimeRangeToolbar'
+import { useAppSelector, useAppDispatch } from '../../store/hooks'
+import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../../store/slices/adminSlice'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
 import { 
   mdiAccountGroup,
   mdiEye,
@@ -26,14 +29,29 @@ interface AnalyticsData {
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444']
 
 export default function AnalyticsOverview() {
+  const dispatch = useAppDispatch()
+  const timeRange = useAppSelector((state) => state.admin.timeRange)
+  const loading = useAppSelector((state) => state.admin.analytics.loading)
+  const refreshing = useAppSelector((state) => state.admin.analytics.refreshing)
+  const cache = useAppSelector((state) => state.cache)
   const [data, setData] = useState<AnalyticsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const [timeRange, setTimeRange] = useState<TimeRange>('30days')
 
-  const fetchAnalyticsData = async () => {
+  const getCacheKey = () => `analytics-overview-${timeRange}`
+
+  const fetchAnalyticsData = async (forceRefresh = false) => {
+    const cacheKey = getCacheKey()
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
+      const cachedData = getCacheData<AnalyticsData>(cache, 'analytics', cacheKey)
+      if (cachedData) {
+        setData(cachedData)
+        return
+      }
+    }
+
     try {
-      setLoading(true)
+      dispatch(setAnalyticsLoading(true))
       // TODO: Replace with actual Supabase queries
       // For now, using mock data
       const mockData: AnalyticsData = {
@@ -78,22 +96,31 @@ export default function AnalyticsOverview() {
       }
       
       setData(mockData)
+      
+      // Cache the data
+      dispatch(setCacheData({
+        type: 'analytics',
+        key: cacheKey,
+        data: mockData
+      }))
     } catch (error) {
       console.error('Failed to fetch analytics data:', error)
     } finally {
-      setLoading(false)
+      dispatch(setAnalyticsLoading(false))
     }
   }
 
   const refresh = async () => {
-    setRefreshing(true)
-    await fetchAnalyticsData()
-    setRefreshing(false)
+    dispatch(setAnalyticsRefreshing(true))
+    // Clear cache for this data type to force refresh
+    dispatch(clearCacheType('analytics'))
+    await fetchAnalyticsData(true)
+    dispatch(setAnalyticsRefreshing(false))
   }
 
   useEffect(() => {
     fetchAnalyticsData()
-  }, [])
+  }, [timeRange])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -183,7 +210,9 @@ export default function AnalyticsOverview() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={setTimeRange}
+          onRangeChange={(range) => dispatch(setTimeRange(range))}
+          onRefresh={refresh}
+          refreshing={refreshing}
         />
       </div>
 

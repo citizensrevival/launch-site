@@ -5,6 +5,8 @@ import type { Lead } from '../../lib/types'
 import { formatDistanceToNow } from 'date-fns'
 import { Icon } from '@mdi/react'
 import { Tooltip } from '../Tooltip'
+import { useAppSelector, useAppDispatch } from '../../store/hooks'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
 import { 
   mdiMagnify, 
   mdiClose, 
@@ -37,6 +39,8 @@ const LEAD_TYPES = [
 ] as const
 
 export default function LeadsPage() {
+  const dispatch = useAppDispatch()
+  const cache = useAppSelector((state) => state.cache)
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -91,7 +95,25 @@ export default function LeadsPage() {
     })
   }
 
-  const fetchPage = async (offset: number) => {
+  const getCacheKey = (offset: number) => {
+    const filters = {
+      ...(selectedLeadTypes.size > 0 ? { lead_kind_in: Array.from(selectedLeadTypes) } : {}),
+      ...(search ? { search } : {}),
+    }
+    return `leads-${offset}-${sortKey}-${sortDirection}-${JSON.stringify(filters)}`
+  }
+
+  const fetchPage = async (offset: number, forceRefresh = false) => {
+    const cacheKey = getCacheKey(offset)
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && isCacheValid(cache, 'leads', cacheKey)) {
+      const cachedData = getCacheData<{ leads: Lead[]; hasMore: boolean }>(cache, 'leads', cacheKey)
+      if (cachedData) {
+        return { success: true, data: cachedData }
+      }
+    }
+
     const service = createLeadsAdminService()
     const res = await service.searchLeads({
       offset,
@@ -103,13 +125,25 @@ export default function LeadsPage() {
         ...(search ? { search } : {}),
       } as any,
     })
+
+    // Cache the result if successful
+    if (res.success && res.data) {
+      dispatch(setCacheData({
+        type: 'leads',
+        key: cacheKey,
+        data: res.data
+      }))
+    }
+
     return res
   }
 
   const refresh = async () => {
     setRefreshing(true)
     setSelectedIds(new Set())
-    const res = await fetchPage(0)
+    // Clear cache for leads to force refresh
+    dispatch(clearCacheType('leads'))
+    const res = await fetchPage(0, true)
     if (res.success && res.data) {
       setLeads(res.data.leads)
       setHasMore(res.data.hasMore)

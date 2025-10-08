@@ -1,11 +1,13 @@
 import { Icon } from '@mdi/react';
-import { mdiCalendarToday, mdiCalendarWeek, mdiCalendarMonth, mdiCalendar } from '@mdi/js';
+import { mdiCalendarToday, mdiCalendarWeek, mdiCalendarMonth, mdiCalendar, mdiRefresh } from '@mdi/js';
 
 export type TimeRange = 'today' | '7days' | '30days' | 'year';
 
 interface TimeRangeToolbarProps {
   selectedRange: TimeRange;
   onRangeChange: (range: TimeRange) => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
   className?: string;
 }
 
@@ -16,7 +18,13 @@ const timeRangeOptions = [
   { value: 'year' as TimeRange, label: 'Last Year', icon: mdiCalendar },
 ];
 
-export function TimeRangeToolbar({ selectedRange, onRangeChange, className = '' }: TimeRangeToolbarProps) {
+export function TimeRangeToolbar({ 
+  selectedRange, 
+  onRangeChange, 
+  onRefresh, 
+  refreshing = false, 
+  className = '' 
+}: TimeRangeToolbarProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <div className="text-sm text-gray-300 mr-2">Time Range:</div>
@@ -35,6 +43,16 @@ export function TimeRangeToolbar({ selectedRange, onRangeChange, className = '' 
             <span>{option.label}</span>
           </button>
         ))}
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white disabled:opacity-50"
+          >
+            <Icon path={mdiRefresh} className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        )}
       </div>
     </div>
   );

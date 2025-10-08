@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { useSiteSettings } from '../lib/SiteSettingsManager'
+import { useAppSelector, useAppDispatch } from '../store/hooks'
+import { setColorTheme } from '../store/slices/sessionSlice'
 
 type ColorTheme = 'purple' | 'green' | 'blue' | 'amber' | 'rose'
 
@@ -34,13 +35,14 @@ export function ThemeProvider({
   children, 
   disableTransitionOnChange = false 
 }: ThemeProviderProps) {
-  const siteSettings = useSiteSettings()
-  const [colorTheme, setColorThemeState] = useState<ColorTheme>('purple')
+  const dispatch = useAppDispatch()
+  const colorTheme = useAppSelector((state) => state.session.colorTheme)
+  const [colorThemeState, setColorThemeState] = useState<ColorTheme>('purple')
 
-  // Set color theme using site settings and apply to document
-  const setColorTheme = (newColorTheme: ColorTheme) => {
+  // Set color theme using Redux and apply to document
+  const handleSetColorTheme = (newColorTheme: ColorTheme) => {
     setColorThemeState(newColorTheme)
-    siteSettings.setColorTheme(newColorTheme)
+    dispatch(setColorTheme(newColorTheme))
     
     if (typeof window !== 'undefined') {
       const root = window.document.documentElement
@@ -64,21 +66,20 @@ export function ThemeProvider({
     }
   }
 
-  // Initialize color theme from site settings
+  // Initialize color theme from Redux state
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const initialColorTheme = siteSettings.getColorTheme()
-    setColorThemeState(initialColorTheme)
+    setColorThemeState(colorTheme)
     
     // Apply initial color theme
     const root = window.document.documentElement
     root.classList.remove('purple', 'green', 'blue', 'amber', 'rose')
-    root.classList.add(initialColorTheme)
-  }, [siteSettings])
+    root.classList.add(colorTheme)
+  }, [colorTheme])
 
   return (
-    <ThemeContext.Provider value={{ colorTheme, setColorTheme }}>
+    <ThemeContext.Provider value={{ colorTheme: colorThemeState, setColorTheme: handleSetColorTheme }}>
       {children}
     </ThemeContext.Provider>
   )

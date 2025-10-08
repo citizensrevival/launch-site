@@ -2,7 +2,8 @@ import { useId, useState } from 'react'
 
 import { Button } from './Button'
 import { useTheme } from '../contexts/ThemeContext'
-import { useSiteSettings } from '../lib/SiteSettingsManager'
+import { useAppSelector, useAppDispatch } from '../store/hooks'
+import { setEmailSubscribed } from '../store/slices/sessionSlice'
 import { LeadsPublic } from '../lib/LeadsPublic'
 import { EnvironmentConfigProvider } from '../lib/supabase'
 import { Icon } from '@mdi/react'
@@ -12,7 +13,8 @@ export function SignUpForm() {
   let id = useId()
   const theme = useTheme()
   const colorTheme = theme?.colorTheme || 'purple'
-  const siteSettings = useSiteSettings()
+  const dispatch = useAppDispatch()
+  const emailSubscribed = useAppSelector((state) => state.session.emailSubscribed)
   
   // Form state
   const [email, setEmail] = useState('')
@@ -54,7 +56,7 @@ export function SignUpForm() {
   const themeColors = getThemeColors(colorTheme)
   
   // Check if user has already subscribed to email
-  const isEmailSubscribed = siteSettings.getEmailSubscribed()
+  const isEmailSubscribed = emailSubscribed
   
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,8 +89,8 @@ export function SignUpForm() {
       })
       
       if (result.success) {
-        // Update site settings to mark as subscribed
-        siteSettings.setEmailSubscribed(true)
+        // Update Redux state to mark as subscribed
+        dispatch(setEmailSubscribed(true))
         setSubmitStatus('success')
         setEmail('')
       } else {
@@ -113,7 +115,7 @@ export function SignUpForm() {
               <Icon path={mdiCheck} className="w-5 h-5 text-green-400" />
             </div>
             <div className="text-sm">
-              <p className="text-white font-medium">You're already subscribed for updates!</p>
+              <p className="text-white font-medium">You're subscribed for updates!</p>
               <p className="text-gray-300">Keep an eye on your inbox.</p>
             </div>
           </div>

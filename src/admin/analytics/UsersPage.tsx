@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { useAppSelector, useAppDispatch } from '../../store/hooks'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
 import { 
   mdiRefresh,
   mdiChevronUp,
@@ -63,6 +65,8 @@ interface UsersData {
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444']
 
 export default function UsersPage() {
+  const dispatch = useAppDispatch()
+  const cache = useAppSelector((state) => state.cache)
   const [data, setData] = useState<UsersData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -72,7 +76,21 @@ export default function UsersPage() {
   const [selectedSession, setSelectedSession] = useState<any>(null)
   const [timeRange, setTimeRange] = useState<TimeRange>('30days')
 
-  const fetchUsersData = async () => {
+  const getCacheKey = () => `analytics-users-${timeRange}`
+
+  const fetchUsersData = async (forceRefresh = false) => {
+    const cacheKey = getCacheKey()
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
+      const cachedData = getCacheData<UsersData>(cache, 'analytics', cacheKey)
+      if (cachedData) {
+        setData(cachedData)
+        setLoading(false)
+        return
+      }
+    }
+
     try {
       setLoading(true)
       // TODO: Replace with actual Supabase queries
@@ -251,6 +269,13 @@ export default function UsersPage() {
       }
       
       setData(mockData)
+      
+      // Cache the data
+      dispatch(setCacheData({
+        type: 'analytics',
+        key: cacheKey,
+        data: mockData
+      }))
     } catch (error) {
       console.error('Failed to fetch users data:', error)
     } finally {
@@ -260,7 +285,9 @@ export default function UsersPage() {
 
   const refresh = async () => {
     setRefreshing(true)
-    await fetchUsersData()
+    // Clear cache for this data type to force refresh
+    dispatch(clearCacheType('analytics'))
+    await fetchUsersData(true)
     setRefreshing(false)
   }
 
@@ -275,7 +302,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchUsersData()
-  }, [])
+  }, [timeRange])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -380,6 +407,8 @@ export default function UsersPage() {
         <TimeRangeToolbar 
           selectedRange={timeRange} 
           onRangeChange={setTimeRange}
+          onRefresh={refresh}
+          refreshing={refreshing}
         />
       </div>
 

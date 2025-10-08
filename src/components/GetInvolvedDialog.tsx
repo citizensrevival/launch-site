@@ -4,7 +4,8 @@ import { LeadsPublic } from '../lib/LeadsPublic';
 import { EnvironmentConfigProvider } from '../lib/supabase';
 import { CreateLeadInput, LeadType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
-import { useSiteSettings } from '../lib/SiteSettingsManager';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { setGetInvolvedSubmission } from '../store/slices/sessionSlice';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiCheck } from '@mdi/js';
 
@@ -29,7 +30,8 @@ interface SocialLink {
 export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
-  const siteSettings = useSiteSettings();
+  const dispatch = useAppDispatch();
+  const getInvolvedSubmissions = useAppSelector((state) => state.session.getInvolvedSubmissions);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<LeadType | null>(preselectedType || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,10 +65,9 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
   // Check for existing submissions when dialog opens
   useEffect(() => {
     if (isOpen) {
-      const submissions = siteSettings.getAllGetInvolvedSubmissions();
-      setExistingSubmissions(submissions);
+      setExistingSubmissions(getInvolvedSubmissions);
     }
-  }, [isOpen, siteSettings]);
+  }, [isOpen, getInvolvedSubmissions]);
 
   // Handle escape key
   useEffect(() => {
@@ -228,9 +229,9 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
 
       if (result.success) {
         setSubmitStatus('success');
-        // Track the submission in site settings (only for get involved types)
+        // Track the submission in Redux (only for get involved types)
         if (selectedType === 'vendor' || selectedType === 'sponsor' || selectedType === 'volunteer') {
-          siteSettings.setGetInvolvedSubmission(selectedType, true);
+          dispatch(setGetInvolvedSubmission({ type: selectedType, submitted: true }));
         }
         // Update local state
         setExistingSubmissions(prev => ({ ...prev, [selectedType!]: true }));

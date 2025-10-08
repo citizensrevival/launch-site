@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Provider } from 'react-redux'
+import { store } from './store'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { GetInvolvedDialog } from './components/GetInvolvedDialog'
@@ -41,12 +43,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider disableTransitionOnChange>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider disableTransitionOnChange>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </Provider>
   )
 }

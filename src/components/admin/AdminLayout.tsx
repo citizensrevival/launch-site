@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { setGlobalSearch } from '../../store/slices/adminSlice';
 import { Icon } from '@mdi/react';
 import { Tooltip } from '../Tooltip';
 import { 
@@ -35,9 +37,10 @@ function getInitialsFromEmail(email?: string | null): string {
 }
 
 export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutProps) {
+  const dispatch = useAppDispatch();
+  const globalSearch = useAppSelector((state) => state.admin.globalSearch);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const [globalSearch, setGlobalSearch] = useState('');
 
   const storageKey = useMemo(() => `admin_sidebar_groups_${user?.email || 'anon'}`, [user?.email]);
   const [openGroups, setOpenGroups] = useState<Record<SidebarGroupKey, boolean>>({ primary: true, analytics: true, settings: true });
@@ -214,7 +217,7 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 name="search"
                 placeholder="Search leads"
                 value={globalSearch}
-                onChange={(e) => setGlobalSearch(e.target.value)}
+                onChange={(e) => dispatch(setGlobalSearch(e.target.value))}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const q = globalSearch.trim();

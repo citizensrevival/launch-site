@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { useAppSelector, useAppDispatch } from '../../store/hooks'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
 import { 
   mdiTrendingUp,
   mdiRefresh,
@@ -33,6 +35,8 @@ interface EventsData {
 }
 
 export default function EventsPage() {
+  const dispatch = useAppDispatch()
+  const cache = useAppSelector((state) => state.cache)
   const [data, setData] = useState<EventsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -40,7 +44,21 @@ export default function EventsPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [timeRange, setTimeRange] = useState<TimeRange>('30days')
 
-  const fetchEventsData = async () => {
+  const getCacheKey = () => `analytics-events-${timeRange}`
+
+  const fetchEventsData = async (forceRefresh = false) => {
+    const cacheKey = getCacheKey()
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
+      const cachedData = getCacheData<EventsData>(cache, 'analytics', cacheKey)
+      if (cachedData) {
+        setData(cachedData)
+        setLoading(false)
+        return
+      }
+    }
+
     try {
       setLoading(true)
       // TODO: Replace with actual Supabase queries
@@ -97,6 +115,13 @@ export default function EventsPage() {
       }
       
       setData(mockData)
+      
+      // Cache the data
+      dispatch(setCacheData({
+        type: 'analytics',
+        key: cacheKey,
+        data: mockData
+      }))
     } catch (error) {
       console.error('Failed to fetch events data:', error)
     } finally {
@@ -106,7 +131,9 @@ export default function EventsPage() {
 
   const refresh = async () => {
     setRefreshing(true)
-    await fetchEventsData()
+    // Clear cache for this data type to force refresh
+    dispatch(clearCacheType('analytics'))
+    await fetchEventsData(true)
     setRefreshing(false)
   }
 
@@ -121,7 +148,7 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEventsData()
-  }, [])
+  }, [timeRange])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -213,6 +240,8 @@ export default function EventsPage() {
         <TimeRangeToolbar 
           selectedRange={timeRange} 
           onRangeChange={setTimeRange}
+          onRefresh={refresh}
+          refreshing={refreshing}
         />
       </div>
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { useAppSelector, useAppDispatch } from '../../store/hooks'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
 import { 
   mdiRefresh,
   mdiChevronUp,
@@ -44,6 +46,8 @@ interface ReferrersData {
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444']
 
 export default function ReferrersPage() {
+  const dispatch = useAppDispatch()
+  const cache = useAppSelector((state) => state.cache)
   const [data, setData] = useState<ReferrersData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -52,7 +56,21 @@ export default function ReferrersPage() {
   const [drawerReferrer, setDrawerReferrer] = useState<Referrer | null>(null)
   const [timeRange, setTimeRange] = useState<TimeRange>('30days')
 
-  const fetchReferrersData = async () => {
+  const getCacheKey = () => `analytics-referrers-${timeRange}`
+
+  const fetchReferrersData = async (forceRefresh = false) => {
+    const cacheKey = getCacheKey()
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
+      const cachedData = getCacheData<ReferrersData>(cache, 'analytics', cacheKey)
+      if (cachedData) {
+        setData(cachedData)
+        setLoading(false)
+        return
+      }
+    }
+
     try {
       setLoading(true)
       // TODO: Replace with actual Supabase queries
@@ -142,6 +160,13 @@ export default function ReferrersPage() {
       }
       
       setData(mockData)
+      
+      // Cache the data
+      dispatch(setCacheData({
+        type: 'analytics',
+        key: cacheKey,
+        data: mockData
+      }))
     } catch (error) {
       console.error('Failed to fetch referrers data:', error)
     } finally {
@@ -151,7 +176,9 @@ export default function ReferrersPage() {
 
   const refresh = async () => {
     setRefreshing(true)
-    await fetchReferrersData()
+    // Clear cache for this data type to force refresh
+    dispatch(clearCacheType('analytics'))
+    await fetchReferrersData(true)
     setRefreshing(false)
   }
 
@@ -166,7 +193,7 @@ export default function ReferrersPage() {
 
   useEffect(() => {
     fetchReferrersData()
-  }, [])
+  }, [timeRange])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -286,6 +313,8 @@ export default function ReferrersPage() {
         <TimeRangeToolbar 
           selectedRange={timeRange} 
           onRangeChange={setTimeRange}
+          onRefresh={refresh}
+          refreshing={refreshing}
         />
       </div>
 
