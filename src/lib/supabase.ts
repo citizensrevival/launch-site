@@ -58,6 +58,12 @@ export class EnvironmentConfigProvider implements ConfigProvider {
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const serviceRoleKey = undefined;
 
+    console.log('[EnvironmentConfigProvider] Loading Supabase config:', {
+      url,
+      anonKeyPresent: !!anonKey,
+      anonKeyPrefix: anonKey ? anonKey.substring(0, 20) + '...' : 'NOT SET'
+    });
+
     if (!url || !anonKey) {
       console.warn('Missing Supabase configuration. App will run without Supabase features.');
       // Return dummy config for development

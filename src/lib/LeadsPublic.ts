@@ -90,9 +90,7 @@ export class LeadsPublic {
       
       const { data, error } = await this.supabase
         .from('leads')
-        .insert([leadData])
-        .select()
-        .single();
+        .insert([leadData]);
       
       console.log('Insert result:', { data, error });
 
@@ -109,7 +107,9 @@ export class LeadsPublic {
 
       return {
         success: true,
-        data: data as Lead,
+        // Note: data is null because anonymous users can't read leads
+        // The insert was successful, but we can't return the inserted record
+        data: undefined,
       };
     } catch (error) {
       return {

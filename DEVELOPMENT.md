@@ -225,3 +225,47 @@ npm run start:remote
 - Use Supabase Studio for database inspection
 
 Happy coding! 🚀
+
+
+## Commands to Kill All Development Servers
+
+### Quick Kill All (Recommended)
+```bash
+pkill -f "vite" && pkill -f "npm run start:local" && pkill -f "npm run start" && pkill -f "cross-env.*vite"
+```
+
+### More Comprehensive Cleanup
+```bash
+# Kill all Node.js processes related to development
+pkill -f "node.*vite"
+pkill -f "npm run start"
+pkill -f "cross-env.*vite"
+
+# Kill any remaining vite processes
+pkill -f "vite"
+
+# Kill any esbuild processes (used by Vite)
+pkill -f "esbuild"
+```
+
+### Nuclear Option (if needed)
+```bash
+# Kill all node processes (be careful with this one!)
+pkill -f "node"
+```
+
+### Check What's Running
+```bash
+# See what development processes are running
+ps aux | grep -E "(vite|npm|node)" | grep -v grep
+```
+
+### Verify Everything is Stopped
+```bash
+# Check if any processes are still running on common dev ports
+lsof -i :5173  # Vite default port
+lsof -i :3000  # Common React port
+lsof -i :8080  # Common dev port
+```
+
+All development servers have been successfully terminated! 🎉
