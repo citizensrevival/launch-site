@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AdminLoginForm } from './AdminLoginForm';
 import AdminDashboard from './AdminDashboard';
 import LeadsPage from './LeadsPage.tsx';
-import { AnalyticsOverview, UsersPage, SessionsPage, SessionDetailPage, EventsPage } from '../../admin/analytics';
+import { AnalyticsOverview, UsersPage, SessionsPage, SessionDetailPage, EventsPage, ReferrersPage } from '../../admin/analytics';
 
 export function AdminRoute() {
   const { user, loading } = useAuth();
@@ -21,15 +21,16 @@ export function AdminRoute() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<AdminDashboard />} />
-      <Route path="leads" element={<LeadsPage />} />
-      <Route path="analytics" element={<AnalyticsOverview />} />
-      <Route path="analytics/users" element={<UsersPage />} />
-      <Route path="analytics/sessions" element={<SessionsPage />} />
-      <Route path="analytics/sessions/:id" element={<SessionDetailPage />} />
-      <Route path="analytics/events" element={<EventsPage />} />
-      <Route path="*" element={<Navigate to="/manage" replace />} />
-    </Routes>
+        <Routes>
+          <Route path="/" element={<AdminDashboard />} />
+          <Route path="leads" element={<LeadsPage />} />
+          <Route path="analytics" element={<AnalyticsOverview />} />
+          <Route path="analytics/users" element={<UsersPage />} />
+          <Route path="analytics/sessions" element={<SessionsPage />} />
+          <Route path="analytics/sessions/:id" element={<SessionDetailPage />} />
+          <Route path="analytics/events" element={<EventsPage />} />
+          <Route path="analytics/referrers" element={<ReferrersPage />} />
+          <Route path="*" element={<Navigate to="/manage" replace />} />
+        </Routes>
   );
 }

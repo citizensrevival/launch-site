@@ -10,7 +10,8 @@ import {
   mdiChevronDown,
   mdiMenu,
   mdiMagnify,
-  mdiChartLine
+  mdiChartLine,
+  mdiWeb
 } from '@mdi/js';
 
 interface AdminLayoutProps {
@@ -70,6 +71,9 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
   const analyticsItems = [
     { name: 'Overview', href: '/manage/analytics', icon: (
       <Icon path={mdiChartLine} className="h-5 w-5" />
+    ) },
+    { name: 'Referrers', href: '/manage/analytics/referrers', icon: (
+      <Icon path={mdiWeb} className="h-5 w-5" />
     ) },
     { name: 'Users', href: '/manage/analytics/users', icon: (
       <Icon path={mdiAccountGroup} className="h-5 w-5" />

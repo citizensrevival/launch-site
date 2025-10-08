@@ -133,7 +133,7 @@ Your in-house analytics system will have two main parts:
 
 ### E. **Events Page**
 
-**Purpose:** See what users are *doing*, not just where they’re going.
+**Purpose:** See what users are *doing*, not just where they're going.
 
 **Components:**
 
@@ -141,6 +141,32 @@ Your in-house analytics system will have two main parts:
   * Event name, count, unique users, conversion %
 * Chart: Frequency of specific events over time
 * Drill down → see sessions that triggered that event
+
+---
+
+### F. **Referrers Page**
+
+**Purpose:** Analyze traffic sources and referral performance.
+
+**Components:**
+
+* **Key Metrics:**
+  * Total Referrals
+  * Referral Traffic Percentage
+  * Top Referrer
+  * Active Referrers
+* **Visualizations:**
+  * Referral traffic changes over time (line chart)
+  * Traffic share by source (pie chart)
+  * Top 3 referrers (horizontal bar chart)
+* **Referrers Table:**
+  * Referrer domain, total sessions, total users, conversions
+  * Average session duration, bounce rate, pages per session
+  * Click → open referrer detail panel
+* **Referrer Detail Panel:**
+  * Comprehensive referrer statistics
+  * Performance indicators (conversion rate, quality score)
+  * Traffic share and engagement metrics
 
 ---
 
@@ -195,6 +221,7 @@ Admin Dashboard (reads + visualizes)
 | Sessions       | Sessions table, Avg duration, Pageview stats | Session Detail   |
 | Session Detail | Timeline, Events, Metadata                   | Events           |
 | Events         | Event counts, charts                         | Session Detail   |
+| Referrers    | Referrer table, Traffic share, Performance  | Referrer Detail  |
 | Settings       | Data retention, anonymization                | —                |
 
 ---
@@ -385,6 +412,55 @@ select
 from analytics.events
 group by 1, 2
 order by 1, 2;
+
+-- 4) Referrer analytics (handy for Referrers page)
+create or replace view analytics.v_referrer_stats as
+select
+  coalesce(s.referrer, 'direct') as referrer_domain,
+  count(distinct s.id) as total_sessions,
+  count(distinct s.user_id) as total_users,
+  count(distinct case when ev.name = 'lead_form_submitted' then s.id end) as conversions,
+  avg(extract(epoch from coalesce(s.ended_at, now()) - s.started_at)) as avg_session_duration,
+  count(distinct case when pv_count.pageviews = 1 then s.id end)::float / count(distinct s.id) * 100 as bounce_rate,
+  avg(pv_count.pageviews) as pages_per_session,
+  max(s.started_at) as last_seen,
+  count(distinct s.id)::float / (select count(*) from analytics.sessions) * 100 as traffic_share
+from analytics.sessions s
+left join (
+  select session_id, count(*) as pageviews
+  from analytics.pageviews
+  group by session_id
+) pv_count on pv_count.session_id = s.id
+left join analytics.events ev on ev.session_id = s.id
+group by s.referrer
+order by total_sessions desc;
+
+-- 5) Referral traffic over time
+create or replace view analytics.v_referral_traffic_daily as
+select
+  date_trunc('day', s.started_at)::date as day,
+  count(distinct s.id) as referrals
+from analytics.sessions s
+where s.referrer is not null
+group by 1
+order by 1;
+
+-- 6) Traffic share by source
+create or replace view analytics.v_traffic_share as
+select
+  case 
+    when s.referrer is null then 'Direct'
+    when s.referrer like '%google%' then 'Google'
+    when s.referrer like '%facebook%' then 'Facebook'
+    when s.referrer like '%twitter%' then 'Twitter'
+    when s.referrer like '%linkedin%' then 'LinkedIn'
+    when s.referrer like '%reddit%' then 'Reddit'
+    else 'Other'
+  end as source,
+  count(distinct s.id) as count
+from analytics.sessions s
+group by 1
+order by count desc;
 
 -- =========================================================
 -- (Optional) Convenience function: upsert user by anon_id
