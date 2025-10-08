@@ -977,3 +977,7 @@ npm install date-fns  # Already installed ✅
 3. **Frontend Tracker** - Basic tracking implementation
 4. **Admin Dashboard** - Analytics overview page
 5. **Advanced Features** - Detailed session analysis, event tracking
+
+### 7. Update Terms and Privacy
+- Update TermsAndConditions.md appropiately
+- Update PrivacyPolicy.md appropiately
