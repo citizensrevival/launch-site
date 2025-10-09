@@ -1,4 +1,5 @@
 import { TimeRange } from '../store/slices/adminSlice'
+import { supabase } from './supabase'
 
 // ================================================
 // Analytics Data Types
@@ -149,9 +150,176 @@ export class AnalyticsService {
   // ================================================
 
   public async getAnalyticsOverview(timeRange: TimeRange): Promise<AnalyticsOverviewData> {
-    // Simulate API delay
-    await this.delay(300)
-    
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get unique users count
+      const { data: usersData, error: usersError } = await supabase
+        .from('analytics.users')
+        .select('id')
+        .gte('first_seen_at', startDate)
+        .lte('first_seen_at', endDate)
+
+      if (usersError) throw usersError
+
+      // Get sessions count
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('analytics.sessions')
+        .select('id')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+
+      if (sessionsError) throw sessionsError
+
+      // Get pageviews count
+      const { data: pageviewsData, error: pageviewsError } = await supabase
+        .from('analytics.pageviews')
+        .select('id')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+
+      if (pageviewsError) throw pageviewsError
+
+      // Get events count
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('analytics.events')
+        .select('id')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+
+      if (eventsError) throw eventsError
+
+      // Get unique users over time
+      const { data: usersOverTime, error: usersOverTimeError } = await supabase
+        .from('analytics.v_unique_users_daily')
+        .select('day, unique_users')
+        .gte('day', startDate.split('T')[0])
+        .lte('day', endDate.split('T')[0])
+        .order('day')
+
+      if (usersOverTimeError) throw usersOverTimeError
+
+      // Get sessions over time
+      const { data: sessionsOverTime, error: sessionsOverTimeError } = await supabase
+        .from('analytics.v_sessions_summary')
+        .select('started_at')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+        .order('started_at')
+
+      if (sessionsOverTimeError) throw sessionsOverTimeError
+
+      // Get top pages
+      const { data: topPagesData, error: topPagesError } = await supabase
+        .from('analytics.pageviews')
+        .select('path')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+
+      if (topPagesError) throw topPagesError
+
+      // Get device breakdown
+      const { data: deviceData, error: deviceError } = await supabase
+        .from('analytics.sessions')
+        .select('device_category')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+
+      if (deviceError) throw deviceError
+
+      // Get new vs returning users
+      const { data: newVsReturningData, error: newVsReturningError } = await supabase
+        .from('analytics.users')
+        .select('first_seen_at, last_seen_at')
+        .gte('first_seen_at', startDate)
+        .lte('first_seen_at', endDate)
+
+      if (newVsReturningError) throw newVsReturningError
+
+      // Process the data
+      const uniqueUsers = usersData?.length || 0
+      const totalSessions = sessionsData?.length || 0
+      const totalPageviews = pageviewsData?.length || 0
+      const totalEvents = eventsData?.length || 0
+
+      // Process unique users over time
+      const uniqueUsersOverTime = usersOverTime?.map(item => ({
+        day: item.day,
+        unique_users: item.unique_users
+      })) || []
+
+      // Process sessions over time (group by day)
+      const sessionsByDay = sessionsOverTime?.reduce((acc, session) => {
+        const day = session.started_at.split('T')[0]
+        acc[day] = (acc[day] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      const sessionsOverTimeFormatted = Object.entries(sessionsByDay).map(([day, sessions]) => ({
+        day,
+        sessions
+      }))
+
+      // Process top pages
+      const pageCounts = topPagesData?.reduce((acc, page) => {
+        acc[page.path] = (acc[page.path] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      const topPages = Object.entries(pageCounts)
+        .map(([path, views]) => ({ path, views }))
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 10)
+
+      // Process device breakdown
+      const deviceCounts = deviceData?.reduce((acc, session) => {
+        const category = session.device_category || 'unknown'
+        acc[category] = (acc[category] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      const deviceBreakdown = Object.entries(deviceCounts).map(([category, count]) => ({
+        category,
+        count
+      }))
+
+      // Process new vs returning users
+      const newUsers = newVsReturningData?.filter(user => {
+        const firstSeen = new Date(user.first_seen_at)
+        const lastSeen = new Date(user.last_seen_at)
+        return firstSeen.getTime() === lastSeen.getTime() // Same day = new user
+      }).length || 0
+
+      const returningUsers = uniqueUsers - newUsers
+
+      const newVsReturning = [
+        { type: 'New Users', count: newUsers },
+        { type: 'Returning Users', count: returningUsers }
+      ]
+
+      return {
+        uniqueUsers,
+        totalSessions,
+        totalPageviews,
+        totalEvents,
+        uniqueUsersOverTime,
+        sessionsOverTime: sessionsOverTimeFormatted,
+        topPages,
+        deviceBreakdown,
+        newVsReturning
+      }
+
+    } catch (error) {
+      console.error('Error fetching analytics overview:', error)
+      // Fallback to mock data if real data fails
+      return this.getMockAnalyticsOverview(timeRange)
+    }
+  }
+
+  private async getMockAnalyticsOverview(timeRange: TimeRange): Promise<AnalyticsOverviewData> {
+    // Fallback to mock data
     const { users, sessions, events } = this.testData
     const dateRange = this.getDateRange(timeRange)
     
@@ -160,8 +328,14 @@ export class AnalyticsService {
       totalSessions: sessions.length,
       totalPageviews: sessions.reduce((sum, s) => sum + s.pageviews, 0),
       totalEvents: events.reduce((sum, e) => sum + e.count, 0),
-      uniqueUsersOverTime: this.generateTimeSeriesData(dateRange, 'unique_users'),
-      sessionsOverTime: this.generateTimeSeriesData(dateRange, 'sessions'),
+      uniqueUsersOverTime: this.generateTimeSeriesData(dateRange, 'unique_users').map(item => ({
+        day: item.day,
+        unique_users: item.unique_users as number
+      })),
+      sessionsOverTime: this.generateTimeSeriesData(dateRange, 'sessions').map(item => ({
+        day: item.day,
+        sessions: item.sessions as number
+      })),
       topPages: this.getTopPages(sessions),
       deviceBreakdown: this.getDeviceBreakdown(sessions),
       newVsReturning: this.getNewVsReturningUsers(users)
@@ -169,21 +343,232 @@ export class AnalyticsService {
   }
 
   public async getUsersData(timeRange: TimeRange): Promise<UsersData> {
-    await this.delay(200)
-    
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get users with their sessions
+      const { data: usersData, error: usersError } = await supabase
+        .from('analytics.users')
+        .select(`
+          id,
+          anon_id,
+          first_seen_at,
+          last_seen_at,
+          first_referrer,
+          last_referrer,
+          first_utm_source,
+          last_utm_source,
+          properties
+        `)
+        .gte('first_seen_at', startDate)
+        .lte('first_seen_at', endDate)
+        .order('first_seen_at', { ascending: false })
+
+      if (usersError) throw usersError
+
+      // Get sessions for each user
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('analytics.v_sessions_summary')
+        .select('*')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+        .order('started_at', { ascending: false })
+
+      if (sessionsError) throw sessionsError
+
+      // Get events to check for lead submissions
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('analytics.events')
+        .select('user_id, name')
+        .eq('name', 'lead_form_submitted')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+
+      if (eventsError) throw eventsError
+
+      // Process users data
+      const usersWithSessions = usersData?.map(user => {
+        const userSessions = sessionsData?.filter(session => session.user_id === user.id) || []
+        const hasLead = eventsData?.some(event => event.user_id === user.id) || false
+        
+        return {
+          id: user.id,
+          anonId: user.anon_id,
+          firstSeenAt: user.first_seen_at,
+          lastSeenAt: user.last_seen_at,
+          sessions: userSessions.length,
+          avgDuration: userSessions.length > 0 
+            ? userSessions.reduce((sum, s) => sum + s.duration_seconds, 0) / userSessions.length 
+            : 0,
+          hasLead,
+          firstReferrer: user.first_referrer,
+          lastReferrer: user.last_referrer,
+          firstUtmSource: user.first_utm_source,
+          lastUtmSource: user.last_utm_source,
+          deviceCategory: userSessions[0]?.device_category,
+          browserName: userSessions[0]?.browser_name,
+          osName: userSessions[0]?.os_name,
+          geoCountry: userSessions[0]?.geo_country,
+          geoCity: userSessions[0]?.geo_city,
+          userSessions: userSessions.map(session => ({
+            id: session.session_id,
+            startedAt: session.started_at,
+            endedAt: session.ended_at,
+            duration: session.duration_seconds,
+            pageviews: session.pageviews_count,
+            events: session.events_count,
+            landingPage: session.landing_page,
+            deviceCategory: session.device_category,
+            geoCountry: session.geo_country,
+            geoCity: session.geo_city
+          }))
+        }
+      }) || []
+
+      // Get new users over time
+      const { data: newUsersOverTime, error: newUsersOverTimeError } = await supabase
+        .from('analytics.users')
+        .select('first_seen_at')
+        .gte('first_seen_at', startDate)
+        .lte('first_seen_at', endDate)
+        .order('first_seen_at')
+
+      if (newUsersOverTimeError) throw newUsersOverTimeError
+
+      // Process new users over time (group by day)
+      const newUsersByDay = newUsersOverTime?.reduce((acc, user) => {
+        const day = user.first_seen_at.split('T')[0]
+        acc[day] = (acc[day] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      const newUsersOverTimeFormatted = Object.entries(newUsersByDay).map(([day, new_users]) => ({
+        day,
+        new_users
+      }))
+
+      // Calculate new vs returning users
+      const newUsers = usersWithSessions.filter(user => {
+        const firstSeen = new Date(user.firstSeenAt)
+        const lastSeen = new Date(user.lastSeenAt)
+        return firstSeen.getTime() === lastSeen.getTime() // Same day = new user
+      }).length
+
+      const returningUsers = usersWithSessions.length - newUsers
+
+      const newVsReturning = [
+        { type: 'New Users', count: newUsers },
+        { type: 'Returning Users', count: returningUsers }
+      ]
+
+      return {
+        users: usersWithSessions,
+        newUsersOverTime: newUsersOverTimeFormatted,
+        newVsReturning
+      }
+
+    } catch (error) {
+      console.error('Error fetching users data:', error)
+      // Fallback to mock data
+      return this.getMockUsersData(timeRange)
+    }
+  }
+
+  private async getMockUsersData(timeRange: TimeRange): Promise<UsersData> {
     const { users } = this.testData
     const dateRange = this.getDateRange(timeRange)
     
     return {
       users: this.filterUsersByTimeRange(users, dateRange),
-      newUsersOverTime: this.generateTimeSeriesData(dateRange, 'new_users'),
+      newUsersOverTime: this.generateTimeSeriesData(dateRange, 'new_users').map(item => ({
+        day: item.day,
+        new_users: item.new_users as number
+      })),
       newVsReturning: this.getNewVsReturningUsers(users)
     }
   }
 
   public async getSessionsData(timeRange: TimeRange): Promise<SessionsData> {
-    await this.delay(250)
-    
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get sessions data
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('analytics.v_sessions_summary')
+        .select('*')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+        .order('started_at', { ascending: false })
+
+      if (sessionsError) throw sessionsError
+
+      // Process sessions data
+      const sessions = sessionsData?.map(session => ({
+        id: session.session_id,
+        userId: session.user_id,
+        startedAt: session.started_at,
+        endedAt: session.ended_at,
+        duration: session.duration_seconds,
+        pageviews: session.pageviews_count,
+        events: session.events_count,
+        landingPage: session.landing_page,
+        referrer: session.referrer,
+        deviceCategory: session.device_category,
+        browserName: session.browser_name,
+        osName: session.os_name,
+        geoCountry: session.geo_country,
+        geoCity: session.geo_city,
+        utmSource: session.utm_source,
+        utmMedium: session.utm_medium,
+        utmCampaign: session.utm_campaign
+      })) || []
+
+      // Calculate sessions per user distribution
+      const sessionsPerUser = sessionsData?.reduce((acc, session) => {
+        acc[session.user_id] = (acc[session.user_id] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      // Convert to distribution with explicit typing
+      const distribution: Record<number, number> = {}
+      const sessionCounts = Object.values(sessionsPerUser) as number[]
+      sessionCounts.forEach((count) => {
+        distribution[count] = (distribution[count] || 0) + 1
+      })
+
+      const sessionsPerUserFormatted = Object.entries(distribution).map(([sessions, users]) => ({
+        sessions: parseInt(sessions),
+        users: users
+      }))
+
+      // Calculate averages
+      const avgSessionLength = sessions.length > 0 
+        ? sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length 
+        : 0
+
+      const avgPagesPerSession = sessions.length > 0 
+        ? sessions.reduce((sum, s) => sum + s.pageviews, 0) / sessions.length 
+        : 0
+
+      return {
+        sessions,
+        sessionsPerUser: sessionsPerUserFormatted,
+        avgSessionLength,
+        avgPagesPerSession
+      }
+
+    } catch (error) {
+      console.error('Error fetching sessions data:', error)
+      // Fallback to mock data
+      return this.getMockSessionsData(timeRange)
+    }
+  }
+
+  private async getMockSessionsData(timeRange: TimeRange): Promise<SessionsData> {
     const { sessions } = this.testData
     const dateRange = this.getDateRange(timeRange)
     const filteredSessions = this.filterSessionsByTimeRange(sessions, dateRange)
@@ -197,8 +582,81 @@ export class AnalyticsService {
   }
 
   public async getEventsData(timeRange: TimeRange): Promise<EventsData> {
-    await this.delay(200)
-    
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get events data
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('analytics.events')
+        .select('*')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+        .order('occurred_at', { ascending: false })
+
+      if (eventsError) throw eventsError
+
+      // Get event trends (group by day and name)
+      const { data: eventTrendsData, error: eventTrendsError } = await supabase
+        .from('analytics.v_event_rollup_daily')
+        .select('day, name, event_count, unique_users')
+        .gte('day', startDate.split('T')[0])
+        .lte('day', endDate.split('T')[0])
+        .order('day')
+
+      if (eventTrendsError) throw eventTrendsError
+
+      // Process event trends
+      const eventTrends = eventTrendsData?.map(trend => ({
+        day: trend.day,
+        [trend.name]: trend.event_count
+      })) || []
+
+      // Get top events (aggregate by name)
+      const eventCounts = eventsData?.reduce((acc, event) => {
+        acc[event.name] = (acc[event.name] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      const uniqueUsersPerEvent = eventsData?.reduce((acc, event) => {
+        if (!acc[event.name]) acc[event.name] = new Set()
+        acc[event.name].add(event.user_id)
+        return acc
+      }, {} as Record<string, Set<string>>) || {}
+
+      const topEvents = Object.entries(eventCounts)
+        .map(([name, count]) => ({
+          name,
+          count: count as number
+        }))
+        .sort((a, b) => (b.count as number) - (a.count as number))
+        .slice(0, 10)
+
+      // Process events data (aggregate by name)
+      const events = Object.entries(eventCounts).map(([name, count]) => ({
+        name,
+        label: name,
+        count: count as number,
+        uniqueUsers: uniqueUsersPerEvent[name]?.size || 0,
+        conversionRate: 0,
+        lastOccurred: new Date().toISOString()
+      }))
+
+      return {
+        events,
+        eventTrends,
+        topEvents
+      }
+
+    } catch (error) {
+      console.error('Error fetching events data:', error)
+      // Fallback to mock data
+      return this.getMockEventsData(timeRange)
+    }
+  }
+
+  private async getMockEventsData(timeRange: TimeRange): Promise<EventsData> {
     const { events } = this.testData
     const dateRange = this.getDateRange(timeRange)
     
@@ -210,8 +668,145 @@ export class AnalyticsService {
   }
 
   public async getReferrersData(timeRange: TimeRange): Promise<ReferrersData> {
-    await this.delay(250)
-    
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get sessions data for referrer analysis
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('analytics.sessions')
+        .select('referrer, started_at, user_id, id')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+
+      if (sessionsError) throw sessionsError
+
+      // Get events for conversion tracking
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('analytics.events')
+        .select('session_id, name')
+        .eq('name', 'lead_form_submitted')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+
+      if (eventsError) throw eventsError
+
+      // Get pageviews for bounce rate calculation
+      const { data: pageviewsData, error: pageviewsError } = await supabase
+        .from('analytics.pageviews')
+        .select('session_id')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+
+      if (pageviewsError) throw pageviewsError
+
+      // Process referrer data
+      const referrerStats = sessionsData?.reduce((acc, session) => {
+        const referrer = session.referrer || 'direct'
+        if (!acc[referrer]) {
+          acc[referrer] = {
+            referrer,
+            totalSessions: 0,
+            totalUsers: new Set(),
+            conversions: 0,
+            avgSessionDuration: 0,
+            bounceRate: 0,
+            pagesPerSession: 0,
+            lastSeen: session.started_at
+          }
+        }
+        
+        acc[referrer].totalSessions++
+        acc[referrer].totalUsers.add(session.user_id)
+        acc[referrer].lastSeen = session.started_at > acc[referrer].lastSeen ? session.started_at : acc[referrer].lastSeen
+        
+        return acc
+      }, {} as Record<string, any>) || {}
+
+      // Calculate conversions
+      const sessionConversions = eventsData?.reduce((acc, event) => {
+        acc[event.session_id] = true
+        return acc
+      }, {} as Record<string, boolean>) || {}
+
+      // Calculate pageviews per session
+      const pageviewsPerSession = pageviewsData?.reduce((acc, pageview) => {
+        acc[pageview.session_id] = (acc[pageview.session_id] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      // Process final referrer data
+      const referrers = Object.values(referrerStats).map((ref: any) => {
+        const sessions = sessionsData?.filter(s => (s.referrer || 'direct') === ref.referrer) || []
+        const conversions = sessions.filter(s => sessionConversions[s.id]).length
+        const totalPageviews = sessions.reduce((sum, s) => sum + (pageviewsPerSession[s.id] || 0), 0)
+        const singlePageSessions = sessions.filter(s => (pageviewsPerSession[s.id] || 0) === 1).length
+        
+        return {
+          domain: ref.referrer,
+          totalSessions: ref.totalSessions,
+          totalUsers: ref.totalUsers.size,
+          conversions,
+          avgSessionDuration: 0, // Would need session duration data
+          bounceRate: ref.totalSessions > 0 ? (singlePageSessions / ref.totalSessions) * 100 : 0,
+          pagesPerSession: ref.totalSessions > 0 ? totalPageviews / ref.totalSessions : 0,
+          lastSeen: ref.lastSeen,
+          trafficShare: 0 // Will be calculated below
+        }
+      }).sort((a, b) => b.totalSessions - a.totalSessions)
+
+      // Calculate traffic share
+      const totalSessions = sessionsData?.length || 0
+      const referrersWithShare = referrers.map(ref => ({
+        ...ref,
+        trafficShare: totalSessions > 0 ? (ref.totalSessions / totalSessions) * 100 : 0
+      }))
+
+      // Get referral traffic over time
+      const referralTrafficByDay = sessionsData?.reduce((acc, session) => {
+        const day = session.started_at.split('T')[0]
+        const referrer = session.referrer || 'direct'
+        if (!acc[day]) acc[day] = {}
+        acc[day][referrer] = (acc[day][referrer] || 0) + 1
+        return acc
+      }, {} as Record<string, Record<string, number>>) || {}
+
+      const referralTrafficOverTime = Object.entries(referralTrafficByDay).map(([day, referrers]) => ({
+        day,
+        referrals: Object.values(referrers).reduce((sum, count) => sum + count, 0)
+      }))
+
+      // Get traffic share by source
+      const trafficShare = referrersWithShare.map(ref => ({
+        source: ref.domain,
+        count: ref.totalSessions
+      }))
+
+      // Calculate totals
+      const totalReferrals = referrersWithShare.reduce((sum, ref) => sum + ref.totalSessions, 0)
+      const referralTrafficPercentage = totalSessions > 0 ? (totalReferrals / totalSessions) * 100 : 0
+
+      return {
+        referrers: referrersWithShare,
+        referralTrafficOverTime,
+        trafficShare,
+        totalReferrals,
+        referralTrafficPercentage,
+        topReferrers: referrersWithShare.slice(0, 3).map(ref => ({
+          domain: ref.domain,
+          sessions: ref.totalSessions
+        }))
+      }
+
+    } catch (error) {
+      console.error('Error fetching referrers data:', error)
+      // Fallback to mock data
+      return this.getMockReferrersData(timeRange)
+    }
+  }
+
+  private async getMockReferrersData(timeRange: TimeRange): Promise<ReferrersData> {
     const { referrers, sessions } = this.testData
     const dateRange = this.getDateRange(timeRange)
     const filteredSessions = this.filterSessionsByTimeRange(sessions, dateRange)
@@ -227,9 +822,63 @@ export class AnalyticsService {
   }
 
   public async getSessionDetail(sessionId: string): Promise<AnalyticsSession | null> {
-    await this.delay(100)
-    
-    return this.testData.sessions.find(s => s.id === sessionId) || null
+    try {
+      // Get session data
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('analytics.v_sessions_summary')
+        .select('*')
+        .eq('session_id', sessionId)
+        .single()
+
+      if (sessionError) throw sessionError
+
+      if (!sessionData) return null
+
+      // Get pageviews for this session
+      const { error: pageviewsError } = await supabase
+        .from('analytics.pageviews')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('occurred_at')
+
+      if (pageviewsError) throw pageviewsError
+
+      // Get events for this session
+      const { error: eventsError } = await supabase
+        .from('analytics.events')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('occurred_at')
+
+      if (eventsError) throw eventsError
+
+      // Process session data
+      const session: AnalyticsSession = {
+        id: sessionData.session_id,
+        userId: sessionData.user_id,
+        startedAt: sessionData.started_at,
+        endedAt: sessionData.ended_at,
+        duration: sessionData.duration_seconds,
+        pageviews: sessionData.pageviews_count,
+        events: sessionData.events_count,
+        landingPage: sessionData.landing_page,
+        referrer: sessionData.referrer,
+        deviceCategory: sessionData.device_category,
+        browserName: sessionData.browser_name,
+        osName: sessionData.os_name,
+        geoCountry: sessionData.geo_country,
+        geoCity: sessionData.geo_city,
+        utmSource: sessionData.utm_source,
+        utmMedium: sessionData.utm_medium,
+        utmCampaign: sessionData.utm_campaign
+      }
+
+      return session
+
+    } catch (error) {
+      console.error('Error fetching session detail:', error)
+      return null
+    }
   }
 
   public async getUserDetail(userId: string): Promise<AnalyticsUser | null> {
@@ -271,8 +920,8 @@ export class AnalyticsService {
     return { start, end }
   }
 
-  private generateTimeSeriesData(dateRange: { start: Date; end: Date }, type: string): Array<{ day: string; [key: string]: number }> {
-    const days: Array<{ day: string; [key: string]: number }> = []
+  private generateTimeSeriesData(dateRange: { start: Date; end: Date }, type: string): Array<{ day: string; [key: string]: number | string }> {
+    const days: Array<{ day: string; [key: string]: number | string }> = []
     const current = new Date(dateRange.start)
     
     while (current <= dateRange.end) {
@@ -293,8 +942,7 @@ export class AnalyticsService {
           value = Math.floor(Math.random() * 30) + 10
       }
       
-      const dayData: { day: string; [key: string]: number } = { day: dayStr }
-      dayData[type] = value
+      const dayData: { day: string; [key: string]: number | string } = { day: dayStr, [type]: value }
       days.push(dayData)
       current.setDate(current.getDate() + 1)
     }
