@@ -4,6 +4,7 @@ import { LeadsPublic } from '../lib/LeadsPublic';
 import { EnvironmentConfigProvider } from '../lib/supabase';
 import { CreateLeadInput, LeadType } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { setGetInvolvedSubmission } from '../store/slices/sessionSlice';
 import { Icon } from '@mdi/react';
@@ -30,6 +31,7 @@ interface SocialLink {
 export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
+  const { trackEvent } = useAnalytics();
   const dispatch = useAppDispatch();
   const getInvolvedSubmissions = useAppSelector((state) => state.session.getInvolvedSubmissions);
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +62,15 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
     if (dialogOpen && preselectedType) {
       setSelectedType(preselectedType);
     }
-  }, [searchParams, preselectedType]);
+    
+    // Track dialog opening
+    if (dialogOpen) {
+      trackEvent('get_involved_dialog_opened', 'Get Involved Dialog', {
+        preselected_type: preselectedType || 'none',
+        source: 'url_param'
+      });
+    }
+  }, [searchParams, preselectedType, trackEvent]);
 
   // Check for existing submissions when dialog opens
   useEffect(() => {
@@ -229,6 +239,16 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
 
       if (result.success) {
         setSubmitStatus('success');
+        
+        // Track analytics event
+        await trackEvent('lead_form_submitted', `${selectedType} signup`, {
+          lead_type: selectedType,
+          business_name: formData.business_name,
+          has_website: !!formData.website,
+          social_links_count: socialLinksArray.length,
+          source_path: window.location.pathname
+        });
+        
         // Track the submission in Redux (only for get involved types)
         if (selectedType === 'vendor' || selectedType === 'sponsor' || selectedType === 'volunteer') {
           dispatch(setGetInvolvedSubmission({ type: selectedType, submitted: true }));

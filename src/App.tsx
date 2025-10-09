@@ -3,9 +3,11 @@ import { Provider } from 'react-redux'
 import { store } from './store'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
+import { AnalyticsProvider } from './contexts/AnalyticsContext'
 import { GetInvolvedDialog } from './components/GetInvolvedDialog'
 import { useGetInvolvedDialog } from './hooks/useGetInvolvedDialog'
 import { useNavigationLoading } from './hooks/useNavigationLoading'
+import { useAnalyticsPageview } from './hooks/useAnalyticsPageview'
 import { AdminRoute } from './components/admin'
 import HomePage from './components/HomePage'
 import SponsorsPage from './pages/SponsorsPage'
@@ -17,6 +19,9 @@ import TermsAndConditionsPage from './pages/TermsAndConditionsPage'
 function AppContent() {
   const { isDialogOpen, preselectedType } = useGetInvolvedDialog();
   const isNavigationLoading = useNavigationLoading();
+  
+  // Initialize analytics pageview tracking
+  useAnalyticsPageview();
 
   return (
     <>
@@ -46,9 +51,11 @@ export default function App() {
     <Provider store={store}>
       <ThemeProvider disableTransitionOnChange>
         <AuthProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <AnalyticsProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </AnalyticsProvider>
         </AuthProvider>
       </ThemeProvider>
     </Provider>
