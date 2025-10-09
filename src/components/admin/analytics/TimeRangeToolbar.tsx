@@ -1,13 +1,12 @@
-import React from 'react'
 import { Icon } from '@mdi/react'
 import { mdiRefresh, mdiCalendar } from '@mdi/js'
-import { TimeRange } from '../../store/slices/adminSlice'
+import { TimeRange } from '../../../store/slices/adminSlice'
 
 export interface TimeRangeToolbarProps {
   selectedRange: TimeRange
   onRangeChange: (range: TimeRange) => void
-  onRefresh: () => void
-  refreshing: boolean
+  onRefresh?: () => void
+  refreshing?: boolean
   className?: string
   showRefresh?: boolean
 }
@@ -25,7 +24,7 @@ export function TimeRangeToolbar({
   onRefresh, 
   refreshing,
   className = '',
-  showRefresh = true
+  showRefresh = false
 }: TimeRangeToolbarProps) {
   return (
     <div className={`flex items-center justify-between ${className}`}>
@@ -49,7 +48,7 @@ export function TimeRangeToolbar({
         </div>
       </div>
       
-      {showRefresh && (
+      {showRefresh && onRefresh && (
         <button
           onClick={onRefresh}
           disabled={refreshing}

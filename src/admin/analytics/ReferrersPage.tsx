@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../store/slices/adminSlice'
+import { analyticsService, ReferrersData, Referrer } from '../../lib/AnalyticsService'
 import { 
   mdiRefresh,
   mdiChevronUp,
@@ -22,43 +24,24 @@ import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { Tooltip } from '../../components/Tooltip'
 
-interface Referrer {
-  domain: string
-  totalSessions: number
-  totalUsers: number
-  conversions: number
-  avgSessionDuration: number
-  bounceRate: number
-  pagesPerSession: number
-  lastSeen: string
-  trafficShare: number
-}
-
-interface ReferrersData {
-  referrers: Referrer[]
-  referralTrafficOverTime: Array<{ day: string; referrals: number }>
-  trafficShare: Array<{ source: string; count: number }>
-  totalReferrals: number
-  referralTrafficPercentage: number
-  topReferrers: Array<{ domain: string; sessions: number }>
-}
+// Using ReferrersData from AnalyticsService
 
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444']
 
 export default function ReferrersPage() {
   const dispatch = useAppDispatch()
-  const cache = useAppSelector((state) => state.cache)
+  const cache = useAppSelector((state) => (state as any).cache)
+  const timeRange = useAppSelector((state) => (state as any).admin?.timeRange || '30days')
+  const loading = useAppSelector((state) => (state as any).admin?.analytics?.loading || false)
+  const refreshing = useAppSelector((state) => (state as any).admin?.analytics?.refreshing || false)
   const [data, setData] = useState<ReferrersData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [sortKey, setSortKey] = useState<'domain' | 'totalSessions' | 'totalUsers' | 'conversions' | 'avgSessionDuration' | 'bounceRate' | 'pagesPerSession'>('totalSessions')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [drawerReferrer, setDrawerReferrer] = useState<Referrer | null>(null)
-  const [timeRange, setTimeRange] = useState<TimeRange>('30days')
 
-  const getCacheKey = () => `analytics-referrers-${timeRange}`
+  const getCacheKey = useCallback(() => `analytics-referrers-${timeRange}`, [timeRange])
 
-  const fetchReferrersData = async (forceRefresh = false) => {
+  const fetchReferrersData = useCallback(async (forceRefresh = false) => {
     const cacheKey = getCacheKey()
     
     // Check cache first (unless force refresh)
@@ -66,121 +49,37 @@ export default function ReferrersPage() {
       const cachedData = getCacheData<ReferrersData>(cache, 'analytics', cacheKey)
       if (cachedData) {
         setData(cachedData)
-        setLoading(false)
         return
       }
     }
 
     try {
-      setLoading(true)
-      // TODO: Replace with actual Supabase queries
-      const mockData: ReferrersData = {
-        referrers: [
-          {
-            domain: 'google.com',
-            totalSessions: 1247,
-            totalUsers: 892,
-            conversions: 156,
-            avgSessionDuration: 245,
-            bounceRate: 32.5,
-            pagesPerSession: 3.2,
-            lastSeen: '2024-01-07T15:30:00Z',
-            trafficShare: 45.2
-          },
-          {
-            domain: 'facebook.com',
-            totalSessions: 567,
-            totalUsers: 445,
-            conversions: 89,
-            avgSessionDuration: 180,
-            bounceRate: 28.7,
-            pagesPerSession: 2.8,
-            lastSeen: '2024-01-07T14:20:00Z',
-            trafficShare: 20.6
-          },
-          {
-            domain: 'twitter.com',
-            totalSessions: 234,
-            totalUsers: 198,
-            conversions: 34,
-            avgSessionDuration: 195,
-            bounceRate: 35.2,
-            pagesPerSession: 2.5,
-            lastSeen: '2024-01-07T12:15:00Z',
-            trafficShare: 8.5
-          },
-          {
-            domain: 'linkedin.com',
-            totalSessions: 189,
-            totalUsers: 156,
-            conversions: 45,
-            avgSessionDuration: 320,
-            bounceRate: 22.1,
-            pagesPerSession: 4.1,
-            lastSeen: '2024-01-07T11:45:00Z',
-            trafficShare: 6.9
-          },
-          {
-            domain: 'reddit.com',
-            totalSessions: 156,
-            totalUsers: 134,
-            conversions: 23,
-            avgSessionDuration: 275,
-            bounceRate: 41.3,
-            pagesPerSession: 2.9,
-            lastSeen: '2024-01-07T10:30:00Z',
-            trafficShare: 5.7
-          }
-        ],
-        referralTrafficOverTime: [
-          { day: '2024-01-01', referrals: 45 },
-          { day: '2024-01-02', referrals: 52 },
-          { day: '2024-01-03', referrals: 38 },
-          { day: '2024-01-04', referrals: 67 },
-          { day: '2024-01-05', referrals: 89 },
-          { day: '2024-01-06', referrals: 76 },
-          { day: '2024-01-07', referrals: 94 }
-        ],
-        trafficShare: [
-          { source: 'Google', count: 1247 },
-          { source: 'Facebook', count: 567 },
-          { source: 'Twitter', count: 234 },
-          { source: 'LinkedIn', count: 189 },
-          { source: 'Reddit', count: 156 },
-          { source: 'Direct', count: 1234 },
-          { source: 'Other', count: 89 }
-        ],
-        totalReferrals: 2393,
-        referralTrafficPercentage: 65.8,
-        topReferrers: [
-          { domain: 'google.com', sessions: 1247 },
-          { domain: 'facebook.com', sessions: 567 },
-          { domain: 'twitter.com', sessions: 234 }
-        ]
-      }
+      dispatch(setAnalyticsLoading(true))
       
-      setData(mockData)
+      // Fetch data from analytics service
+      const referrersData = await analyticsService.getReferrersData(timeRange)
+      setData(referrersData)
       
       // Cache the data
       dispatch(setCacheData({
         type: 'analytics',
         key: cacheKey,
-        data: mockData
+        data: referrersData
       }))
     } catch (error) {
       console.error('Failed to fetch referrers data:', error)
     } finally {
-      setLoading(false)
+      dispatch(setAnalyticsLoading(false))
     }
-  }
+  }, [timeRange, cache, dispatch, getCacheKey])
 
-  const refresh = async () => {
-    setRefreshing(true)
+  const refresh = useCallback(async () => {
+    dispatch(setAnalyticsRefreshing(true))
     // Clear cache for this data type to force refresh
     dispatch(clearCacheType('analytics'))
     await fetchReferrersData(true)
-    setRefreshing(false)
-  }
+    dispatch(setAnalyticsRefreshing(false))
+  }, [dispatch, fetchReferrersData])
 
   const changeSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -193,7 +92,7 @@ export default function ReferrersPage() {
 
   useEffect(() => {
     fetchReferrersData()
-  }, [timeRange])
+  }, [fetchReferrersData])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -312,9 +211,7 @@ export default function ReferrersPage() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={setTimeRange}
-          onRefresh={refresh}
-          refreshing={refreshing}
+          onRangeChange={(range) => dispatch(setTimeRange(range))}
         />
       </div>
 

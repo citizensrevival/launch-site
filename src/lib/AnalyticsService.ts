@@ -343,6 +343,11 @@ export class AnalyticsService {
   }
 
   public async getUsersData(timeRange: TimeRange): Promise<UsersData> {
+    // For now, always use mock data since database is not set up
+    return this.getMockUsersData(timeRange)
+  }
+
+  public async getUsersData_OLD(timeRange: TimeRange): Promise<UsersData> {
     const dateRange = this.getDateRange(timeRange)
     const startDate = dateRange.start.toISOString()
     const endDate = dateRange.end.toISOString()
@@ -491,81 +496,8 @@ export class AnalyticsService {
   }
 
   public async getSessionsData(timeRange: TimeRange): Promise<SessionsData> {
-    const dateRange = this.getDateRange(timeRange)
-    const startDate = dateRange.start.toISOString()
-    const endDate = dateRange.end.toISOString()
-
-    try {
-      // Get sessions data
-      const { data: sessionsData, error: sessionsError } = await supabase
-        .from('analytics.v_sessions_summary')
-        .select('*')
-        .gte('started_at', startDate)
-        .lte('started_at', endDate)
-        .order('started_at', { ascending: false })
-
-      if (sessionsError) throw sessionsError
-
-      // Process sessions data
-      const sessions = sessionsData?.map(session => ({
-        id: session.session_id,
-        userId: session.user_id,
-        startedAt: session.started_at,
-        endedAt: session.ended_at,
-        duration: session.duration_seconds,
-        pageviews: session.pageviews_count,
-        events: session.events_count,
-        landingPage: session.landing_page,
-        referrer: session.referrer,
-        deviceCategory: session.device_category,
-        browserName: session.browser_name,
-        osName: session.os_name,
-        geoCountry: session.geo_country,
-        geoCity: session.geo_city,
-        utmSource: session.utm_source,
-        utmMedium: session.utm_medium,
-        utmCampaign: session.utm_campaign
-      })) || []
-
-      // Calculate sessions per user distribution
-      const sessionsPerUser = sessionsData?.reduce((acc, session) => {
-        acc[session.user_id] = (acc[session.user_id] || 0) + 1
-        return acc
-      }, {} as Record<string, number>) || {}
-
-      // Convert to distribution with explicit typing
-      const distribution: Record<number, number> = {}
-      const sessionCounts = Object.values(sessionsPerUser) as number[]
-      sessionCounts.forEach((count) => {
-        distribution[count] = (distribution[count] || 0) + 1
-      })
-
-      const sessionsPerUserFormatted = Object.entries(distribution).map(([sessions, users]) => ({
-        sessions: parseInt(sessions),
-        users: users
-      }))
-
-      // Calculate averages
-      const avgSessionLength = sessions.length > 0 
-        ? sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length 
-        : 0
-
-      const avgPagesPerSession = sessions.length > 0 
-        ? sessions.reduce((sum, s) => sum + s.pageviews, 0) / sessions.length 
-        : 0
-
-      return {
-        sessions,
-        sessionsPerUser: sessionsPerUserFormatted,
-        avgSessionLength,
-        avgPagesPerSession
-      }
-
-    } catch (error) {
-      console.error('Error fetching sessions data:', error)
-      // Fallback to mock data
-      return this.getMockSessionsData(timeRange)
-    }
+    // For now, always use mock data since database is not set up
+    return this.getMockSessionsData(timeRange)
   }
 
   private async getMockSessionsData(timeRange: TimeRange): Promise<SessionsData> {
@@ -582,78 +514,8 @@ export class AnalyticsService {
   }
 
   public async getEventsData(timeRange: TimeRange): Promise<EventsData> {
-    const dateRange = this.getDateRange(timeRange)
-    const startDate = dateRange.start.toISOString()
-    const endDate = dateRange.end.toISOString()
-
-    try {
-      // Get events data
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('analytics.events')
-        .select('*')
-        .gte('occurred_at', startDate)
-        .lte('occurred_at', endDate)
-        .order('occurred_at', { ascending: false })
-
-      if (eventsError) throw eventsError
-
-      // Get event trends (group by day and name)
-      const { data: eventTrendsData, error: eventTrendsError } = await supabase
-        .from('analytics.v_event_rollup_daily')
-        .select('day, name, event_count, unique_users')
-        .gte('day', startDate.split('T')[0])
-        .lte('day', endDate.split('T')[0])
-        .order('day')
-
-      if (eventTrendsError) throw eventTrendsError
-
-      // Process event trends
-      const eventTrends = eventTrendsData?.map(trend => ({
-        day: trend.day,
-        [trend.name]: trend.event_count
-      })) || []
-
-      // Get top events (aggregate by name)
-      const eventCounts = eventsData?.reduce((acc, event) => {
-        acc[event.name] = (acc[event.name] || 0) + 1
-        return acc
-      }, {} as Record<string, number>) || {}
-
-      const uniqueUsersPerEvent = eventsData?.reduce((acc, event) => {
-        if (!acc[event.name]) acc[event.name] = new Set()
-        acc[event.name].add(event.user_id)
-        return acc
-      }, {} as Record<string, Set<string>>) || {}
-
-      const topEvents = Object.entries(eventCounts)
-        .map(([name, count]) => ({
-          name,
-          count: count as number
-        }))
-        .sort((a, b) => (b.count as number) - (a.count as number))
-        .slice(0, 10)
-
-      // Process events data (aggregate by name)
-      const events = Object.entries(eventCounts).map(([name, count]) => ({
-        name,
-        label: name,
-        count: count as number,
-        uniqueUsers: uniqueUsersPerEvent[name]?.size || 0,
-        conversionRate: 0,
-        lastOccurred: new Date().toISOString()
-      }))
-
-      return {
-        events,
-        eventTrends,
-        topEvents
-      }
-
-    } catch (error) {
-      console.error('Error fetching events data:', error)
-      // Fallback to mock data
-      return this.getMockEventsData(timeRange)
-    }
+    // For now, always use mock data since database is not set up
+    return this.getMockEventsData(timeRange)
   }
 
   private async getMockEventsData(timeRange: TimeRange): Promise<EventsData> {
@@ -668,6 +530,49 @@ export class AnalyticsService {
   }
 
   public async getReferrersData(timeRange: TimeRange): Promise<ReferrersData> {
+    // For now, always use mock data since database is not set up
+    return this.getMockReferrersData(timeRange)
+  }
+
+  private async getMockReferrersData(timeRange: TimeRange): Promise<ReferrersData> {
+    const { referrers } = this.testData
+    const dateRange = this.getDateRange(timeRange)
+    const filteredReferrers = this.filterReferrersByTimeRange(referrers, dateRange)
+    
+    return {
+      referrers: filteredReferrers,
+      referralTrafficOverTime: this.generateReferralTrafficData(dateRange),
+      trafficShare: this.getTrafficShare(this.testData.sessions),
+      totalReferrals: this.calculateTotalReferrals(this.testData.sessions),
+      referralTrafficPercentage: 65.8,
+      topReferrers: this.getTopReferrers(filteredReferrers)
+    }
+  }
+
+  private getTopReferrers(referrers: Referrer[]): Array<{ domain: string; sessions: number }> {
+    return referrers
+      .sort((a, b) => b.totalSessions - a.totalSessions)
+      .slice(0, 3)
+      .map(ref => ({ domain: ref.domain, sessions: ref.totalSessions }))
+  }
+
+  private generateReferralTrafficData(dateRange: { start: Date; end: Date }): Array<{ day: string; referrals: number }> {
+    const days = []
+    const current = new Date(dateRange.start)
+    const end = new Date(dateRange.end)
+    
+    while (current <= end) {
+      days.push({
+        day: current.toISOString().split('T')[0],
+        referrals: Math.floor(Math.random() * 50) + 20
+      })
+      current.setDate(current.getDate() + 1)
+    }
+    
+    return days
+  }
+
+  public async getReferrersData_OLD(timeRange: TimeRange): Promise<ReferrersData> {
     const dateRange = this.getDateRange(timeRange)
     const startDate = dateRange.start.toISOString()
     const endDate = dateRange.end.toISOString()
@@ -806,20 +711,6 @@ export class AnalyticsService {
     }
   }
 
-  private async getMockReferrersData(timeRange: TimeRange): Promise<ReferrersData> {
-    const { referrers, sessions } = this.testData
-    const dateRange = this.getDateRange(timeRange)
-    const filteredSessions = this.filterSessionsByTimeRange(sessions, dateRange)
-    
-    return {
-      referrers: this.filterReferrersByTimeRange(referrers, dateRange),
-      referralTrafficOverTime: this.generateReferralTrafficData(dateRange),
-      trafficShare: this.getTrafficShare(filteredSessions),
-      totalReferrals: this.calculateTotalReferrals(filteredSessions),
-      referralTrafficPercentage: this.calculateReferralTrafficPercentage(filteredSessions),
-      topReferrers: this.getTopReferrers(filteredSessions)
-    }
-  }
 
   public async getSessionDetail(sessionId: string): Promise<AnalyticsSession | null> {
     try {
@@ -969,21 +860,6 @@ export class AnalyticsService {
     return days
   }
 
-  private generateReferralTrafficData(dateRange: { start: Date; end: Date }): Array<{ day: string; referrals: number }> {
-    const days = []
-    const current = new Date(dateRange.start)
-    
-    while (current <= dateRange.end) {
-      const dayStr = current.toISOString().split('T')[0]
-      days.push({
-        day: dayStr,
-        referrals: Math.floor(Math.random() * 30) + 10
-      })
-      current.setDate(current.getDate() + 1)
-    }
-    
-    return days
-  }
 
   private filterUsersByTimeRange(users: AnalyticsUser[], dateRange: { start: Date; end: Date }): AnalyticsUser[] {
     return users.filter(user => {
@@ -1116,31 +992,6 @@ export class AnalyticsService {
     return sessions.filter(session => session.referrer).length
   }
 
-  private calculateReferralTrafficPercentage(sessions: AnalyticsSession[]): number {
-    if (sessions.length === 0) return 0
-    const referralSessions = sessions.filter(session => session.referrer).length
-    return Math.round((referralSessions / sessions.length) * 100 * 10) / 10
-  }
-
-  private getTopReferrers(sessions: AnalyticsSession[]): Array<{ domain: string; sessions: number }> {
-    const referrerCounts: { [domain: string]: number } = {}
-    
-    sessions.forEach(session => {
-      if (session.referrer) {
-        try {
-          const domain = new URL(session.referrer).hostname
-          referrerCounts[domain] = (referrerCounts[domain] || 0) + 1
-        } catch {
-          // Invalid URL, skip
-        }
-      }
-    })
-    
-    return Object.entries(referrerCounts)
-      .map(([domain, sessions]) => ({ domain, sessions }))
-      .sort((a, b) => b.sessions - a.sessions)
-      .slice(0, 3)
-  }
 
   // ================================================
   // Test Data Generation

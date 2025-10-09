@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
@@ -6,10 +6,10 @@ import { ChartCard, MetricCard, TimeSeriesLineChart, TimeSeriesBarChart, SimpleP
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import type { RootState } from '../../store'
 
-// Create typed selectors to avoid TypeScript issues
-const selectTimeRange = (state: RootState) => (state as any).admin.timeRange
-const selectLoading = (state: RootState) => (state as any).admin.analytics.loading
-const selectRefreshing = (state: RootState) => (state as any).admin.analytics.refreshing
+// Create properly typed selectors
+const selectTimeRange = (state: RootState) => (state as any).admin?.timeRange || '30days'
+const selectLoading = (state: RootState) => (state as any).admin?.analytics?.loading || false
+const selectRefreshing = (state: RootState) => (state as any).admin?.analytics?.refreshing || false
 const selectCache = (state: RootState) => (state as any).cache
 import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../../store/slices/adminSlice'
 import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
@@ -26,9 +26,9 @@ export default function AnalyticsOverview() {
   const cache = useAppSelector(selectCache)
   const [data, setData] = useState<AnalyticsOverviewData | null>(null)
 
-  const getCacheKey = () => `analytics-overview-${timeRange}`
+  const getCacheKey = useCallback(() => `analytics-overview-${timeRange}`, [timeRange])
 
-  const fetchAnalyticsData = async (forceRefresh = false) => {
+  const fetchAnalyticsData = useCallback(async (forceRefresh = false) => {
     const cacheKey = getCacheKey()
     
     // Check cache first (unless force refresh)
@@ -58,19 +58,19 @@ export default function AnalyticsOverview() {
     } finally {
       dispatch(setAnalyticsLoading(false))
     }
-  }
+  }, [timeRange, cache, dispatch, getCacheKey])
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     dispatch(setAnalyticsRefreshing(true))
     // Clear cache for this data type to force refresh
     dispatch(clearCacheType('analytics'))
     await fetchAnalyticsData(true)
     dispatch(setAnalyticsRefreshing(false))
-  }
+  }, [dispatch, fetchAnalyticsData])
 
   useEffect(() => {
     fetchAnalyticsData()
-  }, [timeRange])
+  }, [fetchAnalyticsData])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -157,8 +157,6 @@ export default function AnalyticsOverview() {
         <TimeRangeToolbar 
           selectedRange={timeRange} 
           onRangeChange={(range) => dispatch(setTimeRange(range))}
-          onRefresh={refresh}
-          refreshing={refreshing}
         />
       </div>
 

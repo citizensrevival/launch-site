@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../store/slices/adminSlice'
+import { analyticsService, SessionsData, AnalyticsSession } from '../../lib/AnalyticsService'
 import { 
   mdiEye,
   mdiRefresh,
@@ -23,49 +25,22 @@ import { formatDistanceToNow } from 'date-fns'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
 import { Tooltip } from '../../components/Tooltip'
 
-interface Session {
-  id: string
-  userId: string
-  startedAt: string
-  endedAt?: string
-  duration: number
-  pageviews: number
-  events: number
-  landingPage: string
-  referrer?: string
-  deviceCategory: string
-  browserName: string
-  osName: string
-  geoCountry?: string
-  geoCity?: string
-  utmSource?: string
-  utmMedium?: string
-  utmCampaign?: string
-  ipAddress?: string
-  userAgent?: string
-}
-
-interface SessionsData {
-  sessions: Session[]
-  sessionsPerUser: Array<{ sessions: number; users: number }>
-  avgSessionLength: number
-  avgPagesPerSession: number
-}
+// Using SessionsData from AnalyticsService
 
 export default function SessionsPage() {
   const dispatch = useAppDispatch()
-  const cache = useAppSelector((state) => state.cache)
+  const cache = useAppSelector((state) => (state as any).cache)
+  const timeRange = useAppSelector((state) => (state as any).admin?.timeRange || '30days')
+  const loading = useAppSelector((state) => (state as any).admin?.analytics?.loading || false)
+  const refreshing = useAppSelector((state) => (state as any).admin?.analytics?.refreshing || false)
   const [data, setData] = useState<SessionsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [sortKey, setSortKey] = useState<'startedAt' | 'duration' | 'pageviews' | 'events' | 'id' | 'userId' | 'deviceCategory' | 'geoCountry'>('startedAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [drawerSession, setDrawerSession] = useState<Session | null>(null)
-  const [timeRange, setTimeRange] = useState<TimeRange>('30days')
+  const [drawerSession, setDrawerSession] = useState<AnalyticsSession | null>(null)
 
-  const getCacheKey = () => `analytics-sessions-${timeRange}`
+  const getCacheKey = useCallback(() => `analytics-sessions-${timeRange}`, [timeRange])
 
-  const fetchSessionsData = async (forceRefresh = false) => {
+  const fetchSessionsData = useCallback(async (forceRefresh = false) => {
     const cacheKey = getCacheKey()
     
     // Check cache first (unless force refresh)
@@ -73,92 +48,37 @@ export default function SessionsPage() {
       const cachedData = getCacheData<SessionsData>(cache, 'analytics', cacheKey)
       if (cachedData) {
         setData(cachedData)
-        setLoading(false)
         return
       }
     }
 
     try {
-      setLoading(true)
-      // TODO: Replace with actual Supabase queries
-      const mockData: SessionsData = {
-        sessions: [
-          {
-            id: 'session_1',
-            userId: 'anon_abc123',
-            startedAt: '2024-01-07T10:00:00Z',
-            endedAt: '2024-01-07T10:15:00Z',
-            duration: 900,
-            pageviews: 5,
-            events: 3,
-            landingPage: 'https://example.com/',
-            referrer: 'https://google.com',
-            deviceCategory: 'desktop',
-            browserName: 'Chrome',
-            osName: 'Windows',
-            geoCountry: 'US',
-            geoCity: 'New York',
-            utmSource: 'google',
-            utmMedium: 'cpc',
-            utmCampaign: 'brand',
-            ipAddress: '192.168.1.1',
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          },
-          {
-            id: 'session_2',
-            userId: 'anon_def456',
-            startedAt: '2024-01-07T14:20:00Z',
-            endedAt: '2024-01-07T14:35:00Z',
-            duration: 900,
-            pageviews: 3,
-            events: 1,
-            landingPage: 'https://example.com/about',
-            referrer: 'https://facebook.com',
-            deviceCategory: 'mobile',
-            browserName: 'Safari',
-            osName: 'iOS',
-            geoCountry: 'CA',
-            geoCity: 'Toronto',
-            utmSource: 'facebook',
-            utmMedium: 'social',
-            utmCampaign: 'awareness',
-            ipAddress: '192.168.1.2',
-            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15'
-          }
-        ],
-        sessionsPerUser: [
-          { sessions: 1, users: 45 },
-          { sessions: 2, users: 32 },
-          { sessions: 3, users: 28 },
-          { sessions: 4, users: 15 },
-          { sessions: 5, users: 8 }
-        ],
-        avgSessionLength: 245,
-        avgPagesPerSession: 3.2
-      }
+      dispatch(setAnalyticsLoading(true))
       
-      setData(mockData)
+      // Fetch data from analytics service
+      const sessionsData = await analyticsService.getSessionsData(timeRange)
+      setData(sessionsData)
       
       // Cache the data
       dispatch(setCacheData({
         type: 'analytics',
         key: cacheKey,
-        data: mockData
+        data: sessionsData
       }))
     } catch (error) {
       console.error('Failed to fetch sessions data:', error)
     } finally {
-      setLoading(false)
+      dispatch(setAnalyticsLoading(false))
     }
-  }
+  }, [timeRange, cache, dispatch, getCacheKey])
 
-  const refresh = async () => {
-    setRefreshing(true)
+  const refresh = useCallback(async () => {
+    dispatch(setAnalyticsRefreshing(true))
     // Clear cache for this data type to force refresh
     dispatch(clearCacheType('analytics'))
     await fetchSessionsData(true)
-    setRefreshing(false)
-  }
+    dispatch(setAnalyticsRefreshing(false))
+  }, [dispatch, fetchSessionsData])
 
   const changeSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -171,7 +91,7 @@ export default function SessionsPage() {
 
   useEffect(() => {
     fetchSessionsData()
-  }, [timeRange])
+  }, [fetchSessionsData])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -298,9 +218,7 @@ export default function SessionsPage() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={setTimeRange}
-          onRefresh={refresh}
-          refreshing={refreshing}
+          onRangeChange={(range) => dispatch(setTimeRange(range))}
         />
       </div>
 

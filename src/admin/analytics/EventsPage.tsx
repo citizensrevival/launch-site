@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../store/slices/adminSlice'
+import { analyticsService, EventsData } from '../../lib/AnalyticsService'
 import { 
   mdiTrendingUp,
   mdiRefresh,
@@ -19,34 +21,21 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
-interface Event {
-  name: string
-  label: string
-  count: number
-  uniqueUsers: number
-  conversionRate: number
-  lastOccurred: string
-}
-
-interface EventsData {
-  events: Event[]
-  eventTrends: Array<{ day: string; [key: string]: number | string }>
-  topEvents: Array<{ name: string; count: number }>
-}
+// Using EventsData from AnalyticsService
 
 export default function EventsPage() {
   const dispatch = useAppDispatch()
-  const cache = useAppSelector((state) => state.cache)
+  const cache = useAppSelector((state) => (state as any).cache)
+  const timeRange = useAppSelector((state) => (state as any).admin?.timeRange || '30days')
+  const loading = useAppSelector((state) => (state as any).admin?.analytics?.loading || false)
+  const refreshing = useAppSelector((state) => (state as any).admin?.analytics?.refreshing || false)
   const [data, setData] = useState<EventsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [sortKey, setSortKey] = useState<'name' | 'count' | 'uniqueUsers' | 'conversionRate' | 'lastOccurred'>('count')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [timeRange, setTimeRange] = useState<TimeRange>('30days')
 
-  const getCacheKey = () => `analytics-events-${timeRange}`
+  const getCacheKey = useCallback(() => `analytics-events-${timeRange}`, [timeRange])
 
-  const fetchEventsData = async (forceRefresh = false) => {
+  const fetchEventsData = useCallback(async (forceRefresh = false) => {
     const cacheKey = getCacheKey()
     
     // Check cache first (unless force refresh)
@@ -54,88 +43,37 @@ export default function EventsPage() {
       const cachedData = getCacheData<EventsData>(cache, 'analytics', cacheKey)
       if (cachedData) {
         setData(cachedData)
-        setLoading(false)
         return
       }
     }
 
     try {
-      setLoading(true)
-      // TODO: Replace with actual Supabase queries
-      const mockData: EventsData = {
-        events: [
-          {
-            name: 'lead_form_submitted',
-            label: 'Lead Form Submitted',
-            count: 234,
-            uniqueUsers: 189,
-            conversionRate: 15.2,
-            lastOccurred: '2024-01-07T16:30:00Z'
-          },
-          {
-            name: 'cta_click',
-            label: 'CTA Clicked',
-            count: 567,
-            uniqueUsers: 445,
-            conversionRate: 8.7,
-            lastOccurred: '2024-01-07T15:45:00Z'
-          },
-          {
-            name: 'video_play',
-            label: 'Video Played',
-            count: 123,
-            uniqueUsers: 98,
-            conversionRate: 12.3,
-            lastOccurred: '2024-01-07T14:20:00Z'
-          },
-          {
-            name: 'download_started',
-            label: 'Download Started',
-            count: 89,
-            uniqueUsers: 76,
-            conversionRate: 18.9,
-            lastOccurred: '2024-01-07T13:15:00Z'
-          }
-        ],
-        eventTrends: [
-          { day: '2024-01-01', lead_form_submitted: 12, cta_click: 45, video_play: 8, download_started: 5 } as any,
-          { day: '2024-01-02', lead_form_submitted: 18, cta_click: 52, video_play: 12, download_started: 7 } as any,
-          { day: '2024-01-03', lead_form_submitted: 15, cta_click: 38, video_play: 6, download_started: 4 } as any,
-          { day: '2024-01-04', lead_form_submitted: 22, cta_click: 67, video_play: 15, download_started: 9 } as any,
-          { day: '2024-01-05', lead_form_submitted: 28, cta_click: 89, video_play: 18, download_started: 12 } as any,
-          { day: '2024-01-06', lead_form_submitted: 24, cta_click: 76, video_play: 14, download_started: 8 } as any,
-          { day: '2024-01-07', lead_form_submitted: 31, cta_click: 95, video_play: 20, download_started: 15 } as any
-        ],
-        topEvents: [
-          { name: 'CTA Clicked', count: 567 },
-          { name: 'Lead Form Submitted', count: 234 },
-          { name: 'Video Played', count: 123 },
-          { name: 'Download Started', count: 89 }
-        ]
-      }
+      dispatch(setAnalyticsLoading(true))
       
-      setData(mockData)
+      // Fetch data from analytics service
+      const eventsData = await analyticsService.getEventsData(timeRange)
+      setData(eventsData)
       
       // Cache the data
       dispatch(setCacheData({
         type: 'analytics',
         key: cacheKey,
-        data: mockData
+        data: eventsData
       }))
     } catch (error) {
       console.error('Failed to fetch events data:', error)
     } finally {
-      setLoading(false)
+      dispatch(setAnalyticsLoading(false))
     }
-  }
+  }, [timeRange, cache, dispatch, getCacheKey])
 
-  const refresh = async () => {
-    setRefreshing(true)
+  const refresh = useCallback(async () => {
+    dispatch(setAnalyticsRefreshing(true))
     // Clear cache for this data type to force refresh
     dispatch(clearCacheType('analytics'))
     await fetchEventsData(true)
-    setRefreshing(false)
-  }
+    dispatch(setAnalyticsRefreshing(false))
+  }, [dispatch, fetchEventsData])
 
   const changeSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -148,7 +86,7 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEventsData()
-  }, [timeRange])
+  }, [fetchEventsData])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -239,9 +177,7 @@ export default function EventsPage() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={setTimeRange}
-          onRefresh={refresh}
-          refreshing={refreshing}
+          onRangeChange={(range) => dispatch(setTimeRange(range))}
         />
       </div>
 

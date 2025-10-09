@@ -154,7 +154,7 @@ export function TimeSeriesBarChart({
             }}
             labelFormatter={(value) => new Date(value).toLocaleDateString()}
           />
-          <Bar dataKey={dataKey} fill={color} radius={radius} />
+          <Bar dataKey={dataKey} fill={color} radius={radius as [number, number, number, number]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -192,7 +192,7 @@ export function SimpleBarChart({
               color: '#F9FAFB'
             }}
           />
-          <Bar dataKey={dataKey} fill={color} radius={radius} />
+          <Bar dataKey={dataKey} fill={color} radius={radius as [number, number, number, number]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -201,8 +201,6 @@ export function SimpleBarChart({
 
 export function SimplePieChart({ 
   data, 
-  dataKey,
-  nameKey = 'name',
   valueKey = 'value',
   height = 300,
   colors = CHART_COLOR_PALETTE,

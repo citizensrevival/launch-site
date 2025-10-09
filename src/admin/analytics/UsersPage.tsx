@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../../components/admin/AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar, TimeRange } from '../../components/admin/TimeRangeToolbar'
+import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../store/slices/adminSlice'
+import { analyticsService, UsersData, AnalyticsUser, AnalyticsSession } from '../../lib/AnalyticsService'
 import { 
   mdiRefresh,
   mdiChevronUp,
@@ -25,60 +27,25 @@ import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { Tooltip } from '../../components/Tooltip'
 
-interface User {
-  id: string
-  anonId: string
-  firstSeenAt: string
-  lastSeenAt: string
-  sessions: number
-  avgDuration: number
-  hasLead: boolean
-  firstReferrer?: string
-  lastReferrer?: string
-  firstUtmSource?: string
-  lastUtmSource?: string
-  deviceCategory?: string
-  browserName?: string
-  osName?: string
-  geoCountry?: string
-  geoCity?: string
-  userSessions?: Array<{
-    id: string
-    startedAt: string
-    endedAt?: string
-    duration: number
-    pageviews: number
-    events: number
-    landingPage: string
-    deviceCategory: string
-    geoCountry?: string
-    geoCity?: string
-  }>
-}
-
-interface UsersData {
-  users: User[]
-  newUsersOverTime: Array<{ day: string; new_users: number }>
-  newVsReturning: Array<{ type: string; count: number }>
-}
+// Using UsersData from AnalyticsService
 
 const COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444']
 
 export default function UsersPage() {
   const dispatch = useAppDispatch()
-  const cache = useAppSelector((state) => state.cache)
+  const cache = useAppSelector((state) => (state as any).cache)
+  const timeRange = useAppSelector((state) => (state as any).admin?.timeRange || '30days')
+  const loading = useAppSelector((state) => (state as any).admin?.analytics?.loading || false)
+  const refreshing = useAppSelector((state) => (state as any).admin?.analytics?.refreshing || false)
   const [data, setData] = useState<UsersData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [sortKey, setSortKey] = useState<'firstSeenAt' | 'lastSeenAt' | 'sessions' | 'avgDuration' | 'anonId' | 'hasLead'>('lastSeenAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [drawerUser, setDrawerUser] = useState<User | null>(null)
-  const [selectedSession, setSelectedSession] = useState<any>(null)
-  const [timeRange, setTimeRange] = useState<TimeRange>('30days')
+  const [drawerUser, setDrawerUser] = useState<AnalyticsUser | null>(null)
+  const [selectedSession, setSelectedSession] = useState<AnalyticsSession | null>(null)
 
-  const getCacheKey = () => `analytics-users-${timeRange}`
+  const getCacheKey = useCallback(() => `analytics-users-${timeRange}`, [timeRange])
 
-  const fetchUsersData = async (forceRefresh = false) => {
+  const fetchUsersData = useCallback(async (forceRefresh = false) => {
     const cacheKey = getCacheKey()
     
     // Check cache first (unless force refresh)
@@ -86,210 +53,37 @@ export default function UsersPage() {
       const cachedData = getCacheData<UsersData>(cache, 'analytics', cacheKey)
       if (cachedData) {
         setData(cachedData)
-        setLoading(false)
         return
       }
     }
 
     try {
-      setLoading(true)
-      // TODO: Replace with actual Supabase queries
-      const mockData: UsersData = {
-        users: [
-          {
-            id: '1',
-            anonId: 'anon_abc123',
-            firstSeenAt: '2024-01-01T10:00:00Z',
-            lastSeenAt: '2024-01-07T15:30:00Z',
-            sessions: 12,
-            avgDuration: 245,
-            hasLead: true,
-            firstReferrer: 'https://google.com',
-            lastReferrer: 'https://facebook.com',
-            firstUtmSource: 'google',
-            lastUtmSource: 'facebook',
-            deviceCategory: 'desktop',
-            browserName: 'Chrome',
-            osName: 'Windows',
-            geoCountry: 'United States',
-            geoCity: 'New York',
-            userSessions: [
-              {
-                id: 'session_1a',
-                startedAt: '2024-01-01T10:00:00Z',
-                endedAt: '2024-01-01T10:15:00Z',
-                duration: 900,
-                pageviews: 5,
-                events: 3,
-                landingPage: 'https://example.com/',
-                deviceCategory: 'desktop',
-                geoCountry: 'US',
-                geoCity: 'New York'
-              },
-              {
-                id: 'session_1b',
-                startedAt: '2024-01-03T14:20:00Z',
-                endedAt: '2024-01-03T14:35:00Z',
-                duration: 900,
-                pageviews: 3,
-                events: 1,
-                landingPage: 'https://example.com/about',
-                deviceCategory: 'desktop',
-                geoCountry: 'US',
-                geoCity: 'New York'
-              },
-              {
-                id: 'session_1c',
-                startedAt: '2024-01-07T15:30:00Z',
-                endedAt: '2024-01-07T15:45:00Z',
-                duration: 900,
-                pageviews: 4,
-                events: 2,
-                landingPage: 'https://example.com/contact',
-                deviceCategory: 'desktop',
-                geoCountry: 'US',
-                geoCity: 'New York'
-              }
-            ]
-          },
-          {
-            id: '2',
-            anonId: 'anon_def456',
-            firstSeenAt: '2024-01-02T14:20:00Z',
-            lastSeenAt: '2024-01-07T09:15:00Z',
-            sessions: 8,
-            avgDuration: 180,
-            hasLead: false,
-            firstReferrer: 'https://twitter.com',
-            lastReferrer: 'https://linkedin.com',
-            firstUtmSource: 'twitter',
-            lastUtmSource: 'linkedin',
-            deviceCategory: 'mobile',
-            browserName: 'Safari',
-            osName: 'iOS',
-            geoCountry: 'Canada',
-            geoCity: 'Toronto',
-            userSessions: [
-              {
-                id: 'session_2a',
-                startedAt: '2024-01-02T14:20:00Z',
-                endedAt: '2024-01-02T14:35:00Z',
-                duration: 900,
-                pageviews: 2,
-                events: 0,
-                landingPage: 'https://example.com/',
-                deviceCategory: 'mobile',
-                geoCountry: 'CA',
-                geoCity: 'Toronto'
-              },
-              {
-                id: 'session_2b',
-                startedAt: '2024-01-05T09:15:00Z',
-                endedAt: '2024-01-05T09:30:00Z',
-                duration: 900,
-                pageviews: 4,
-                events: 1,
-                landingPage: 'https://example.com/volunteers',
-                deviceCategory: 'mobile',
-                geoCountry: 'CA',
-                geoCity: 'Toronto'
-              }
-            ]
-          },
-          {
-            id: '3',
-            anonId: 'anon_ghi789',
-            firstSeenAt: '2024-01-03T11:45:00Z',
-            lastSeenAt: '2024-01-06T16:20:00Z',
-            sessions: 15,
-            avgDuration: 320,
-            hasLead: true,
-            firstReferrer: 'https://reddit.com',
-            lastReferrer: 'https://reddit.com',
-            firstUtmSource: 'reddit',
-            lastUtmSource: 'reddit',
-            deviceCategory: 'desktop',
-            browserName: 'Firefox',
-            osName: 'macOS',
-            geoCountry: 'United Kingdom',
-            geoCity: 'London',
-            userSessions: [
-              {
-                id: 'session_3a',
-                startedAt: '2024-01-03T11:45:00Z',
-                endedAt: '2024-01-03T12:00:00Z',
-                duration: 900,
-                pageviews: 6,
-                events: 4,
-                landingPage: 'https://example.com/',
-                deviceCategory: 'desktop',
-                geoCountry: 'GB',
-                geoCity: 'London'
-              },
-              {
-                id: 'session_3b',
-                startedAt: '2024-01-04T16:20:00Z',
-                endedAt: '2024-01-04T16:35:00Z',
-                duration: 900,
-                pageviews: 3,
-                events: 2,
-                landingPage: 'https://example.com/sponsors',
-                deviceCategory: 'desktop',
-                geoCountry: 'GB',
-                geoCity: 'London'
-              },
-              {
-                id: 'session_3c',
-                startedAt: '2024-01-06T16:20:00Z',
-                endedAt: '2024-01-06T16:35:00Z',
-                duration: 900,
-                pageviews: 5,
-                events: 3,
-                landingPage: 'https://example.com/vendors',
-                deviceCategory: 'desktop',
-                geoCountry: 'GB',
-                geoCity: 'London'
-              }
-            ]
-          }
-        ],
-        newUsersOverTime: [
-          { day: '2024-01-01', new_users: 45 },
-          { day: '2024-01-02', new_users: 52 },
-          { day: '2024-01-03', new_users: 38 },
-          { day: '2024-01-04', new_users: 67 },
-          { day: '2024-01-05', new_users: 89 },
-          { day: '2024-01-06', new_users: 76 },
-          { day: '2024-01-07', new_users: 94 }
-        ],
-        newVsReturning: [
-          { type: 'New Users', count: 892 },
-          { type: 'Returning Users', count: 355 }
-        ]
-      }
+      dispatch(setAnalyticsLoading(true))
       
-      setData(mockData)
+      // Fetch data from analytics service
+      const usersData = await analyticsService.getUsersData(timeRange)
+      setData(usersData)
       
       // Cache the data
       dispatch(setCacheData({
         type: 'analytics',
         key: cacheKey,
-        data: mockData
+        data: usersData
       }))
     } catch (error) {
       console.error('Failed to fetch users data:', error)
     } finally {
-      setLoading(false)
+      dispatch(setAnalyticsLoading(false))
     }
-  }
+  }, [timeRange, cache, dispatch, getCacheKey])
 
-  const refresh = async () => {
-    setRefreshing(true)
+  const refresh = useCallback(async () => {
+    dispatch(setAnalyticsRefreshing(true))
     // Clear cache for this data type to force refresh
     dispatch(clearCacheType('analytics'))
     await fetchUsersData(true)
-    setRefreshing(false)
-  }
+    dispatch(setAnalyticsRefreshing(false))
+  }, [dispatch, fetchUsersData])
 
   const changeSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -302,7 +96,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchUsersData()
-  }, [timeRange])
+  }, [fetchUsersData])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -406,9 +200,7 @@ export default function UsersPage() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={setTimeRange}
-          onRefresh={refresh}
-          refreshing={refreshing}
+          onRangeChange={(range) => dispatch(setTimeRange(range))}
         />
       </div>
 
