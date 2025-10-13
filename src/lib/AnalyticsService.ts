@@ -343,8 +343,130 @@ export class AnalyticsService {
   }
 
   public async getUsersData(timeRange: TimeRange): Promise<UsersData> {
-    // For now, always use mock data since database is not set up
-    return this.getMockUsersData(timeRange)
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get users with their sessions
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select(`
+          id,
+          anon_id,
+          first_seen_at,
+          last_seen_at,
+          first_referrer,
+          last_referrer,
+          first_utm_source,
+          last_utm_source,
+          properties
+        `)
+        .gte('first_seen_at', startDate)
+        .lte('first_seen_at', endDate)
+        .order('first_seen_at', { ascending: false })
+
+      if (usersError) throw usersError
+
+      // Get sessions for each user
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('v_sessions_summary')
+        .select('*')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+        .order('started_at', { ascending: false })
+
+      if (sessionsError) throw sessionsError
+
+      // Get events to check for lead submissions
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('user_id, name')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+        .eq('name', 'lead_submitted')
+
+      if (eventsError) throw eventsError
+
+      // Get new users over time by querying users directly
+      const { data: newUsersOverTime, error: newUsersError } = await supabase
+        .from('users')
+        .select('first_seen_at')
+        .gte('first_seen_at', startDate)
+        .lte('first_seen_at', endDate)
+        .order('first_seen_at')
+
+      if (newUsersError) throw newUsersError
+
+      // Group users by day to create new users over time data
+      const usersByDay = new Map<string, number>()
+      newUsersOverTime?.forEach(user => {
+        const day = user.first_seen_at.split('T')[0]
+        usersByDay.set(day, (usersByDay.get(day) || 0) + 1)
+      })
+
+      // Create array of all days in range with new user counts
+      const startDateObj = new Date(startDate)
+      const endDateObj = new Date(endDate)
+      const newUsersOverTimeData = []
+      
+      for (let d = new Date(startDateObj); d <= endDateObj; d.setDate(d.getDate() + 1)) {
+        const dayStr = d.toISOString().split('T')[0]
+        newUsersOverTimeData.push({
+          day: dayStr,
+          new_users: usersByDay.get(dayStr) || 0
+        })
+      }
+
+      // Process users data
+      const users: AnalyticsUser[] = usersData?.map(user => {
+        const userSessions = sessionsData?.filter(session => session.user_id === user.id) || []
+        const hasLead = eventsData?.some(event => event.user_id === user.id) || false
+        
+        return {
+          id: user.id,
+          anonId: user.anon_id,
+          firstSeenAt: user.first_seen_at,
+          lastSeenAt: user.last_seen_at,
+          sessions: userSessions.length,
+          avgDuration: userSessions.length > 0 
+            ? userSessions.reduce((sum, session) => sum + (session.duration || 0), 0) / userSessions.length 
+            : 0,
+          hasLead,
+          firstReferrer: user.first_referrer,
+          lastReferrer: user.last_referrer,
+          firstUtmSource: user.first_utm_source,
+          lastUtmSource: user.last_utm_source,
+          deviceCategory: user.properties?.device_category || 'desktop',
+          browserName: user.properties?.browser_name || 'Unknown',
+          osName: user.properties?.os_name || 'Unknown',
+          geoCountry: user.properties?.geo_country || 'Unknown',
+          geoCity: user.properties?.geo_city || 'Unknown',
+          userSessions: userSessions.map(session => ({
+            id: session.id,
+            startedAt: session.started_at,
+            endedAt: session.ended_at,
+            duration: session.duration || 0,
+            pageviews: session.pageviews || 0,
+            events: session.events || 0,
+            landingPage: session.landing_page,
+            deviceCategory: session.device_category || 'desktop',
+            geoCountry: session.geo_country,
+            geoCity: session.geo_city
+          }))
+        }
+      }) || []
+
+      return {
+        users,
+        newUsersOverTime: newUsersOverTimeData,
+        newVsReturning: this.getNewVsReturningUsers(users)
+      }
+    } catch (error) {
+      console.error('Error fetching users data:', error)
+      // Fallback to mock data if database fails
+      return this.getMockUsersData(timeRange)
+    }
   }
 
   public async getUsersData_OLD(timeRange: TimeRange): Promise<UsersData> {
@@ -496,8 +618,48 @@ export class AnalyticsService {
   }
 
   public async getSessionsData(timeRange: TimeRange): Promise<SessionsData> {
-    // For now, always use mock data since database is not set up
-    return this.getMockSessionsData(timeRange)
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get sessions data
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('v_sessions_summary')
+        .select('*')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+        .order('started_at', { ascending: false })
+
+      if (sessionsError) throw sessionsError
+
+      const sessions: AnalyticsSession[] = sessionsData?.map(session => ({
+        id: session.id,
+        userId: session.user_id,
+        startedAt: session.started_at,
+        endedAt: session.ended_at,
+        duration: session.duration || 0,
+        pageviews: session.pageviews || 0,
+        events: session.events || 0,
+        landingPage: session.landing_page,
+        deviceCategory: session.device_category || 'desktop',
+        browserName: session.browser_name || 'Unknown',
+        osName: session.os_name || 'Unknown',
+        geoCountry: session.geo_country,
+        geoCity: session.geo_city
+      })) || []
+
+      return {
+        sessions,
+        sessionsPerUser: this.getSessionsPerUserDistribution(sessions),
+        avgSessionLength: this.calculateAverageSessionLength(sessions),
+        avgPagesPerSession: this.calculateAveragePagesPerSession(sessions)
+      }
+    } catch (error) {
+      console.error('Error fetching sessions data:', error)
+      // Fallback to mock data if database fails
+      return this.getMockSessionsData(timeRange)
+    }
   }
 
   private async getMockSessionsData(timeRange: TimeRange): Promise<SessionsData> {
@@ -514,8 +676,58 @@ export class AnalyticsService {
   }
 
   public async getEventsData(timeRange: TimeRange): Promise<EventsData> {
-    // For now, always use mock data since database is not set up
-    return this.getMockEventsData(timeRange)
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get events data
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('*')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+        .order('occurred_at', { ascending: false })
+
+      if (eventsError) throw eventsError
+
+      // Get event trends data from database
+      const { data: eventTrendsData, error: eventTrendsError } = await supabase
+        .from('events')
+        .select('name, occurred_at')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+        .order('occurred_at')
+
+      if (eventTrendsError) throw eventTrendsError
+
+      const events: AnalyticsEvent[] = eventsData?.map(event => ({
+        id: event.id,
+        userId: event.user_id,
+        sessionId: event.session_id,
+        name: event.name,
+        label: event.name,
+        properties: event.properties || {},
+        occurredAt: event.occurred_at,
+        lastOccurred: event.occurred_at,
+        count: 1,
+        uniqueUsers: 1,
+        conversionRate: 0
+      })) || []
+
+      // Process real event trends data
+      const eventTrends = this.processEventTrendsData(eventTrendsData || [], dateRange)
+
+      return {
+        events,
+        eventTrends,
+        topEvents: this.getTopEvents(events)
+      }
+    } catch (error) {
+      console.error('Error fetching events data:', error)
+      // Fallback to mock data if database fails
+      return this.getMockEventsData(timeRange)
+    }
   }
 
   private async getMockEventsData(timeRange: TimeRange): Promise<EventsData> {
@@ -530,8 +742,116 @@ export class AnalyticsService {
   }
 
   public async getReferrersData(timeRange: TimeRange): Promise<ReferrersData> {
-    // For now, always use mock data since database is not set up
-    return this.getMockReferrersData(timeRange)
+    const dateRange = this.getDateRange(timeRange)
+    const startDate = dateRange.start.toISOString()
+    const endDate = dateRange.end.toISOString()
+
+    try {
+      // Get sessions data for referrer analysis
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('sessions')
+        .select('referrer, started_at, user_id, id')
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
+        .not('referrer', 'is', null)
+
+      if (sessionsError) throw sessionsError
+
+      // Get events for conversion tracking
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('session_id, name')
+        .gte('occurred_at', startDate)
+        .lte('occurred_at', endDate)
+        .eq('name', 'lead_submitted')
+
+      if (eventsError) throw eventsError
+
+      // Process referrer data
+      const referrerMap = new Map<string, any>()
+      
+      sessionsData?.forEach(session => {
+        if (!session.referrer) return
+        
+        const domain = new URL(session.referrer).hostname
+        const existing = referrerMap.get(domain) || {
+          domain,
+          totalSessions: 0,
+          totalUsers: new Set(),
+          conversions: 0,
+          totalDuration: 0,
+          totalPageviews: 0,
+          lastSeen: session.started_at
+        }
+        
+        existing.totalSessions++
+        existing.totalUsers.add(session.user_id)
+        // Note: duration and pageviews are not available in sessions table
+        // We'll need to calculate these from other sources or use defaults
+        existing.totalDuration += 0 // Default duration
+        existing.totalPageviews += 1 // Default to 1 pageview per session
+        
+        if (session.started_at > existing.lastSeen) {
+          existing.lastSeen = session.started_at
+        }
+        
+        referrerMap.set(domain, existing)
+      })
+
+      // Count conversions
+      eventsData?.forEach(event => {
+        const session = sessionsData?.find(s => s.id === event.session_id)
+        if (session?.referrer) {
+          const domain = new URL(session.referrer).hostname
+          const referrer = referrerMap.get(domain)
+          if (referrer) {
+            referrer.conversions++
+          }
+        }
+      })
+
+      const referrers: Referrer[] = Array.from(referrerMap.values()).map(ref => {
+        const totalUsers = ref.totalUsers.size
+        const avgSessionDuration = ref.totalSessions > 0 ? ref.totalDuration / ref.totalSessions : 0
+        const bounceRate = ref.totalSessions > 0 ? ((ref.totalSessions - ref.totalPageviews) / ref.totalSessions) * 100 : 0
+        const pagesPerSession = ref.totalSessions > 0 ? ref.totalPageviews / ref.totalSessions : 0
+        const totalSessions = sessionsData?.length || 0
+        const trafficShare = totalSessions > 0 ? (ref.totalSessions / totalSessions) * 100 : 0
+
+        return {
+          domain: ref.domain,
+          totalSessions: ref.totalSessions,
+          totalUsers,
+          conversions: ref.conversions,
+          avgSessionDuration: Math.round(avgSessionDuration),
+          bounceRate: Math.round(bounceRate * 10) / 10,
+          pagesPerSession: Math.round(pagesPerSession * 10) / 10,
+          lastSeen: ref.lastSeen,
+          trafficShare: Math.round(trafficShare * 10) / 10
+        }
+      }).sort((a, b) => b.totalSessions - a.totalSessions)
+
+      const totalReferrals = referrers.reduce((sum, ref) => sum + ref.totalSessions, 0)
+      
+      return {
+        referrers,
+        referralTrafficOverTime: this.processReferralTrafficOverTime(sessionsData || [], dateRange),
+        trafficShare: referrers.map(ref => ({
+          source: ref.domain,
+          count: ref.totalSessions
+        })),
+        totalReferrals,
+        referralTrafficPercentage: totalReferrals > 0 ? (totalReferrals / (sessionsData?.length || 1)) * 100 : 0,
+        topReferrers: referrers.slice(0, 10).map(ref => ({
+          domain: ref.domain,
+          sessions: ref.totalSessions
+        }))
+      }
+    } catch (error) {
+      console.error('Error fetching referrers data:', error)
+      // Fallback to mock data if database fails
+      return this.getMockReferrersData(timeRange)
+    }
   }
 
   private async getMockReferrersData(timeRange: TimeRange): Promise<ReferrersData> {
@@ -554,6 +874,34 @@ export class AnalyticsService {
       .sort((a, b) => b.totalSessions - a.totalSessions)
       .slice(0, 3)
       .map(ref => ({ domain: ref.domain, sessions: ref.totalSessions }))
+  }
+
+  private processReferralTrafficOverTime(sessionsData: Array<{ started_at: string; referrer: string }>, dateRange: { start: Date; end: Date }): Array<{ day: string; referrals: number }> {
+    // Group sessions by day
+    const sessionsByDay = new Map<string, number>()
+    
+    sessionsData.forEach(session => {
+      if (!session.referrer) return
+      
+      const day = session.started_at.split('T')[0]
+      sessionsByDay.set(day, (sessionsByDay.get(day) || 0) + 1)
+    })
+    
+    // Create array of all days in range with referral counts
+    const days = []
+    const current = new Date(dateRange.start)
+    const end = new Date(dateRange.end)
+    
+    while (current <= end) {
+      const dayStr = current.toISOString().split('T')[0]
+      days.push({
+        day: dayStr,
+        referrals: sessionsByDay.get(dayStr) || 0
+      })
+      current.setDate(current.getDate() + 1)
+    }
+    
+    return days
   }
 
   private generateReferralTrafficData(dateRange: { start: Date; end: Date }): Array<{ day: string; referrals: number }> {
@@ -937,6 +1285,43 @@ export class AnalyticsService {
       
       const dayData: { day: string; [key: string]: number | string } = { day: dayStr, [type]: value }
       days.push(dayData)
+      current.setDate(current.getDate() + 1)
+    }
+    
+    return days
+  }
+
+  private processEventTrendsData(eventTrendsData: Array<{ name: string; occurred_at: string }>, dateRange: { start: Date; end: Date }): Array<{ day: string; [key: string]: number | string }> {
+    // Group events by day and event type
+    const eventsByDay: { [day: string]: { [eventName: string]: number } } = {}
+    
+    eventTrendsData.forEach(event => {
+      const day = event.occurred_at.split('T')[0]
+      if (!eventsByDay[day]) {
+        eventsByDay[day] = {}
+      }
+      eventsByDay[day][event.name] = (eventsByDay[day][event.name] || 0) + 1
+    })
+    
+    // Create array of all days in range with event counts
+    const days = []
+    const current = new Date(dateRange.start)
+    
+    while (current <= dateRange.end) {
+      const dayStr = current.toISOString().split('T')[0]
+      const dayEvents = eventsByDay[dayStr] || {}
+      
+      days.push({
+        day: dayStr,
+        lead_form_submitted: dayEvents.lead_form_submitted || 0,
+        cta_click: dayEvents.cta_click || 0,
+        video_play: dayEvents.video_play || 0,
+        download_started: dayEvents.download_started || 0,
+        lead_submitted: dayEvents.lead_submitted || 0,
+        page_view: dayEvents.page_view || 0,
+        session_start: dayEvents.session_start || 0,
+        session_end: dayEvents.session_end || 0
+      })
       current.setDate(current.getDate() + 1)
     }
     

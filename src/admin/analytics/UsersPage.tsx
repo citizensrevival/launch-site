@@ -93,7 +93,7 @@ export default function UsersPage() {
   const loadExcludedUsers = useCallback(async () => {
     try {
       const excluded = await analyticsService.getExcludedUsers()
-      const excludedUserIds = new Set(excluded.map(e => e.userId).filter(Boolean))
+      const excludedUserIds = new Set(excluded.map(e => e.userId).filter((id): id is string => Boolean(id)))
       setExcludedUsers(excludedUserIds)
     } catch (error) {
       console.error('Failed to load excluded users:', error)
@@ -238,7 +238,7 @@ export default function UsersPage() {
     )
   }
 
-  const sortedUsers = [...data.users].sort((a, b) => {
+  const sortedUsers = [...(data.users || [])].sort((a, b) => {
     const aVal = a[sortKey]
     const bVal = b[sortKey]
     const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
@@ -298,7 +298,7 @@ export default function UsersPage() {
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
           <h3 className="text-lg font-semibold text-white mb-4">New Users Over Time</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.newUsersOverTime}>
+            <LineChart data={data.newUsersOverTime || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="day" 
@@ -333,7 +333,7 @@ export default function UsersPage() {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={data.newVsReturning}
+                data={data.newVsReturning || []}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -342,7 +342,7 @@ export default function UsersPage() {
                 fill="#8884d8"
                 dataKey="count"
               >
-                {data.newVsReturning.map((_entry, index) => (
+                {(data.newVsReturning || []).map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -487,7 +487,7 @@ export default function UsersPage() {
                 <div>
                   <div className="text-sm font-semibold text-white mb-3">User Sessions</div>
                   <div className="space-y-2">
-                    {drawerUser.userSessions.map((session) => (
+                    {(drawerUser.userSessions || []).map((session) => (
                       <div
                         key={session.id}
                         className="bg-gray-800 rounded-lg p-3 hover:bg-gray-700 cursor-pointer transition-colors"
