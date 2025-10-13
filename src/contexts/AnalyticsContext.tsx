@@ -109,13 +109,6 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
         setUser(context.user)
         setSession(context.session)
         setIsInitialized(true)
-        
-        // Track initial pageview
-        await trackPageview(
-          window.location.href,
-          window.location.pathname,
-          document.title
-        )
       } catch (error) {
         console.error('Failed to initialize analytics:', error)
         setIsInitialized(true) // Still mark as initialized to prevent blocking
