@@ -3,7 +3,7 @@ import { useId } from 'react'
 import { Intro, IntroFooter } from './Intro'
 import { ColorThemeToggle } from './ThemeToggle'
 import { Menu } from './Menu'
-import { useTheme } from '../contexts/ThemeContext'
+import { useTheme } from './contexts/ThemeContext'
 
 function Timeline() {
   let id = useId()

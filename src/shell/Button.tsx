@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
-import { useTheme } from '../contexts/ThemeContext'
-import { useAnalytics } from '../contexts/AnalyticsContext'
+import { useTheme } from './contexts/ThemeContext'
+import { useAnalytics } from './contexts/AnalyticsContext'
 
 export function Button({
   className,

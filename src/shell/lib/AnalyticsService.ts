@@ -1164,7 +1164,7 @@ export class AnalyticsService {
     anonId?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const { data, error } = await supabase.rpc('remove_exclusion', {
+      const { error } = await supabase.rpc('remove_exclusion', {
         p_user_id: userId || null,
         p_session_id: sessionId || null,
         p_ip_address: ipAddress || null,

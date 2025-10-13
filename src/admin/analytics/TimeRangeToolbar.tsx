@@ -1,6 +1,6 @@
 import { Icon } from '@mdi/react'
 import { mdiRefresh, mdiCalendar } from '@mdi/js'
-import { TimeRange } from '../../../store/slices/adminSlice'
+import { TimeRange } from '../../shell/store/slices/adminSlice'
 
 export interface TimeRangeToolbarProps {
   selectedRange: TimeRange

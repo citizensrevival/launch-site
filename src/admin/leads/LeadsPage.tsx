@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AdminLayout } from './AdminLayout'
-import { createLeadsAdminService } from '../../lib'
-import type { Lead } from '../../lib/types'
+import { AdminLayout } from '../AdminLayout'
+import { createLeadsAdminService } from '../../shell/lib'
+import type { Lead } from '../../shell/lib/types'
 import { formatDistanceToNow } from 'date-fns'
 import { Icon } from '@mdi/react'
-import { Tooltip } from '../Tooltip'
-import { useAppSelector, useAppDispatch } from '../../store/hooks'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
+import { Tooltip } from '../../shell/Tooltip'
+import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
 import { 
   mdiMagnify, 
   mdiClose, 

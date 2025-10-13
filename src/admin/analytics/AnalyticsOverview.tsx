@@ -1,19 +1,19 @@
 import { useEffect, useState, useCallback } from 'react'
-import { AdminLayout } from '../../components/admin/AdminLayout'
+import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
-import { ChartCard, MetricCard, TimeSeriesLineChart, TimeSeriesBarChart, SimplePieChart, CHART_COLORS } from '../../components/admin/analytics/ChartComponents'
-import { useAppSelector, useAppDispatch } from '../../store/hooks'
-import type { RootState } from '../../store'
+import { TimeRangeToolbar } from './TimeRangeToolbar'
+import { ChartCard, MetricCard, TimeSeriesLineChart, TimeSeriesBarChart, SimplePieChart, CHART_COLORS } from './ChartComponents'
+import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
+import type { RootState } from '../../shell/store'
 
 // Create properly typed selectors
 const selectTimeRange = (state: RootState) => (state as any).admin?.timeRange || '30days'
 const selectLoading = (state: RootState) => (state as any).admin?.analytics?.loading || false
 const selectRefreshing = (state: RootState) => (state as any).admin?.analytics?.refreshing || false
 const selectCache = (state: RootState) => (state as any).cache
-import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../../store/slices/adminSlice'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
-import { analyticsService, AnalyticsOverviewData } from '../../lib/AnalyticsService'
+import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../../shell/store/slices/adminSlice'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
+import { analyticsService, AnalyticsOverviewData } from '../../shell/lib/AnalyticsService'
 import { mdiRefresh } from '@mdi/js'
 
 // Remove the interface since we're importing it from AnalyticsService

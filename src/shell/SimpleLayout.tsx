@@ -1,6 +1,6 @@
 import { ColorThemeToggle } from './ThemeToggle'
 import { Menu } from './Menu'
-import { useTheme } from '../contexts/ThemeContext'
+import { useTheme } from './contexts/ThemeContext'
 
 export function SimpleLayout({ children }: { children: React.ReactNode }) {
   const theme = useTheme()

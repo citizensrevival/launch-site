@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useTheme } from '../contexts/ThemeContext'
+import { useTheme } from './contexts/ThemeContext'
 
 type ColorTheme = 'purple' | 'green' | 'blue' | 'amber' | 'rose'
 

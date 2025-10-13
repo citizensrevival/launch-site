@@ -1,7 +1,7 @@
 import { Button } from './Button'
 import { Logo } from './Logo'
 import { SignUpForm } from './SignUpForm'
-import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
+import { useGetInvolvedDialog } from './hooks/useGetInvolvedDialog'
 
 export function Intro() {
   const { openDialog } = useGetInvolvedDialog();

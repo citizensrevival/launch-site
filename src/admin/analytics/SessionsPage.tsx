@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
-import { AdminLayout } from '../../components/admin/AdminLayout'
+import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
-import { useAppSelector, useAppDispatch } from '../../store/hooks'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
-import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../store/slices/adminSlice'
-import { analyticsService, SessionsData, AnalyticsSession } from '../../lib/AnalyticsService'
+import { TimeRangeToolbar } from './TimeRangeToolbar'
+import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../shell/store/slices/adminSlice'
+import { analyticsService, SessionsData, AnalyticsSession } from '../../shell/lib/AnalyticsService'
 import { 
   mdiEye,
   mdiRefresh,
@@ -25,7 +25,7 @@ import {
 } from '@mdi/js'
 import { formatDistanceToNow } from 'date-fns'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
-import { Tooltip } from '../../components/Tooltip'
+import { Tooltip } from '../../shell/Tooltip'
 
 // Using SessionsData from AnalyticsService
 
@@ -88,7 +88,7 @@ export default function SessionsPage() {
   const loadExcludedSessions = useCallback(async () => {
     try {
       const excluded = await analyticsService.getExcludedUsers()
-      const excludedSessionIds = new Set(excluded.map(e => e.sessionId).filter(Boolean))
+      const excludedSessionIds = new Set(excluded.map(e => e.sessionId).filter(Boolean) as string[])
       setExcludedSessions(excludedSessionIds)
     } catch (error) {
       console.error('Failed to load excluded sessions:', error)

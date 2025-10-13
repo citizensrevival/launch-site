@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
-import { AdminLayout } from '../../components/admin/AdminLayout'
+import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar } from '../../components/admin/analytics/TimeRangeToolbar'
-import { useAppSelector, useAppDispatch } from '../../store/hooks'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../store/slices/cacheSlice'
-import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../store/slices/adminSlice'
-import { analyticsService, EventsData } from '../../lib/AnalyticsService'
+import { TimeRangeToolbar } from './TimeRangeToolbar'
+import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
+import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../shell/store/slices/adminSlice'
+import { analyticsService, EventsData } from '../../shell/lib/AnalyticsService'
 import { 
   mdiTrendingUp,
   mdiRefresh,

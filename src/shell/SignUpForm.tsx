@@ -1,11 +1,11 @@
 import { useId, useState } from 'react'
 
 import { Button } from './Button'
-import { useTheme } from '../contexts/ThemeContext'
-import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setEmailSubscribed } from '../store/slices/sessionSlice'
-import { LeadsPublic } from '../lib/LeadsPublic'
-import { EnvironmentConfigProvider } from '../lib/supabase'
+import { useTheme } from './contexts/ThemeContext'
+import { useAppSelector, useAppDispatch } from './store/hooks'
+import { setEmailSubscribed } from './store/slices/sessionSlice'
+import { LeadsPublic } from './lib/LeadsPublic'
+import { EnvironmentConfigProvider } from './lib/supabase'
 import { Icon } from '@mdi/react'
 import { mdiCheck } from '@mdi/js'
 

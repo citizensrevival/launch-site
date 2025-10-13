@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App'
-import { LoadingScreen } from './components/LoadingScreen'
-import './styles/tailwind.css'
+import { LoadingScreen } from './shell/LoadingScreen'
+import './shell/styles/tailwind.css'
 
 console.log('React app starting...')
 

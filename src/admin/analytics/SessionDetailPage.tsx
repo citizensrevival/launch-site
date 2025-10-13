@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { AdminLayout } from '../../components/admin/AdminLayout';
+import { AdminLayout } from '../AdminLayout';
 
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();

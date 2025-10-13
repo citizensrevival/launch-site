@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { setGlobalSearch } from '../../store/slices/adminSlice';
+import { useAuth } from '../shell/contexts/AuthContext';
+import { useAppSelector, useAppDispatch } from '../shell/store/hooks';
+import { setGlobalSearch } from '../shell/store/slices/adminSlice';
 import { Icon } from '@mdi/react';
-import { Tooltip } from '../Tooltip';
+import { Tooltip } from '../shell/Tooltip';
 import { 
   mdiClock,
   mdiAccountGroup,

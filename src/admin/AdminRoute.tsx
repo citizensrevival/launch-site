@@ -1,9 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../shell/contexts/AuthContext';
 import { AdminLoginForm } from './AdminLoginForm';
 import AdminDashboard from './AdminDashboard';
-import LeadsPage from './LeadsPage.tsx';
-import { AnalyticsOverview, UsersPage, SessionsPage, SessionDetailPage, EventsPage, ReferrersPage } from '../../admin/analytics';
+import LeadsPage from './leads/LeadsPage';
+import { AnalyticsOverview, UsersPage, SessionsPage, SessionDetailPage, EventsPage, ReferrersPage } from './analytics';
 
 export function AdminRoute() {
   const { user, loading } = useAuth();

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { LeadsPublic } from '../lib/LeadsPublic';
-import { EnvironmentConfigProvider } from '../lib/supabase';
-import { CreateLeadInput, LeadType } from '../lib/types';
-import { useTheme } from '../contexts/ThemeContext';
-import { useAnalytics } from '../contexts/AnalyticsContext';
-import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { setGetInvolvedSubmission } from '../store/slices/sessionSlice';
+import { LeadsPublic } from './lib/LeadsPublic';
+import { EnvironmentConfigProvider } from './lib/supabase';
+import { CreateLeadInput, LeadType } from './lib/types';
+import { useTheme } from './contexts/ThemeContext';
+import { useAnalytics } from './contexts/AnalyticsContext';
+import { useAppSelector, useAppDispatch } from './store/hooks';
+import { setGetInvolvedSubmission } from './store/slices/sessionSlice';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiCheck } from '@mdi/js';
 

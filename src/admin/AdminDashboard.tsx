@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createLeadsAdminService } from '../../lib'
+import { createLeadsAdminService } from '../shell/lib'
 import { AdminLayout } from './AdminLayout'
 import { Icon } from '@mdi/react'
 import { mdiRefresh, mdiDownload } from '@mdi/js'
