@@ -15,7 +15,7 @@ export const StartSessionReq = z.object({
   sessionId: z.string().uuid(),          // client-generated is fine
   landingPage: z.string().url(),
   landingPath: z.string(),
-  referrer: z.string().nullable(),
+  referrer: z.string().nullable().optional().transform(val => val === undefined ? null : val),
   utm: z.object({
     source: z.string().optional(),
     medium: z.string().optional(),

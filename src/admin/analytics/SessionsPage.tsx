@@ -19,7 +19,9 @@ import {
   mdiCellphone,
   mdiTablet,
   mdiClose,
-  mdiCardAccountDetailsOutline
+  mdiCardAccountDetailsOutline,
+  mdiAccountMinus,
+  mdiAccountPlus
 } from '@mdi/js'
 import { formatDistanceToNow } from 'date-fns'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
@@ -37,6 +39,8 @@ export default function SessionsPage() {
   const [sortKey, setSortKey] = useState<'startedAt' | 'duration' | 'pageviews' | 'events' | 'id' | 'userId' | 'deviceCategory' | 'geoCountry'>('startedAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [drawerSession, setDrawerSession] = useState<AnalyticsSession | null>(null)
+  const [excludedSessions, setExcludedSessions] = useState<Set<string>>(new Set())
+  const [excludingSessions, setExcludingSessions] = useState<Set<string>>(new Set())
 
   const getCacheKey = useCallback(() => `analytics-sessions-${timeRange}`, [timeRange])
 
@@ -77,8 +81,91 @@ export default function SessionsPage() {
     // Clear cache for this data type to force refresh
     dispatch(clearCacheType('analytics'))
     await fetchSessionsData(true)
+    await loadExcludedSessions()
     dispatch(setAnalyticsRefreshing(false))
   }, [dispatch, fetchSessionsData])
+
+  const loadExcludedSessions = useCallback(async () => {
+    try {
+      const excluded = await analyticsService.getExcludedUsers()
+      const excludedSessionIds = new Set(excluded.map(e => e.sessionId).filter(Boolean))
+      setExcludedSessions(excludedSessionIds)
+    } catch (error) {
+      console.error('Failed to load excluded sessions:', error)
+    }
+  }, [])
+
+  const handleExcludeSession = useCallback(async (session: AnalyticsSession) => {
+    if (excludingSessions.has(session.id)) return
+
+    setExcludingSessions(prev => new Set(prev).add(session.id))
+    
+    try {
+      const result = await analyticsService.excludeUser(
+        session.userId,
+        session.id,
+        session.ipAddress,
+        undefined,
+        'Manual exclusion from admin panel',
+        'admin'
+      )
+
+      if (result.success) {
+        setExcludedSessions(prev => new Set(prev).add(session.id))
+        // Refresh data to reflect exclusion
+        await fetchSessionsData(true)
+      } else {
+        console.error('Failed to exclude session:', result.error)
+        alert(`Failed to exclude session: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error excluding session:', error)
+      alert('Error excluding session')
+    } finally {
+      setExcludingSessions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(session.id)
+        return newSet
+      })
+    }
+  }, [excludingSessions, fetchSessionsData])
+
+  const handleRemoveExclusion = useCallback(async (session: AnalyticsSession) => {
+    if (excludingSessions.has(session.id)) return
+
+    setExcludingSessions(prev => new Set(prev).add(session.id))
+    
+    try {
+      const result = await analyticsService.removeExclusion(
+        session.userId,
+        session.id,
+        session.ipAddress,
+        undefined
+      )
+
+      if (result.success) {
+        setExcludedSessions(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(session.id)
+          return newSet
+        })
+        // Refresh data to reflect removal
+        await fetchSessionsData(true)
+      } else {
+        console.error('Failed to remove exclusion:', result.error)
+        alert(`Failed to remove exclusion: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error removing exclusion:', error)
+      alert('Error removing exclusion')
+    } finally {
+      setExcludingSessions(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(session.id)
+        return newSet
+      })
+    }
+  }, [excludingSessions, fetchSessionsData])
 
   const changeSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -91,7 +178,8 @@ export default function SessionsPage() {
 
   useEffect(() => {
     fetchSessionsData()
-  }, [fetchSessionsData])
+    loadExcludedSessions()
+  }, [fetchSessionsData, loadExcludedSessions])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -301,15 +389,40 @@ export default function SessionsPage() {
                     </div>
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <Tooltip content="View session details">
-                      <button 
-                        className="p-2 rounded hover:bg-gray-800" 
-                        aria-label="View details"
-                        onClick={() => setDrawerSession(session)}
-                      >
-                        <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
-                      </button>
-                    </Tooltip>
+                    <div className="flex items-center gap-2">
+                      {excludedSessions.has(session.id) ? (
+                        <Tooltip content="Remove from exclusions">
+                          <button 
+                            className="p-2 rounded hover:bg-gray-800 disabled:opacity-50" 
+                            aria-label="Remove exclusion"
+                            disabled={excludingSessions.has(session.id)}
+                            onClick={() => handleRemoveExclusion(session)}
+                          >
+                            <Icon path={mdiAccountPlus} className="h-5 w-5 text-green-400" />
+                          </button>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip content="Exclude from analytics">
+                          <button 
+                            className="p-2 rounded hover:bg-gray-800 disabled:opacity-50" 
+                            aria-label="Exclude session"
+                            disabled={excludingSessions.has(session.id)}
+                            onClick={() => handleExcludeSession(session)}
+                          >
+                            <Icon path={mdiAccountMinus} className="h-5 w-5 text-red-400" />
+                          </button>
+                        </Tooltip>
+                      )}
+                      <Tooltip content="View session details">
+                        <button 
+                          className="p-2 rounded hover:bg-gray-800" 
+                          aria-label="View details"
+                          onClick={() => setDrawerSession(session)}
+                        >
+                          <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
+                        </button>
+                      </Tooltip>
+                    </div>
                   </td>
                 </tr>
               ))}

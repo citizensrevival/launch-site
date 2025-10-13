@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { analyticsTracker } from '../lib/analyticsTracker'
 import { AnalyticsUser, AnalyticsSession } from '../lib/analyticsTypes'
+import { useAuth } from './AuthContext'
+import { analyticsService } from '../lib/AnalyticsService'
 
 interface AnalyticsContextType {
   user: AnalyticsUser | null
   session: AnalyticsSession | null
   isInitialized: boolean
+  isExcluded: boolean
   trackPageview: (url: string, path: string, title?: string) => Promise<void>
   trackEvent: (name: string, label?: string, properties?: Record<string, any>) => Promise<void>
   reset: () => Promise<void>
@@ -29,10 +32,78 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
   const [user, setUser] = useState<AnalyticsUser | null>(null)
   const [session, setSession] = useState<AnalyticsSession | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isExcluded, setIsExcluded] = useState(false)
+  const { user: authUser } = useAuth()
+
+  // Check if current path should be excluded from tracking
+  const shouldExcludePath = (path: string) => {
+    return path.startsWith('/manage')
+  }
+
+  // Check if user should be excluded from analytics
+  const checkUserExclusion = async () => {
+    if (!authUser) return false
+
+    try {
+      // Check if user is already excluded
+      const excluded = await analyticsService.isUserExcluded(
+        authUser.id,
+        undefined,
+        undefined,
+        undefined
+      )
+
+      if (excluded) {
+        return true
+      }
+
+      // Auto-exclude admin users
+      if (authUser.email && authUser.email.includes('@')) {
+        // Check if this is an admin user (you can customize this logic)
+        const isAdmin = authUser.email.endsWith('@yourdomain.com') || 
+                       authUser.email === 'admin@example.com' // Add your admin emails
+        
+        if (isAdmin) {
+          // Auto-exclude admin user
+          await analyticsService.excludeUser(
+            authUser.id,
+            undefined,
+            undefined,
+            undefined,
+            'Auto-excluded admin user',
+            'system'
+          )
+          return true
+        }
+      }
+
+      return false
+    } catch (error) {
+      console.error('Error checking user exclusion:', error)
+      return false
+    }
+  }
 
   useEffect(() => {
     const initializeAnalytics = async () => {
       try {
+        // Check if user should be excluded
+        const userExcluded = await checkUserExclusion()
+        setIsExcluded(userExcluded)
+
+        // If user is excluded, don't initialize analytics
+        if (userExcluded) {
+          setIsInitialized(true)
+          return
+        }
+
+        // Check if current path should be excluded
+        if (shouldExcludePath(window.location.pathname)) {
+          setIsExcluded(true)
+          setIsInitialized(true)
+          return
+        }
+
         await analyticsTracker.init()
         const context = analyticsTracker.getContext()
         setUser(context.user)
@@ -52,9 +123,37 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     }
 
     initializeAnalytics()
-  }, [])
+  }, [authUser])
+
+  // Handle route changes to check for /manage paths
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const currentPath = window.location.pathname
+      if (shouldExcludePath(currentPath)) {
+        setIsExcluded(true)
+      } else if (isExcluded && !shouldExcludePath(currentPath)) {
+        // Re-enable tracking if user navigates away from /manage
+        setIsExcluded(false)
+      }
+    }
+
+    // Listen for navigation changes
+    window.addEventListener('popstate', handleRouteChange)
+    
+    // Check current path on mount
+    handleRouteChange()
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange)
+    }
+  }, [isExcluded])
 
   const trackPageview = async (url: string, path: string, title?: string) => {
+    // Don't track if user is excluded or on excluded paths
+    if (isExcluded || shouldExcludePath(path)) {
+      return
+    }
+
     try {
       await analyticsTracker.trackPageview({
         url,
@@ -68,6 +167,11 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
   }
 
   const trackEvent = async (name: string, label?: string, properties?: Record<string, any>) => {
+    // Don't track if user is excluded
+    if (isExcluded) {
+      return
+    }
+
     try {
       await analyticsTracker.trackEvent({
         name,
@@ -93,6 +197,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     user,
     session,
     isInitialized,
+    isExcluded,
     trackPageview,
     trackEvent,
     reset

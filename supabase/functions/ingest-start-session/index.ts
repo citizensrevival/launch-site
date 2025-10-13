@@ -4,8 +4,27 @@ import { StartSessionReq, type StartSessionRes } from '../_lib/validation.ts'
 import { getClientIP, parseUserAgent, anonymizeIP } from '../_lib/identity.ts'
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-client-version, x-client-name',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
+  }
+
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+    return new Response('Method not allowed', { 
+      status: 405,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      }
+    })
   }
 
   try {
@@ -22,7 +41,7 @@ serve(async (req) => {
 
     // Insert session
     const { data, error } = await supabase
-      .from('analytics.sessions')
+      .from('sessions')
       .insert({
         id: sessionId,
         user_id: anonId, // This should be the user_id from upsert-user
@@ -48,10 +67,13 @@ serve(async (req) => {
 
     if (error) {
       console.error('Error creating session:', error)
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      })
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        })
     }
 
     const response: StartSessionRes = { 
@@ -59,22 +81,31 @@ serve(async (req) => {
       userId: anonId 
     }
     return new Response(JSON.stringify(response), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     })
 
   } catch (error) {
     console.error('Error in start-session:', error)
     
     if (error.name === 'ZodError') {
-      return new Response(JSON.stringify({ error: 'Invalid request data', details: error.issues }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+        return new Response(JSON.stringify({ error: 'Invalid request data', details: error.issues }), {
+          status: 400,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        })
     }
 
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
     })
   }
 })

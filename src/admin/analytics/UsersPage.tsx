@@ -21,7 +21,9 @@ import {
   mdiMapMarker,
   mdiMonitor,
   mdiCellphone,
-  mdiTablet
+  mdiTablet,
+  mdiAccountMinus,
+  mdiAccountPlus
 } from '@mdi/js'
 import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
@@ -42,6 +44,8 @@ export default function UsersPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [drawerUser, setDrawerUser] = useState<AnalyticsUser | null>(null)
   const [selectedSession, setSelectedSession] = useState<AnalyticsSession | null>(null)
+  const [excludedUsers, setExcludedUsers] = useState<Set<string>>(new Set())
+  const [excludingUsers, setExcludingUsers] = useState<Set<string>>(new Set())
 
   const getCacheKey = useCallback(() => `analytics-users-${timeRange}`, [timeRange])
 
@@ -82,8 +86,91 @@ export default function UsersPage() {
     // Clear cache for this data type to force refresh
     dispatch(clearCacheType('analytics'))
     await fetchUsersData(true)
+    await loadExcludedUsers()
     dispatch(setAnalyticsRefreshing(false))
   }, [dispatch, fetchUsersData])
+
+  const loadExcludedUsers = useCallback(async () => {
+    try {
+      const excluded = await analyticsService.getExcludedUsers()
+      const excludedUserIds = new Set(excluded.map(e => e.userId).filter(Boolean))
+      setExcludedUsers(excludedUserIds)
+    } catch (error) {
+      console.error('Failed to load excluded users:', error)
+    }
+  }, [])
+
+  const handleExcludeUser = useCallback(async (user: AnalyticsUser) => {
+    if (excludingUsers.has(user.id)) return
+
+    setExcludingUsers(prev => new Set(prev).add(user.id))
+    
+    try {
+      const result = await analyticsService.excludeUser(
+        user.id,
+        undefined,
+        undefined,
+        user.anonId,
+        'Manual exclusion from admin panel',
+        'admin'
+      )
+
+      if (result.success) {
+        setExcludedUsers(prev => new Set(prev).add(user.id))
+        // Refresh data to reflect exclusion
+        await fetchUsersData(true)
+      } else {
+        console.error('Failed to exclude user:', result.error)
+        alert(`Failed to exclude user: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error excluding user:', error)
+      alert('Error excluding user')
+    } finally {
+      setExcludingUsers(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(user.id)
+        return newSet
+      })
+    }
+  }, [excludingUsers, fetchUsersData])
+
+  const handleRemoveExclusion = useCallback(async (user: AnalyticsUser) => {
+    if (excludingUsers.has(user.id)) return
+
+    setExcludingUsers(prev => new Set(prev).add(user.id))
+    
+    try {
+      const result = await analyticsService.removeExclusion(
+        user.id,
+        undefined,
+        undefined,
+        user.anonId
+      )
+
+      if (result.success) {
+        setExcludedUsers(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(user.id)
+          return newSet
+        })
+        // Refresh data to reflect removal
+        await fetchUsersData(true)
+      } else {
+        console.error('Failed to remove exclusion:', result.error)
+        alert(`Failed to remove exclusion: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error removing exclusion:', error)
+      alert('Error removing exclusion')
+    } finally {
+      setExcludingUsers(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(user.id)
+        return newSet
+      })
+    }
+  }, [excludingUsers, fetchUsersData])
 
   const changeSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -96,7 +183,8 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchUsersData()
-  }, [fetchUsersData])
+    loadExcludedUsers()
+  }, [fetchUsersData, loadExcludedUsers])
 
   const breadcrumb = (
     <div className="flex items-center gap-2">
@@ -317,15 +405,40 @@ export default function UsersPage() {
                     />
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <Tooltip content="View user details">
-                      <button 
-                        className="p-2 rounded hover:bg-gray-800" 
-                        aria-label="View details"
-                        onClick={() => setDrawerUser(user)}
-                      >
-                        <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
-                      </button>
-                    </Tooltip>
+                    <div className="flex items-center gap-2">
+                      {excludedUsers.has(user.id) ? (
+                        <Tooltip content="Remove from exclusions">
+                          <button 
+                            className="p-2 rounded hover:bg-gray-800 disabled:opacity-50" 
+                            aria-label="Remove exclusion"
+                            disabled={excludingUsers.has(user.id)}
+                            onClick={() => handleRemoveExclusion(user)}
+                          >
+                            <Icon path={mdiAccountPlus} className="h-5 w-5 text-green-400" />
+                          </button>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip content="Exclude from analytics">
+                          <button 
+                            className="p-2 rounded hover:bg-gray-800 disabled:opacity-50" 
+                            aria-label="Exclude user"
+                            disabled={excludingUsers.has(user.id)}
+                            onClick={() => handleExcludeUser(user)}
+                          >
+                            <Icon path={mdiAccountMinus} className="h-5 w-5 text-red-400" />
+                          </button>
+                        </Tooltip>
+                      )}
+                      <Tooltip content="View user details">
+                        <button 
+                          className="p-2 rounded hover:bg-gray-800" 
+                          aria-label="View details"
+                          onClick={() => setDrawerUser(user)}
+                        >
+                          <Icon path={mdiCardAccountDetailsOutline} className="h-5 w-5 text-white" />
+                        </button>
+                      </Tooltip>
+                    </div>
                   </td>
                 </tr>
               ))}

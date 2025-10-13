@@ -8,6 +8,7 @@
  */
 export interface AnalyticsUser {
   anonId: string;             // Persistent UUID stored in localStorage or cookie
+  userId?: string;             // UUID returned from backend after upsert
   firstSeenAt?: string;       // ISO string
   lastSeenAt?: string;
   isReturning?: boolean;

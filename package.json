@@ -20,7 +20,8 @@
     "db:generate": "supabase gen types typescript --local > src/lib/database.types.ts",
     "db:studio": "supabase studio",
     "db:logs": "supabase logs",
-    "db:ensure": "supabase status || supabase start"
+    "db:ensure": "supabase status || supabase start",
+    "db:clear-analytics": "./scripts/clear-analytics.sh"
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {

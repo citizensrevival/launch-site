@@ -157,7 +157,7 @@ export class AnalyticsService {
     try {
       // Get unique users count
       const { data: usersData, error: usersError } = await supabase
-        .from('analytics.users')
+        .from('users')
         .select('id')
         .gte('first_seen_at', startDate)
         .lte('first_seen_at', endDate)
@@ -166,7 +166,7 @@ export class AnalyticsService {
 
       // Get sessions count
       const { data: sessionsData, error: sessionsError } = await supabase
-        .from('analytics.sessions')
+        .from('sessions')
         .select('id')
         .gte('started_at', startDate)
         .lte('started_at', endDate)
@@ -175,7 +175,7 @@ export class AnalyticsService {
 
       // Get pageviews count
       const { data: pageviewsData, error: pageviewsError } = await supabase
-        .from('analytics.pageviews')
+        .from('pageviews')
         .select('id')
         .gte('occurred_at', startDate)
         .lte('occurred_at', endDate)
@@ -184,7 +184,7 @@ export class AnalyticsService {
 
       // Get events count
       const { data: eventsData, error: eventsError } = await supabase
-        .from('analytics.events')
+        .from('events')
         .select('id')
         .gte('occurred_at', startDate)
         .lte('occurred_at', endDate)
@@ -193,7 +193,7 @@ export class AnalyticsService {
 
       // Get unique users over time
       const { data: usersOverTime, error: usersOverTimeError } = await supabase
-        .from('analytics.v_unique_users_daily')
+        .from('v_unique_users_daily')
         .select('day, unique_users')
         .gte('day', startDate.split('T')[0])
         .lte('day', endDate.split('T')[0])
@@ -203,7 +203,7 @@ export class AnalyticsService {
 
       // Get sessions over time
       const { data: sessionsOverTime, error: sessionsOverTimeError } = await supabase
-        .from('analytics.v_sessions_summary')
+        .from('v_sessions_summary')
         .select('started_at')
         .gte('started_at', startDate)
         .lte('started_at', endDate)
@@ -213,7 +213,7 @@ export class AnalyticsService {
 
       // Get top pages
       const { data: topPagesData, error: topPagesError } = await supabase
-        .from('analytics.pageviews')
+        .from('pageviews')
         .select('path')
         .gte('occurred_at', startDate)
         .lte('occurred_at', endDate)
@@ -222,7 +222,7 @@ export class AnalyticsService {
 
       // Get device breakdown
       const { data: deviceData, error: deviceError } = await supabase
-        .from('analytics.sessions')
+        .from('sessions')
         .select('device_category')
         .gte('started_at', startDate)
         .lte('started_at', endDate)
@@ -231,7 +231,7 @@ export class AnalyticsService {
 
       // Get new vs returning users
       const { data: newVsReturningData, error: newVsReturningError } = await supabase
-        .from('analytics.users')
+        .from('users')
         .select('first_seen_at, last_seen_at')
         .gte('first_seen_at', startDate)
         .lte('first_seen_at', endDate)
@@ -776,6 +776,108 @@ export class AnalyticsService {
     await this.delay(100)
     
     return this.testData.users.find(u => u.id === userId) || null
+  }
+
+  // ================================================
+  // Exclusion Management Methods
+  // ================================================
+
+  public async excludeUser(
+    userId?: string,
+    sessionId?: string,
+    ipAddress?: string,
+    anonId?: string,
+    reason: string = 'Manual exclusion',
+    excludedBy: string = 'admin'
+  ): Promise<{ success: boolean; id?: string; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('exclude_user', {
+        p_user_id: userId || null,
+        p_session_id: sessionId || null,
+        p_ip_address: ipAddress || null,
+        p_anon_id: anonId || null,
+        p_reason: reason,
+        p_excluded_by: excludedBy
+      })
+
+      if (error) throw error
+
+      return { success: true, id: data }
+    } catch (error) {
+      console.error('Error excluding user:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
+  public async removeExclusion(
+    userId?: string,
+    sessionId?: string,
+    ipAddress?: string,
+    anonId?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('remove_exclusion', {
+        p_user_id: userId || null,
+        p_session_id: sessionId || null,
+        p_ip_address: ipAddress || null,
+        p_anon_id: anonId || null
+      })
+
+      if (error) throw error
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error removing exclusion:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  }
+
+  public async isUserExcluded(
+    userId?: string,
+    sessionId?: string,
+    ipAddress?: string,
+    anonId?: string
+  ): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('is_user_excluded', {
+        p_user_id: userId || null,
+        p_session_id: sessionId || null,
+        p_ip_address: ipAddress || null,
+        p_anon_id: anonId || null
+      })
+
+      if (error) throw error
+
+      return data || false
+    } catch (error) {
+      console.error('Error checking user exclusion:', error)
+      return false
+    }
+  }
+
+  public async getExcludedUsers(): Promise<Array<{
+    id: string
+    userId?: string
+    sessionId?: string
+    ipAddress?: string
+    anonId?: string
+    reason: string
+    excludedBy: string
+    excludedAt: string
+  }>> {
+    try {
+      const { data, error } = await supabase
+        .from('excluded_users')
+        .select('*')
+        .order('excluded_at', { ascending: false })
+
+      if (error) throw error
+
+      return data || []
+    } catch (error) {
+      console.error('Error fetching excluded users:', error)
+      return []
+    }
   }
 
   // ================================================

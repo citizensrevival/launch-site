@@ -55,15 +55,21 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
 
     // Upsert user to backend
     try {
-      const { data } = await supabase.functions.invoke('ingest-upsert-user', {
+      const { data, error } = await supabase.functions.invoke('ingest-upsert-user', {
         body: {
           anonId: this.user.anonId,
           traits: {}
         }
       })
       
+      if (error) {
+        console.error('Failed to upsert user:', error)
+        return
+      }
+      
       if (data?.userId) {
-        this.user = { ...this.user, ...data }
+        // Store the userId (UUID) returned from the backend
+        this.user = { ...this.user, userId: data.userId }
       }
     } catch (error) {
       console.error('Failed to upsert user:', error)
@@ -71,8 +77,8 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
   }
 
   async startSession(): Promise<void> {
-    if (!this.user) {
-      throw new Error('User must be identified before starting session')
+    if (!this.user || !this.user.userId) {
+      throw new Error('User must be identified and have a userId before starting session')
     }
 
     const sessionId = this.generateSessionId()
@@ -81,7 +87,7 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
 
     this.session = {
       sessionId,
-      userId: this.user.anonId,
+      userId: this.user.userId, // Use the UUID userId from the backend
       startedAt: new Date().toISOString(),
       referrer: document.referrer || undefined,
       landingPage: window.location.href,
@@ -92,9 +98,9 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
 
     // Start session on backend
     try {
-      const { data } = await supabase.functions.invoke('ingest-start-session', {
+      const { data, error } = await supabase.functions.invoke('ingest-start-session', {
         body: {
-          anonId: this.user.anonId,
+          anonId: this.user.userId, // Use the UUID userId as anonId for the session
           sessionId: this.session.sessionId,
           landingPage: this.session.landingPage,
           landingPath: this.session.landingPath,
@@ -103,6 +109,11 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
           device: this.session.device
         }
       })
+
+      if (error) {
+        console.error('Failed to start session:', error)
+        return
+      }
 
       if (data?.sessionId) {
         this.session.sessionId = data.sessionId
@@ -205,7 +216,7 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
       const pageviews = events.filter(e => 'url' in e) as PageviewEvent[]
       const customEvents = events.filter(e => 'name' in e) as AnalyticsEvent[]
 
-      await supabase.functions.invoke('ingest-batch', {
+      const { error } = await supabase.functions.invoke('ingest-batch', {
         body: {
           pageviews: pageviews.map(pv => ({
             sessionId: this.session!.sessionId,
@@ -229,6 +240,12 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
           }))
         }
       })
+
+      if (error) {
+        console.error('Failed to flush events:', error)
+        // Re-add events to pending queue
+        this.pendingEvents.unshift(...events)
+      }
     } catch (error) {
       console.error('Failed to flush events:', error)
       // Re-add events to pending queue
@@ -341,12 +358,16 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
     this.heartbeatInterval = setInterval(async () => {
       if (this.session) {
         try {
-          await supabase.functions.invoke('ingest-heartbeat', {
+          const { error } = await supabase.functions.invoke('ingest-heartbeat', {
             body: {
               sessionId: this.session.sessionId,
               userId: this.session.userId
             }
           })
+          
+          if (error) {
+            console.error('Heartbeat failed:', error)
+          }
         } catch (error) {
           console.error('Heartbeat failed:', error)
         }
