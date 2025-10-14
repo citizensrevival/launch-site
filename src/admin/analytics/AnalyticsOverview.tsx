@@ -84,7 +84,8 @@ export default function AnalyticsOverview() {
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="text-2xl font-bold text-white">Analytics Overview</h1>
-        <p className="text-gray-400">Site engagement and user behavior insights</p>
+        <p className="text-gray-300">Authenticated users are excluded.</p>
+        <p className="text-gray-400">Site engagement and user behavior insights.</p>
       </div>
       <div className="flex items-center gap-2">
         <button

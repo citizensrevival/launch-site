@@ -45,39 +45,52 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
     if (!authUser) return false
 
     try {
-      // Check if user is already excluded
+      console.log('Checking user exclusion for user:', authUser.id)
+      
+      // Get the analytics context to get the anonId
+      const context = analyticsTracker.getContext()
+      const anonId = context.user?.anonId
+      
+      if (!anonId) {
+        console.log('No anonId found, cannot exclude user')
+        return false
+      }
+      
+      console.log('Using anonId for exclusion:', anonId)
+      
+      // Check if user is already excluded by anonId
       const excluded = await analyticsService.isUserExcluded(
-        authUser.id,
         undefined,
         undefined,
-        undefined
+        undefined,
+        anonId
       )
+
+      console.log('User already excluded:', excluded)
 
       if (excluded) {
         return true
       }
 
-      // Auto-exclude admin users
-      if (authUser.email && authUser.email.includes('@')) {
-        // Check if this is an admin user (you can customize this logic)
-        const isAdmin = authUser.email.endsWith('@yourdomain.com') || 
-                       authUser.email === 'admin@example.com' // Add your admin emails
-        
-        if (isAdmin) {
-          // Auto-exclude admin user
-          await analyticsService.excludeUser(
-            authUser.id,
-            undefined,
-            undefined,
-            undefined,
-            'Auto-excluded admin user',
-            'system'
-          )
-          return true
-        }
+      // Auto-exclude all logged-in users by anonId
+      console.log('Excluding user by anonId:', anonId)
+      const result = await analyticsService.excludeUser(
+        undefined,
+        undefined,
+        undefined,
+        anonId,
+        'Auto-excluded logged-in user',
+        'system'
+      )
+      
+      console.log('Exclusion result:', result)
+      
+      if (!result.success) {
+        console.error('Failed to exclude user:', result.error)
+        return false
       }
-
-      return false
+      
+      return true
     } catch (error) {
       console.error('Error checking user exclusion:', error)
       return false

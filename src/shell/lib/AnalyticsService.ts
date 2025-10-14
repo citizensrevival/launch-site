@@ -155,43 +155,7 @@ export class AnalyticsService {
     const endDate = dateRange.end.toISOString()
 
     try {
-      // Get unique users count
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('id')
-        .gte('first_seen_at', startDate)
-        .lte('first_seen_at', endDate)
-
-      if (usersError) throw usersError
-
-      // Get sessions count
-      const { data: sessionsData, error: sessionsError } = await supabase
-        .from('sessions')
-        .select('id')
-        .gte('started_at', startDate)
-        .lte('started_at', endDate)
-
-      if (sessionsError) throw sessionsError
-
-      // Get pageviews count
-      const { data: pageviewsData, error: pageviewsError } = await supabase
-        .from('pageviews')
-        .select('id')
-        .gte('occurred_at', startDate)
-        .lte('occurred_at', endDate)
-
-      if (pageviewsError) throw pageviewsError
-
-      // Get events count
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('id')
-        .gte('occurred_at', startDate)
-        .lte('occurred_at', endDate)
-
-      if (eventsError) throw eventsError
-
-      // Get unique users over time
+      // Get unique users over time (this view already filters excluded users)
       const { data: usersOverTime, error: usersOverTimeError } = await supabase
         .from('v_unique_users_daily')
         .select('day, unique_users')
@@ -201,7 +165,7 @@ export class AnalyticsService {
 
       if (usersOverTimeError) throw usersOverTimeError
 
-      // Get sessions over time
+      // Get sessions over time from filtered sessions
       const { data: sessionsOverTime, error: sessionsOverTimeError } = await supabase
         .from('v_sessions_summary')
         .select('started_at')
@@ -211,38 +175,36 @@ export class AnalyticsService {
 
       if (sessionsOverTimeError) throw sessionsOverTimeError
 
-      // Get top pages
+      // Get top pages from filtered pageviews
       const { data: topPagesData, error: topPagesError } = await supabase
-        .from('pageviews')
+        .from('v_analytics_pageviews')
         .select('path')
         .gte('occurred_at', startDate)
         .lte('occurred_at', endDate)
 
       if (topPagesError) throw topPagesError
 
-      // Get device breakdown
+      // Get device breakdown from filtered sessions
       const { data: deviceData, error: deviceError } = await supabase
-        .from('sessions')
+        .from('v_analytics_sessions')
         .select('device_category')
         .gte('started_at', startDate)
         .lte('started_at', endDate)
 
       if (deviceError) throw deviceError
 
-      // Get new vs returning users
+      // Get new vs returning users from filtered users
       const { data: newVsReturningData, error: newVsReturningError } = await supabase
-        .from('users')
-        .select('first_seen_at, last_seen_at')
-        .gte('first_seen_at', startDate)
-        .lte('first_seen_at', endDate)
+        .from('v_new_vs_returning_users')
+        .select('type, count')
 
       if (newVsReturningError) throw newVsReturningError
 
       // Process the data
-      const uniqueUsers = usersData?.length || 0
-      const totalSessions = sessionsData?.length || 0
-      const totalPageviews = pageviewsData?.length || 0
-      const totalEvents = eventsData?.length || 0
+      const uniqueUsers = usersOverTime?.reduce((sum, day) => sum + day.unique_users, 0) || 0
+      const totalSessions = sessionsOverTime?.length || 0
+      const totalPageviews = topPagesData?.length || 0
+      const totalEvents = 0 // Will be calculated from events view
 
       // Process unique users over time
       const uniqueUsersOverTime = usersOverTime?.map(item => ({
@@ -286,18 +248,10 @@ export class AnalyticsService {
       }))
 
       // Process new vs returning users
-      const newUsers = newVsReturningData?.filter(user => {
-        const firstSeen = new Date(user.first_seen_at)
-        const lastSeen = new Date(user.last_seen_at)
-        return firstSeen.getTime() === lastSeen.getTime() // Same day = new user
-      }).length || 0
-
-      const returningUsers = uniqueUsers - newUsers
-
-      const newVsReturning = [
-        { type: 'New Users', count: newUsers },
-        { type: 'Returning Users', count: returningUsers }
-      ]
+      const newVsReturning = newVsReturningData?.map(item => ({
+        type: item.type,
+        count: item.count
+      })) || []
 
       return {
         uniqueUsers,
@@ -348,27 +302,34 @@ export class AnalyticsService {
     const endDate = dateRange.end.toISOString()
 
     try {
-      // Get users with their sessions
+      // Get users analytics data (already filtered for excluded users)
       const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select(`
-          id,
-          anon_id,
-          first_seen_at,
-          last_seen_at,
-          first_referrer,
-          last_referrer,
-          first_utm_source,
-          last_utm_source,
-          properties
-        `)
+        .from('v_users_analytics')
+        .select('*')
         .gte('first_seen_at', startDate)
         .lte('first_seen_at', endDate)
         .order('first_seen_at', { ascending: false })
 
       if (usersError) throw usersError
 
-      // Get sessions for each user
+      // Get new users over time from the dedicated view
+      const { data: newUsersOverTime, error: newUsersError } = await supabase
+        .from('v_new_users_daily')
+        .select('day, new_users')
+        .gte('day', startDate.split('T')[0])
+        .lte('day', endDate.split('T')[0])
+        .order('day')
+
+      if (newUsersError) throw newUsersError
+
+      // Get new vs returning users from the dedicated view
+      const { data: newVsReturningData, error: newVsReturningError } = await supabase
+        .from('v_new_vs_returning_users')
+        .select('type, count')
+
+      if (newVsReturningError) throw newVsReturningError
+
+      // Get user sessions for detailed view
       const { data: sessionsData, error: sessionsError } = await supabase
         .from('v_sessions_summary')
         .select('*')
@@ -378,77 +339,34 @@ export class AnalyticsService {
 
       if (sessionsError) throw sessionsError
 
-      // Get events to check for lead submissions
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('user_id, name')
-        .gte('occurred_at', startDate)
-        .lte('occurred_at', endDate)
-        .eq('name', 'lead_submitted')
-
-      if (eventsError) throw eventsError
-
-      // Get new users over time by querying users directly
-      const { data: newUsersOverTime, error: newUsersError } = await supabase
-        .from('users')
-        .select('first_seen_at')
-        .gte('first_seen_at', startDate)
-        .lte('first_seen_at', endDate)
-        .order('first_seen_at')
-
-      if (newUsersError) throw newUsersError
-
-      // Group users by day to create new users over time data
-      const usersByDay = new Map<string, number>()
-      newUsersOverTime?.forEach(user => {
-        const day = user.first_seen_at.split('T')[0]
-        usersByDay.set(day, (usersByDay.get(day) || 0) + 1)
-      })
-
-      // Create array of all days in range with new user counts
-      const startDateObj = new Date(startDate)
-      const endDateObj = new Date(endDate)
-      const newUsersOverTimeData = []
-      
-      for (let d = new Date(startDateObj); d <= endDateObj; d.setDate(d.getDate() + 1)) {
-        const dayStr = d.toISOString().split('T')[0]
-        newUsersOverTimeData.push({
-          day: dayStr,
-          new_users: usersByDay.get(dayStr) || 0
-        })
-      }
-
       // Process users data
       const users: AnalyticsUser[] = usersData?.map(user => {
         const userSessions = sessionsData?.filter(session => session.user_id === user.id) || []
-        const hasLead = eventsData?.some(event => event.user_id === user.id) || false
         
         return {
           id: user.id,
           anonId: user.anon_id,
           firstSeenAt: user.first_seen_at,
           lastSeenAt: user.last_seen_at,
-          sessions: userSessions.length,
-          avgDuration: userSessions.length > 0 
-            ? userSessions.reduce((sum, session) => sum + (session.duration || 0), 0) / userSessions.length 
-            : 0,
-          hasLead,
+          sessions: user.sessions,
+          avgDuration: user.avg_duration,
+          hasLead: user.has_lead,
           firstReferrer: user.first_referrer,
           lastReferrer: user.last_referrer,
           firstUtmSource: user.first_utm_source,
           lastUtmSource: user.last_utm_source,
-          deviceCategory: user.properties?.device_category || 'desktop',
-          browserName: user.properties?.browser_name || 'Unknown',
-          osName: user.properties?.os_name || 'Unknown',
-          geoCountry: user.properties?.geo_country || 'Unknown',
-          geoCity: user.properties?.geo_city || 'Unknown',
+          deviceCategory: user.device_category || 'desktop',
+          browserName: user.browser_name || 'Unknown',
+          osName: user.os_name || 'Unknown',
+          geoCountry: user.geo_country || 'Unknown',
+          geoCity: user.geo_city || 'Unknown',
           userSessions: userSessions.map(session => ({
-            id: session.id,
+            id: session.session_id,
             startedAt: session.started_at,
             endedAt: session.ended_at,
-            duration: session.duration || 0,
-            pageviews: session.pageviews || 0,
-            events: session.events || 0,
+            duration: session.duration_seconds || 0,
+            pageviews: session.pageviews_count || 0,
+            events: session.events_count || 0,
             landingPage: session.landing_page,
             deviceCategory: session.device_category || 'desktop',
             geoCountry: session.geo_country,
@@ -457,10 +375,22 @@ export class AnalyticsService {
         }
       }) || []
 
+      // Process new users over time data
+      const newUsersOverTimeData = newUsersOverTime?.map(item => ({
+        day: item.day,
+        new_users: item.new_users
+      })) || []
+
+      // Process new vs returning users
+      const newVsReturning = newVsReturningData?.map(item => ({
+        type: item.type,
+        count: item.count
+      })) || []
+
       return {
         users,
         newUsersOverTime: newUsersOverTimeData,
-        newVsReturning: this.getNewVsReturningUsers(users)
+        newVsReturning
       }
     } catch (error) {
       console.error('Error fetching users data:', error)
@@ -623,7 +553,7 @@ export class AnalyticsService {
     const endDate = dateRange.end.toISOString()
 
     try {
-      // Get sessions data
+      // Get sessions data from filtered view
       const { data: sessionsData, error: sessionsError } = await supabase
         .from('v_sessions_summary')
         .select('*')
@@ -633,14 +563,29 @@ export class AnalyticsService {
 
       if (sessionsError) throw sessionsError
 
+      // Get sessions per user distribution from dedicated view
+      const { data: sessionsPerUserData, error: sessionsPerUserError } = await supabase
+        .from('v_sessions_per_user_distribution')
+        .select('sessions, users')
+
+      if (sessionsPerUserError) throw sessionsPerUserError
+
+      // Get session metrics from dedicated view
+      const { data: sessionMetricsData, error: sessionMetricsError } = await supabase
+        .from('v_session_metrics')
+        .select('total_sessions, avg_duration, avg_pageviews')
+        .single()
+
+      if (sessionMetricsError) throw sessionMetricsError
+
       const sessions: AnalyticsSession[] = sessionsData?.map(session => ({
-        id: session.id,
+        id: session.session_id,
         userId: session.user_id,
         startedAt: session.started_at,
         endedAt: session.ended_at,
-        duration: session.duration || 0,
-        pageviews: session.pageviews || 0,
-        events: session.events || 0,
+        duration: session.duration_seconds || 0,
+        pageviews: session.pageviews_count || 0,
+        events: session.events_count || 0,
         landingPage: session.landing_page,
         deviceCategory: session.device_category || 'desktop',
         browserName: session.browser_name || 'Unknown',
@@ -649,11 +594,16 @@ export class AnalyticsService {
         geoCity: session.geo_city
       })) || []
 
+      const sessionsPerUser = sessionsPerUserData?.map(item => ({
+        sessions: item.sessions,
+        users: item.users
+      })) || []
+
       return {
         sessions,
-        sessionsPerUser: this.getSessionsPerUserDistribution(sessions),
-        avgSessionLength: this.calculateAverageSessionLength(sessions),
-        avgPagesPerSession: this.calculateAveragePagesPerSession(sessions)
+        sessionsPerUser,
+        avgSessionLength: sessionMetricsData?.avg_duration || 0,
+        avgPagesPerSession: sessionMetricsData?.avg_pageviews || 0
       }
     } catch (error) {
       console.error('Error fetching sessions data:', error)
@@ -681,47 +631,43 @@ export class AnalyticsService {
     const endDate = dateRange.end.toISOString()
 
     try {
-      // Get events data
+      // Get events analytics from filtered view
       const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
+        .from('v_events_analytics')
         .select('*')
-        .gte('occurred_at', startDate)
-        .lte('occurred_at', endDate)
-        .order('occurred_at', { ascending: false })
+        .order('count', { ascending: false })
 
       if (eventsError) throw eventsError
 
-      // Get event trends data from database
+      // Get event trends from filtered view
       const { data: eventTrendsData, error: eventTrendsError } = await supabase
-        .from('events')
-        .select('name, occurred_at')
-        .gte('occurred_at', startDate)
-        .lte('occurred_at', endDate)
-        .order('occurred_at')
+        .from('v_event_trends_daily')
+        .select('day, name, count')
+        .gte('day', startDate.split('T')[0])
+        .lte('day', endDate.split('T')[0])
+        .order('day')
 
       if (eventTrendsError) throw eventTrendsError
 
       const events: AnalyticsEvent[] = eventsData?.map(event => ({
-        id: event.id,
-        userId: event.user_id,
-        sessionId: event.session_id,
         name: event.name,
         label: event.name,
-        properties: event.properties || {},
-        occurredAt: event.occurred_at,
-        lastOccurred: event.occurred_at,
-        count: 1,
-        uniqueUsers: 1,
-        conversionRate: 0
+        count: event.count,
+        uniqueUsers: event.unique_users,
+        conversionRate: 0, // Will be calculated separately
+        lastOccurred: event.last_occurred
       })) || []
 
-      // Process real event trends data
-      const eventTrends = this.processEventTrendsData(eventTrendsData || [], dateRange)
+      // Process event trends data
+      const eventTrends = this.processEventTrendsFromView(eventTrendsData || [], dateRange)
 
       return {
         events,
         eventTrends,
-        topEvents: this.getTopEvents(events)
+        topEvents: events.slice(0, 4).map(event => ({
+          name: event.name,
+          count: event.count
+        }))
       }
     } catch (error) {
       console.error('Error fetching events data:', error)
@@ -747,101 +693,52 @@ export class AnalyticsService {
     const endDate = dateRange.end.toISOString()
 
     try {
-      // Get sessions data for referrer analysis
-      const { data: sessionsData, error: sessionsError } = await supabase
-        .from('sessions')
-        .select('referrer, started_at, user_id, id')
-        .gte('started_at', startDate)
-        .lte('started_at', endDate)
-        .not('referrer', 'is', null)
+      // Get referrer analytics from filtered view
+      const { data: referrersData, error: referrersError } = await supabase
+        .from('v_referrers_analytics')
+        .select('*')
+        .order('total_sessions', { ascending: false })
 
-      if (sessionsError) throw sessionsError
+      if (referrersError) throw referrersError
 
-      // Get events for conversion tracking
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('session_id, name')
-        .gte('occurred_at', startDate)
-        .lte('occurred_at', endDate)
-        .eq('name', 'lead_submitted')
+      // Get referral traffic over time from filtered view
+      const { data: referralTrafficData, error: referralTrafficError } = await supabase
+        .from('v_referral_traffic_daily')
+        .select('day, referrals')
+        .gte('day', startDate.split('T')[0])
+        .lte('day', endDate.split('T')[0])
+        .order('day')
 
-      if (eventsError) throw eventsError
+      if (referralTrafficError) throw referralTrafficError
 
-      // Process referrer data
-      const referrerMap = new Map<string, any>()
-      
-      sessionsData?.forEach(session => {
-        if (!session.referrer) return
-        
-        const domain = new URL(session.referrer).hostname
-        const existing = referrerMap.get(domain) || {
-          domain,
-          totalSessions: 0,
-          totalUsers: new Set(),
-          conversions: 0,
-          totalDuration: 0,
-          totalPageviews: 0,
-          lastSeen: session.started_at
-        }
-        
-        existing.totalSessions++
-        existing.totalUsers.add(session.user_id)
-        // Note: duration and pageviews are not available in sessions table
-        // We'll need to calculate these from other sources or use defaults
-        existing.totalDuration += 0 // Default duration
-        existing.totalPageviews += 1 // Default to 1 pageview per session
-        
-        if (session.started_at > existing.lastSeen) {
-          existing.lastSeen = session.started_at
-        }
-        
-        referrerMap.set(domain, existing)
-      })
+      const referrers: Referrer[] = referrersData?.map(ref => ({
+        domain: ref.domain,
+        totalSessions: ref.total_sessions,
+        totalUsers: ref.total_users,
+        conversions: ref.conversions,
+        avgSessionDuration: ref.avg_session_duration,
+        bounceRate: ref.bounce_rate,
+        pagesPerSession: ref.pages_per_session,
+        lastSeen: ref.last_seen,
+        trafficShare: ref.traffic_share
+      })) || []
 
-      // Count conversions
-      eventsData?.forEach(event => {
-        const session = sessionsData?.find(s => s.id === event.session_id)
-        if (session?.referrer) {
-          const domain = new URL(session.referrer).hostname
-          const referrer = referrerMap.get(domain)
-          if (referrer) {
-            referrer.conversions++
-          }
-        }
-      })
-
-      const referrers: Referrer[] = Array.from(referrerMap.values()).map(ref => {
-        const totalUsers = ref.totalUsers.size
-        const avgSessionDuration = ref.totalSessions > 0 ? ref.totalDuration / ref.totalSessions : 0
-        const bounceRate = ref.totalSessions > 0 ? ((ref.totalSessions - ref.totalPageviews) / ref.totalSessions) * 100 : 0
-        const pagesPerSession = ref.totalSessions > 0 ? ref.totalPageviews / ref.totalSessions : 0
-        const totalSessions = sessionsData?.length || 0
-        const trafficShare = totalSessions > 0 ? (ref.totalSessions / totalSessions) * 100 : 0
-
-        return {
-          domain: ref.domain,
-          totalSessions: ref.totalSessions,
-          totalUsers,
-          conversions: ref.conversions,
-          avgSessionDuration: Math.round(avgSessionDuration),
-          bounceRate: Math.round(bounceRate * 10) / 10,
-          pagesPerSession: Math.round(pagesPerSession * 10) / 10,
-          lastSeen: ref.lastSeen,
-          trafficShare: Math.round(trafficShare * 10) / 10
-        }
-      }).sort((a, b) => b.totalSessions - a.totalSessions)
+      const referralTrafficOverTime = referralTrafficData?.map(item => ({
+        day: item.day,
+        referrals: item.referrals
+      })) || []
 
       const totalReferrals = referrers.reduce((sum, ref) => sum + ref.totalSessions, 0)
       
       return {
         referrers,
-        referralTrafficOverTime: this.processReferralTrafficOverTime(sessionsData || [], dateRange),
+        referralTrafficOverTime,
         trafficShare: referrers.map(ref => ({
           source: ref.domain,
           count: ref.totalSessions
         })),
         totalReferrals,
-        referralTrafficPercentage: totalReferrals > 0 ? (totalReferrals / (sessionsData?.length || 1)) * 100 : 0,
+        referralTrafficPercentage: totalReferrals > 0 ? (totalReferrals / (referrers.length || 1)) * 100 : 0,
         topReferrers: referrers.slice(0, 10).map(ref => ({
           domain: ref.domain,
           sessions: ref.totalSessions
@@ -1301,6 +1198,42 @@ export class AnalyticsService {
         eventsByDay[day] = {}
       }
       eventsByDay[day][event.name] = (eventsByDay[day][event.name] || 0) + 1
+    })
+    
+    // Create array of all days in range with event counts
+    const days = []
+    const current = new Date(dateRange.start)
+    
+    while (current <= dateRange.end) {
+      const dayStr = current.toISOString().split('T')[0]
+      const dayEvents = eventsByDay[dayStr] || {}
+      
+      days.push({
+        day: dayStr,
+        lead_form_submitted: dayEvents.lead_form_submitted || 0,
+        cta_click: dayEvents.cta_click || 0,
+        video_play: dayEvents.video_play || 0,
+        download_started: dayEvents.download_started || 0,
+        lead_submitted: dayEvents.lead_submitted || 0,
+        page_view: dayEvents.page_view || 0,
+        session_start: dayEvents.session_start || 0,
+        session_end: dayEvents.session_end || 0
+      })
+      current.setDate(current.getDate() + 1)
+    }
+    
+    return days
+  }
+
+  private processEventTrendsFromView(eventTrendsData: Array<{ day: string; name: string; count: number }>, dateRange: { start: Date; end: Date }): Array<{ day: string; [key: string]: number | string }> {
+    // Group events by day and event type
+    const eventsByDay: { [day: string]: { [eventName: string]: number } } = {}
+    
+    eventTrendsData.forEach(event => {
+      if (!eventsByDay[event.day]) {
+        eventsByDay[event.day] = {}
+      }
+      eventsByDay[event.day][event.name] = event.count
     })
     
     // Create array of all days in range with event counts
