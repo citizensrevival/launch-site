@@ -3,13 +3,6 @@ import { AdminLayout } from '../AdminLayout';
 export function AssetsPage() {
   return (
     <AdminLayout
-      breadcrumb={
-        <div className="flex items-center gap-2">
-          <span>Content</span>
-          <span className="text-gray-600">›</span>
-          <span className="text-gray-300">Assets</span>
-        </div>
-      }
       pageHeader={
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">Assets</h1>

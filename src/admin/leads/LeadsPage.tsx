@@ -303,13 +303,6 @@ export default function LeadsPage() {
     </div>
   )
 
-  const breadcrumb = (
-      <div className="flex items-center gap-2">
-        <a href="/manage" className="text-white hover:text-gray-200">Dashboard</a>
-        <span className="text-gray-400">›</span>
-        <span className="text-white">Leads</span>
-      </div>
-  )
 
   const headerCell = (label: string, key: SortKey) => (
     <th className="sticky top-0 z-10 bg-gray-800 px-3 py-2 text-left text-xs font-semibold text-white uppercase tracking-wider">
@@ -400,7 +393,7 @@ export default function LeadsPage() {
   }
 
   return (
-    <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+    <AdminLayout pageHeader={pageHeader}>
       {/* Desktop Table View */}
       <div className="hidden md:block rounded-lg overflow-hidden border border-gray-800">
         <div className="overflow-auto">

@@ -15,6 +15,7 @@ const ReferrersPage = lazy(() => import('./analytics').then(module => ({ default
 const PagesPage = lazy(() => import('./content').then(module => ({ default: module.PagesPage })));
 const ContentBlocksPage = lazy(() => import('./content').then(module => ({ default: module.ContentBlocksPage })));
 const AssetsPage = lazy(() => import('./content').then(module => ({ default: module.AssetsPage })));
+const SettingsPage = lazy(() => import('./content').then(module => ({ default: module.SettingsPage })));
 
 export function AdminRoute() {
   const { user, loading } = useAuth();
@@ -49,6 +50,7 @@ export function AdminRoute() {
         <Route path="content/pages" element={<PagesPage />} />
         <Route path="content/blocks" element={<ContentBlocksPage />} />
         <Route path="content/assets" element={<AssetsPage />} />
+        <Route path="content/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/manage" replace />} />
       </Routes>
     </Suspense>

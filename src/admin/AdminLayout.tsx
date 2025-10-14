@@ -13,12 +13,12 @@ import {
   mdiMenu,
   mdiMagnify,
   mdiChartLine,
-  mdiWeb
+  mdiWeb,
+  mdiCog
 } from '@mdi/js';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  breadcrumb?: React.ReactNode;
   pageHeader?: React.ReactNode;
 }
 
@@ -36,11 +36,29 @@ function getInitialsFromEmail(email?: string | null): string {
   return initials || 'U';
 }
 
-export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutProps) {
+export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
   const dispatch = useAppDispatch();
   const globalSearch = useAppSelector((state) => state.admin.globalSearch);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const [currentPath, setCurrentPath] = useState('');
+
+  // Get current path for active navigation
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
+
+  // Helper function to check if a navigation item is active
+  const isActive = (href: string) => {
+    if (href === '/manage') {
+      return currentPath === '/manage';
+    }
+    // For analytics overview, only match exact path
+    if (href === '/manage/analytics') {
+      return currentPath === '/manage/analytics';
+    }
+    return currentPath.startsWith(href);
+  };
 
   const storageKey = useMemo(() => `admin_sidebar_groups_${user?.email || 'anon'}`, [user?.email]);
   const [openGroups, setOpenGroups] = useState<Record<SidebarGroupKey, boolean>>({ primary: true, analytics: true, content: true, settings: true });
@@ -99,6 +117,9 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
     { name: 'Assets', href: '/manage/content/assets', icon: (
       <Icon path={mdiChartLine} className="h-5 w-5" />
     ) },
+    { name: 'Site Settings', href: '/manage/content/settings', icon: (
+      <Icon path={mdiCog} className="h-5 w-5" />
+    ) },
   ];
 
 
@@ -149,12 +170,26 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 <Icon path={mdiChevronDown} className={classNames('h-4 w-4 transform transition-transform', openGroups.primary && 'rotate-180')} />
               </button>
               <nav className={classNames('px-2 space-y-1', openGroups.primary ? 'block' : 'hidden')}>
-                {primaryItems.map((item) => (
-                  <a key={item.name} href={item.href} className="group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <span className="text-gray-400 group-hover:text-gray-200">{item.icon}</span>
-                    {item.name}
-                  </a>
-                ))}
+                {primaryItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <a 
+                      key={item.name} 
+                      href={item.href} 
+                      className={classNames(
+                        'group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                        active 
+                          ? 'bg-gray-700 text-white' 
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      )}
+                    >
+                      <span className={classNames(
+                        active ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'
+                      )}>{item.icon}</span>
+                      {item.name}
+                    </a>
+                  );
+                })}
               </nav>
             </div>
 
@@ -167,12 +202,26 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 <Icon path={mdiChevronDown} className={classNames('h-4 w-4 transform transition-transform', openGroups.analytics && 'rotate-180')} />
               </button>
               <nav className={classNames('px-2 space-y-1', openGroups.analytics ? 'block' : 'hidden')}>
-                {analyticsItems.map((item) => (
-                  <a key={item.name} href={item.href} className="group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <span className="text-gray-400 group-hover:text-gray-200">{item.icon}</span>
-                    {item.name}
-                  </a>
-                ))}
+                {analyticsItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <a 
+                      key={item.name} 
+                      href={item.href} 
+                      className={classNames(
+                        'group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                        active 
+                          ? 'bg-gray-700 text-white' 
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      )}
+                    >
+                      <span className={classNames(
+                        active ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'
+                      )}>{item.icon}</span>
+                      {item.name}
+                    </a>
+                  );
+                })}
               </nav>
             </div>
 
@@ -185,12 +234,26 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
                 <Icon path={mdiChevronDown} className={classNames('h-4 w-4 transform transition-transform', openGroups.content && 'rotate-180')} />
               </button>
               <nav className={classNames('px-2 space-y-1', openGroups.content ? 'block' : 'hidden')}>
-                {contentItems.map((item) => (
-                  <a key={item.name} href={item.href} className="group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <span className="text-gray-400 group-hover:text-gray-200">{item.icon}</span>
-                    {item.name}
-                  </a>
-                ))}
+                {contentItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <a 
+                      key={item.name} 
+                      href={item.href} 
+                      className={classNames(
+                        'group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                        active 
+                          ? 'bg-gray-700 text-white' 
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      )}
+                    >
+                      <span className={classNames(
+                        active ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'
+                      )}>{item.icon}</span>
+                      {item.name}
+                    </a>
+                  );
+                })}
               </nav>
             </div>
 
@@ -309,20 +372,6 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
               </div>
             </div>
           </div>
-          {/* Breadcrumbs */}
-          <div className="px-4 sm:px-6 lg:px-8 py-2 bg-gray-850 border-t border-b border-gray-700">
-            <div className="max-w-7xl mx-auto">
-              <nav className="text-sm text-gray-400" aria-label="Breadcrumb">
-                {breadcrumb || (
-                  <div className="flex items-center gap-2">
-                    <span>Dashboard</span>
-                    <span className="text-gray-600">›</span>
-                    <span className="text-gray-300">Home</span>
-                  </div>
-                )}
-              </nav>
-            </div>
-          </div>
         </div>
 
         {/* Page content */}
@@ -340,19 +389,51 @@ export function AdminLayout({ children, breadcrumb, pageHeader }: AdminLayoutPro
         {/* Mobile bottom bar */}
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-gray-800 border-t border-gray-700">
           <div className="grid grid-cols-4">
-            <a href="/manage" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
+            <a 
+              href="/manage" 
+              className={classNames(
+                'flex flex-col items-center justify-center py-2 text-xs transition-colors',
+                isActive('/manage') 
+                  ? 'text-gray-200' 
+                  : 'text-gray-300 hover:text-white'
+              )}
+            >
               <Icon path={mdiHome} className="h-5 w-5" />
               <span>Dashboard</span>
             </a>
-            <a href="/manage/leads" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
+            <a 
+              href="/manage/leads" 
+              className={classNames(
+                'flex flex-col items-center justify-center py-2 text-xs transition-colors',
+                isActive('/manage/leads') 
+                  ? 'text-gray-200' 
+                  : 'text-gray-300 hover:text-white'
+              )}
+            >
               <Icon path={mdiAccountGroup} className="h-5 w-5" />
               <span>Leads</span>
             </a>
-            <a href="/manage/analytics" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
+            <a 
+              href="/manage/analytics" 
+              className={classNames(
+                'flex flex-col items-center justify-center py-2 text-xs transition-colors',
+                isActive('/manage/analytics') 
+                  ? 'text-gray-200' 
+                  : 'text-gray-300 hover:text-white'
+              )}
+            >
               <Icon path={mdiChartLine} className="h-5 w-5" />
               <span>Analytics</span>
             </a>
-            <a href="/manage/content/pages" className="flex flex-col items-center justify-center py-2 text-xs text-gray-300 hover:text-white">
+            <a 
+              href="/manage/content/pages" 
+              className={classNames(
+                'flex flex-col items-center justify-center py-2 text-xs transition-colors',
+                isActive('/manage/content') 
+                  ? 'text-gray-200' 
+                  : 'text-gray-300 hover:text-white'
+              )}
+            >
               <Icon path={mdiWeb} className="h-5 w-5" />
               <span>Content</span>
             </a>

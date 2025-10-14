@@ -62,13 +62,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const breadcrumb = (
-    <div className="flex items-center gap-2">
-      <a href="/manage" className="hover:text-gray-200">
-        Dashboard
-      </a>
-    </div>
-  )
 
   const pageHeader = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -115,7 +108,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+    <AdminLayout pageHeader={pageHeader}>
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <a
           href="/manage/leads?type=subscriber"

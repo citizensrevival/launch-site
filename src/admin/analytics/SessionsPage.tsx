@@ -182,15 +182,6 @@ export default function SessionsPage() {
     loadExcludedSessions()
   }, [fetchSessionsData, loadExcludedSessions])
 
-  const breadcrumb = (
-    <div className="flex items-center gap-2">
-      <a href="/manage" className="text-white hover:text-gray-200">Dashboard</a>
-      <span className="text-gray-400">›</span>
-      <a href="/manage/analytics" className="text-white hover:text-gray-200">Analytics</a>
-      <span className="text-gray-400">›</span>
-      <span className="text-white">Sessions</span>
-    </div>
-  )
 
   const pageHeader = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -213,7 +204,7 @@ export default function SessionsPage() {
 
   if (loading) {
     return (
-      <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+      <AdminLayout pageHeader={pageHeader}>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Icon path={mdiRefresh} className="h-8 w-8 text-gray-400 animate-spin mx-auto mb-4" />
@@ -226,7 +217,7 @@ export default function SessionsPage() {
 
   if (!data) {
     return (
-      <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+      <AdminLayout pageHeader={pageHeader}>
         <div className="text-center py-12">
           <p className="text-gray-400">Failed to load sessions data</p>
         </div>
@@ -271,7 +262,7 @@ export default function SessionsPage() {
   )
 
   return (
-    <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+    <AdminLayout pageHeader={pageHeader}>
       {/* KPI Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">

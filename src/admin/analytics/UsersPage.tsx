@@ -187,15 +187,6 @@ export default function UsersPage() {
     loadExcludedUsers()
   }, [fetchUsersData, loadExcludedUsers])
 
-  const breadcrumb = (
-    <div className="flex items-center gap-2">
-      <a href="/manage" className="text-white hover:text-gray-200">Dashboard</a>
-      <span className="text-gray-400">›</span>
-      <a href="/manage/analytics" className="text-white hover:text-gray-200">Analytics</a>
-      <span className="text-gray-400">›</span>
-      <span className="text-white">Users</span>
-    </div>
-  )
 
   const pageHeader = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -218,7 +209,7 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+      <AdminLayout pageHeader={pageHeader}>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Icon path={mdiRefresh} className="h-8 w-8 text-gray-400 animate-spin mx-auto mb-4" />
@@ -231,7 +222,7 @@ export default function UsersPage() {
 
   if (!data) {
     return (
-      <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+      <AdminLayout pageHeader={pageHeader}>
         <div className="text-center py-12">
           <p className="text-gray-400">Failed to load users data</p>
         </div>
@@ -284,7 +275,7 @@ export default function UsersPage() {
   )
 
   return (
-    <AdminLayout breadcrumb={breadcrumb} pageHeader={pageHeader}>
+    <AdminLayout pageHeader={pageHeader}>
       {/* Time Range Toolbar */}
       <div className="mb-6">
         <TimeRangeToolbar 

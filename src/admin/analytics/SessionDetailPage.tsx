@@ -6,15 +6,6 @@ export default function SessionDetailPage() {
 
   return (
     <AdminLayout
-      breadcrumb={
-        <div className="flex items-center gap-2">
-          <a href="/manage/analytics" className="text-gray-400 hover:text-gray-300">Analytics</a>
-          <span className="text-gray-600">›</span>
-          <a href="/manage/analytics/sessions" className="text-gray-400 hover:text-gray-300">Sessions</a>
-          <span className="text-gray-600">›</span>
-          <span className="text-gray-300">Session {id}</span>
-        </div>
-      }
       pageHeader={
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">Session Detail</h1>
