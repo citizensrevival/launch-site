@@ -65,3 +65,160 @@
 .sidebar a {
   color: white !important;
 }
+
+/* Route transition animations */
+.route-transition {
+  animation: fadeIn 0.1s ease-out;
+  background-color: #111827; /* bg-gray-900 */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+    background-color: #111827; /* bg-gray-900 */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: #111827; /* bg-gray-900 */
+  }
+}
+
+/* Smooth transitions for route changes */
+.route-transition > * {
+  transition: opacity 0.1s ease-out;
+}
+
+/* Prevent flash of unstyled content */
+body {
+  transition: opacity 0.1s ease-in-out;
+}
+
+body.content-loaded {
+  opacity: 1;
+}
+
+/* Route transition animations with dark background only during transition */
+.route-transition {
+  animation: fadeIn 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Disable scrolling during transition */
+.route-transition.animating {
+  overflow: hidden;
+  height: 100vh;
+}
+
+.route-transition.animating body {
+  overflow: hidden;
+}
+
+.route-transition::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #111827; /* bg-gray-900 */
+  z-index: -1;
+  animation: fadeOut 0.3s ease-out 0.05s forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Public pages should have white background */
+.route-transition.public-route {
+  background-color: white;
+}
+
+.route-transition.public-route::before {
+  background-color: white;
+}
+
+/* Admin pages keep dark background */
+.route-transition.admin-route {
+  background-color: #111827;
+}
+
+.route-transition.admin-route::before {
+  background-color: #0f1419; /* Slightly darker than bg-gray-900 */
+  animation: fadeToDark 0.3s ease-out 0.05s forwards;
+}
+
+@keyframes fadeToDark {
+  from {
+    background-color: #0f1419; /* Slightly darker shade */
+  }
+  to {
+    background-color: #111827; /* Normal dark background */
+  }
+}
+
+/* Custom scrollbars for admin routes - apply to all admin content */
+.route-transition.admin-route,
+.route-transition.admin-route *,
+.route-transition.admin-route main,
+.route-transition.admin-route div,
+.route-transition.admin-route section {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1f2937; /* lighter thumb, lighter track */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) - apply to all admin content */
+.route-transition.admin-route::-webkit-scrollbar,
+.route-transition.admin-route *::-webkit-scrollbar,
+.route-transition.admin-route main::-webkit-scrollbar,
+.route-transition.admin-route div::-webkit-scrollbar,
+.route-transition.admin-route section::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.route-transition.admin-route::-webkit-scrollbar-track,
+.route-transition.admin-route *::-webkit-scrollbar-track,
+.route-transition.admin-route main::-webkit-scrollbar-track,
+.route-transition.admin-route div::-webkit-scrollbar-track,
+.route-transition.admin-route section::-webkit-scrollbar-track {
+  background: #1f2937; /* bg-gray-800 - lighter track */
+  border-radius: 4px;
+}
+
+.route-transition.admin-route::-webkit-scrollbar-thumb,
+.route-transition.admin-route *::-webkit-scrollbar-thumb,
+.route-transition.admin-route main::-webkit-scrollbar-thumb,
+.route-transition.admin-route div::-webkit-scrollbar-thumb,
+.route-transition.admin-route section::-webkit-scrollbar-thumb {
+  background: #4b5563; /* bg-gray-600 - lighter, more visible thumb */
+  border-radius: 4px;
+  border: 1px solid #1f2937; /* lighter border */
+}
+
+.route-transition.admin-route::-webkit-scrollbar-thumb:hover,
+.route-transition.admin-route *::-webkit-scrollbar-thumb:hover,
+.route-transition.admin-route main::-webkit-scrollbar-thumb:hover,
+.route-transition.admin-route div::-webkit-scrollbar-thumb:hover,
+.route-transition.admin-route section::-webkit-scrollbar-thumb:hover {
+  background: #6b7280; /* bg-gray-500 - even lighter on hover */
+}
+
+.route-transition.admin-route::-webkit-scrollbar-corner,
+.route-transition.admin-route *::-webkit-scrollbar-corner,
+.route-transition.admin-route main::-webkit-scrollbar-corner,
+.route-transition.admin-route div::-webkit-scrollbar-corner,
+.route-transition.admin-route section::-webkit-scrollbar-corner {
+  background: #1f2937; /* bg-gray-800 */
+}
+
+/* Custom scrollbars now applied to all admin content permanently */
