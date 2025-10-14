@@ -23,6 +23,7 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { Tooltip } from '../../shell/Tooltip'
+import { ChartTooltipWrapper } from './ChartComponents'
 
 // Using ReferrersData from AnalyticsService
 
@@ -218,7 +219,10 @@ export default function ReferrersPage() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Referral Traffic Over Time */}
-        <ChartCard title="Referral Traffic Over Time">
+        <ChartTooltipWrapper 
+          title="Referral Traffic Over Time"
+          tooltip="Shows the daily volume of traffic coming from external referrers (other websites, social media, etc.) over the selected time period. Helps track referral marketing effectiveness."
+        >
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data.referralTrafficOverTime}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -247,10 +251,13 @@ export default function ReferrersPage() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </ChartTooltipWrapper>
 
         {/* Traffic Share */}
-        <ChartCard title="Traffic Share by Source">
+        <ChartTooltipWrapper 
+          title="Traffic Share by Source"
+          tooltip="Displays the percentage breakdown of traffic sources (direct, search, social, referrals, etc.). This helps understand which channels drive the most visitors to your site."
+        >
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -277,7 +284,7 @@ export default function ReferrersPage() {
               />
             </PieChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </ChartTooltipWrapper>
       </div>
 
       {/* Top 3 Referrers */}
@@ -484,14 +491,6 @@ function MetricCard({
   )
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
-      <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
-      {children}
-    </div>
-  )
-}
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (

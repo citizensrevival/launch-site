@@ -28,6 +28,7 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { Tooltip } from '../../shell/Tooltip'
+import { ChartTooltipWrapper } from './ChartComponents'
 
 // Using UsersData from AnalyticsService
 
@@ -295,8 +296,10 @@ export default function UsersPage() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* New Users Over Time */}
-        <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">New Users Over Time</h3>
+        <ChartTooltipWrapper 
+          title="New Users Over Time"
+          tooltip="Tracks the daily count of new users visiting your site for the first time. This metric helps measure user acquisition and growth trends over the selected time period."
+        >
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data.newUsersOverTime || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -325,11 +328,13 @@ export default function UsersPage() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </ChartTooltipWrapper>
 
         {/* New vs Returning Users */}
-        <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">New vs Returning Users</h3>
+        <ChartTooltipWrapper 
+          title="New vs Returning Users"
+          tooltip="Shows the proportion of new users versus returning users. This helps understand user retention and whether your site successfully brings visitors back for repeat engagement."
+        >
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -356,7 +361,7 @@ export default function UsersPage() {
               />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </ChartTooltipWrapper>
       </div>
 
       {/* Users Table */}

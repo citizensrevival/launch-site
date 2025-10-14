@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { 
   LineChart, 
   Line, 
@@ -13,6 +13,8 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts'
+import { Icon } from '@mdi/react'
+import { mdiInformation } from '@mdi/js'
 
 // ================================================
 // Chart Color Palette
@@ -308,16 +310,76 @@ export interface ChartCardProps {
   children: React.ReactNode
   className?: string
   actions?: React.ReactNode
+  tooltip?: string
 }
 
-export function ChartCard({ title, children, className = '', actions }: ChartCardProps) {
+export function ChartCard({ title, children, className = '', actions, tooltip }: ChartCardProps) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const iconRef = useRef<HTMLButtonElement>(null)
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tooltipRef.current && 
+        !tooltipRef.current.contains(event.target as Node) &&
+        iconRef.current &&
+        !iconRef.current.contains(event.target as Node)
+      ) {
+        setShowTooltip(false)
+      }
+    }
+
+    if (showTooltip) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showTooltip])
+
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowTooltip(!showTooltip)
+  }
+
   return (
-    <div className={`bg-gray-900 rounded-lg border border-gray-800 p-6 ${className}`}>
+    <div className={`bg-gray-900 rounded-lg border border-gray-800 p-6 relative ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        <div className="flex items-center gap-2">
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+          {/* Information Icon */}
+          {tooltip && (
+            <button
+              ref={iconRef}
+              onClick={handleIconClick}
+              className="text-gray-400 hover:text-gray-300 transition-colors"
+              aria-label="Show information"
+            >
+              <Icon path={mdiInformation} className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
       {children}
+
+      {/* Tooltip Bubble */}
+      {showTooltip && tooltip && (
+        <div
+          ref={tooltipRef}
+          className="absolute top-12 right-3 z-50 bg-gray-800 text-white text-sm rounded-lg shadow-lg border border-gray-700 p-3 max-w-xs"
+          style={{ minWidth: '200px' }}
+        >
+          <div className="relative">
+            {tooltip}
+            {/* Arrow pointing up to the icon */}
+            <div className="absolute -top-2 right-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-gray-800"></div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -332,6 +394,7 @@ export interface MetricCardProps {
   icon?: string
   trend?: string
   trendUp?: boolean
+  tooltip?: string
   className?: string
 }
 
@@ -341,10 +404,55 @@ export function MetricCard({
   icon, 
   trend, 
   trendUp, 
+  tooltip,
   className = '' 
 }: MetricCardProps) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const iconRef = useRef<HTMLButtonElement>(null)
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tooltipRef.current && 
+        !tooltipRef.current.contains(event.target as Node) &&
+        iconRef.current &&
+        !iconRef.current.contains(event.target as Node)
+      ) {
+        setShowTooltip(false)
+      }
+    }
+
+    if (showTooltip) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showTooltip])
+
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowTooltip(!showTooltip)
+  }
+
   return (
-    <div className={`bg-gray-900 rounded-lg border border-gray-800 p-6 ${className}`}>
+    <div className={`bg-gray-900 rounded-lg border border-gray-800 p-6 relative ${className}`}>
+      {/* Information Icon */}
+      {tooltip && (
+        <button
+          ref={iconRef}
+          onClick={handleIconClick}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-300 transition-colors"
+          aria-label="Show information"
+        >
+          <Icon path={mdiInformation} className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* Main Content */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-gray-400 text-sm">{title}</p>
@@ -365,6 +473,100 @@ export function MetricCard({
           </div>
         )}
       </div>
+
+      {/* Tooltip Bubble */}
+      {showTooltip && tooltip && (
+        <div
+          ref={tooltipRef}
+          className="absolute top-12 right-3 z-50 bg-gray-800 text-white text-sm rounded-lg shadow-lg border border-gray-700 p-3 max-w-xs"
+          style={{ minWidth: '200px' }}
+        >
+          <div className="relative">
+            {tooltip}
+            {/* Arrow pointing up to the icon */}
+            <div className="absolute -top-2 right-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-gray-800"></div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ================================================
+// Chart Tooltip Wrapper Component
+// ================================================
+
+export interface ChartTooltipWrapperProps {
+  title: string
+  children: React.ReactNode
+  tooltip?: string
+  className?: string
+}
+
+export function ChartTooltipWrapper({ title, children, tooltip, className = '' }: ChartTooltipWrapperProps) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const iconRef = useRef<HTMLButtonElement>(null)
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tooltipRef.current && 
+        !tooltipRef.current.contains(event.target as Node) &&
+        iconRef.current &&
+        !iconRef.current.contains(event.target as Node)
+      ) {
+        setShowTooltip(false)
+      }
+    }
+
+    if (showTooltip) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showTooltip])
+
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowTooltip(!showTooltip)
+  }
+
+  return (
+    <div className={`bg-gray-900 rounded-lg border border-gray-800 p-6 relative ${className}`}>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        {/* Information Icon */}
+        {tooltip && (
+          <button
+            ref={iconRef}
+            onClick={handleIconClick}
+            className="text-gray-400 hover:text-gray-300 transition-colors"
+            aria-label="Show information"
+          >
+            <Icon path={mdiInformation} className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      {children}
+
+      {/* Tooltip Bubble */}
+      {showTooltip && tooltip && (
+        <div
+          ref={tooltipRef}
+          className="absolute top-12 right-3 z-50 bg-gray-800 text-white text-sm rounded-lg shadow-lg border border-gray-700 p-3 max-w-xs"
+          style={{ minWidth: '200px' }}
+        >
+          <div className="relative">
+            {tooltip}
+            {/* Arrow pointing up to the icon */}
+            <div className="absolute -top-2 right-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-gray-800"></div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

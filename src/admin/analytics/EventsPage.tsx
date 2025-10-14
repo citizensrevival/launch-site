@@ -20,6 +20,7 @@ import {
 } from '@mdi/js'
 import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import { ChartTooltipWrapper } from './ChartComponents'
 
 // Using EventsData from AnalyticsService
 
@@ -182,8 +183,11 @@ export default function EventsPage() {
       </div>
 
       {/* Event Trends Chart */}
-      <div className="bg-gray-900 rounded-lg border border-gray-800 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-white mb-4">Event Trends Over Time</h3>
+      <ChartTooltipWrapper 
+        title="Event Trends Over Time"
+        tooltip="Shows the daily trends of different user interactions and events on your site. Track how users engage with forms, CTAs, videos, and downloads over time."
+        className="mb-8"
+      >
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={data.eventTrends}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -209,11 +213,14 @@ export default function EventsPage() {
             <Line type="monotone" dataKey="download_started" stroke="#F59E0B" strokeWidth={2} name="Download Started" />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </ChartTooltipWrapper>
 
       {/* Top Events Chart */}
-      <div className="bg-gray-900 rounded-lg border border-gray-800 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-white mb-4">Top Events</h3>
+      <ChartTooltipWrapper 
+        title="Top Events"
+        tooltip="Displays the most frequently triggered events on your site. This helps identify which user actions are most popular and can guide content and feature prioritization."
+        className="mb-8"
+      >
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data.topEvents}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -237,7 +244,7 @@ export default function EventsPage() {
             <Bar dataKey="count" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </ChartTooltipWrapper>
 
       {/* Events Table */}
       <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">

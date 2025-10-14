@@ -26,6 +26,7 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
 import { Tooltip } from '../../shell/Tooltip'
+import { ChartTooltipWrapper } from './ChartComponents'
 
 // Using SessionsData from AnalyticsService
 
@@ -311,8 +312,11 @@ export default function SessionsPage() {
       </div>
 
       {/* Sessions per User Chart */}
-      <div className="bg-gray-900 rounded-lg border border-gray-800 p-6 mb-8">
-        <h3 className="text-lg font-semibold text-white mb-4">Sessions per User Distribution</h3>
+      <ChartTooltipWrapper 
+        title="Sessions per User Distribution"
+        tooltip="Shows how many sessions each user has on average. This helps understand user engagement patterns - whether users visit once or return multiple times."
+        className="mb-8"
+      >
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data.sessionsPerUser}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -333,7 +337,7 @@ export default function SessionsPage() {
             <Bar dataKey="users" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </ChartTooltipWrapper>
 
       {/* Sessions Table */}
       <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">

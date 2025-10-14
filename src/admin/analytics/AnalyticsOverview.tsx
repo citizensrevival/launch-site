@@ -132,24 +132,28 @@ export default function AnalyticsOverview() {
           value={data.uniqueUsers}
           trend="+12%"
           trendUp={true}
+          tooltip="The number of distinct users who visited your site during the selected time period. This excludes authenticated users and focuses on anonymous visitor engagement."
         />
         <MetricCard
           title="Total Sessions"
           value={data.totalSessions}
           trend="+8%"
           trendUp={true}
+          tooltip="The total number of user sessions on your site. A session begins when a user visits and ends after 30 minutes of inactivity or when they leave."
         />
         <MetricCard
           title="Page Views"
           value={data.totalPageviews}
           trend="+15%"
           trendUp={true}
+          tooltip="The total number of pages viewed by all users. Each time a user loads a page, it counts as one page view."
         />
         <MetricCard
           title="Events"
           value={data.totalEvents}
           trend="+23%"
           trendUp={true}
+          tooltip="The total number of custom events tracked on your site, such as button clicks, form submissions, and other user interactions."
         />
       </div>
 
@@ -164,7 +168,10 @@ export default function AnalyticsOverview() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Unique Users Over Time */}
-        <ChartCard title="Unique Users Over Time">
+        <ChartCard 
+          title="Unique Users Over Time"
+          tooltip="Shows the daily count of unique users visiting your site over the selected time period. This helps identify trends in user engagement and growth patterns."
+        >
           <TimeSeriesLineChart 
             data={data.uniqueUsersOverTime}
             dataKey="unique_users"
@@ -173,7 +180,10 @@ export default function AnalyticsOverview() {
         </ChartCard>
 
         {/* Sessions Over Time */}
-        <ChartCard title="Sessions Over Time">
+        <ChartCard 
+          title="Sessions Over Time"
+          tooltip="Displays the daily number of user sessions. A session represents a user's visit to your site and includes all their interactions during that visit."
+        >
           <TimeSeriesBarChart 
             data={data.sessionsOverTime}
             dataKey="sessions"
@@ -182,7 +192,10 @@ export default function AnalyticsOverview() {
         </ChartCard>
 
         {/* Device Breakdown */}
-        <ChartCard title="Device Breakdown">
+        <ChartCard 
+          title="Device Breakdown"
+          tooltip="Shows the distribution of users by device type (desktop, mobile, tablet). This helps understand how users access your site and optimize for different devices."
+        >
           <SimplePieChart 
             data={data.deviceBreakdown}
             dataKey="count"
@@ -192,7 +205,10 @@ export default function AnalyticsOverview() {
         </ChartCard>
 
         {/* New vs Returning Users */}
-        <ChartCard title="New vs Returning Users">
+        <ChartCard 
+          title="New vs Returning Users"
+          tooltip="Compares the ratio of new visitors versus returning users. This metric helps gauge user retention and the effectiveness of your content in bringing back visitors."
+        >
           <SimplePieChart 
             data={data.newVsReturning}
             dataKey="count"
