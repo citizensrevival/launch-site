@@ -35,31 +35,31 @@ echo "🗑️  Clearing analytics data..."
 
 # Clear events first (references sessions)
 echo "  - Clearing events..."
-psql "$DB_URL" -c "DELETE FROM analytics.events;"
+psql "$DB_URL" -c "DELETE FROM public.events;"
 
 # Clear pageviews (references sessions)
 echo "  - Clearing pageviews..."
-psql "$DB_URL" -c "DELETE FROM analytics.pageviews;"
+psql "$DB_URL" -c "DELETE FROM public.pageviews;"
 
 # Clear sessions (references users)
 echo "  - Clearing sessions..."
-psql "$DB_URL" -c "DELETE FROM analytics.sessions;"
+psql "$DB_URL" -c "DELETE FROM public.sessions;"
 
 # Clear users last (referenced by sessions)
 echo "  - Clearing users..."
-psql "$DB_URL" -c "DELETE FROM analytics.users;"
+psql "$DB_URL" -c "DELETE FROM public.users;"
 
 # Reset sequences to start from 1
 echo "  - Resetting sequences..."
-psql "$DB_URL" -c "ALTER SEQUENCE analytics.pageviews_id_seq RESTART WITH 1;"
-psql "$DB_URL" -c "ALTER SEQUENCE analytics.events_id_seq RESTART WITH 1;"
+psql "$DB_URL" -c "ALTER SEQUENCE public.pageviews_id_seq RESTART WITH 1;"
+psql "$DB_URL" -c "ALTER SEQUENCE public.events_id_seq RESTART WITH 1;"
 
 echo "✅ Analytics data cleared successfully!"
 echo ""
 echo "📈 Analytics tables cleared:"
-echo "  - analytics.users"
-echo "  - analytics.sessions" 
-echo "  - analytics.pageviews"
-echo "  - analytics.events"
+echo "  - public.users"
+echo "  - public.sessions" 
+echo "  - public.pageviews"
+echo "  - public.events"
 echo ""
 echo "🔄 Sequences reset to start from 1"

@@ -16,7 +16,7 @@ import {
 class AnalyticsTrackerImpl implements AnalyticsTracker {
   private user: AnalyticsUser | null = null
   private session: AnalyticsSession | null = null
-  // private _sessionTimeout: number = 30 * 60 * 1000 // 30 minutes
+  private _sessionTimeout: number = 30 * 60 * 1000 // 30 minutes
   private heartbeatInterval: NodeJS.Timeout | null = null
   private pendingEvents: Array<PageviewEvent | AnalyticsEvent> = []
   // private _batchSize: number = 10
@@ -29,6 +29,28 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
 
   async init(): Promise<void> {
     await this.identify()
+    
+    // Check for existing valid session first
+    const existingSession = this.getStoredSession()
+    
+    if (existingSession && this.isSessionValid(existingSession)) {
+      // Verify the session belongs to the current user
+      if (this.user && existingSession.userId === this.user.userId) {
+        console.log('Continuing existing session:', existingSession.sessionId)
+        this.session = existingSession
+        this.startHeartbeat()
+        return
+      } else {
+        console.log('Session user mismatch, starting new session')
+        this.clearStoredSession()
+      }
+    } else if (existingSession) {
+      console.log('Session found but invalid, clearing and starting new')
+      this.clearStoredSession()
+    }
+    
+    // Only start new session if none exists or expired
+    console.log('Starting new session')
     await this.startSession()
     this.startHeartbeat()
   }
@@ -96,6 +118,9 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
       device
     }
 
+    // Store session in localStorage for persistence
+    this.setStoredSession(this.session)
+
     // Start session on backend
     try {
       const { data, error } = await supabase.functions.invoke('ingest-start-session', {
@@ -117,13 +142,15 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
 
       if (data?.sessionId) {
         this.session.sessionId = data.sessionId
+        // Update stored session with backend sessionId
+        this.setStoredSession(this.session)
       }
     } catch (error) {
       console.error('Failed to start session:', error)
     }
   }
 
-  async endSession(): Promise<void> {
+  async endSession(clearStored: boolean = true): Promise<void> {
     if (!this.session) return
 
     // Flush pending events
@@ -140,6 +167,10 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
       console.error('Failed to end session:', error)
     }
 
+    // Only clear stored session if explicitly requested
+    if (clearStored) {
+      this.clearStoredSession()
+    }
     this.session = null
     this.stopHeartbeat()
   }
@@ -254,9 +285,14 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
   }
 
   async reset(): Promise<void> {
+    // End current session if it exists
+    if (this.session) {
+      await this.endSession(true) // Clear stored session on reset
+    }
+    
     // Clear stored identifiers
     localStorage.removeItem('analytics_anon_id')
-    sessionStorage.removeItem('analytics_session_id')
+    localStorage.removeItem('analytics_session')
     
     // Clear current state
     this.user = null
@@ -287,6 +323,48 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
 
   private setStoredAnonId(anonId: string): void {
     localStorage.setItem('analytics_anon_id', anonId)
+  }
+
+  private getStoredSession(): AnalyticsSession | null {
+    try {
+      const stored = localStorage.getItem('analytics_session')
+      if (!stored) return null
+      return JSON.parse(stored)
+    } catch (error) {
+      console.error('Failed to parse stored session:', error)
+      return null
+    }
+  }
+
+  private setStoredSession(session: AnalyticsSession): void {
+    try {
+      localStorage.setItem('analytics_session', JSON.stringify(session))
+    } catch (error) {
+      console.error('Failed to store session:', error)
+    }
+  }
+
+  private clearStoredSession(): void {
+    localStorage.removeItem('analytics_session')
+  }
+
+  private isSessionValid(session: AnalyticsSession): boolean {
+    const now = Date.now()
+    const sessionStart = new Date(session.startedAt).getTime()
+    const timeSinceStart = now - sessionStart
+    
+    // Check 30-minute timeout
+    if (timeSinceStart >= this._sessionTimeout) {
+      return false
+    }
+    
+    // Check if it's a new day (local timezone)
+    const nowDate = new Date()
+    const sessionDate = new Date(session.startedAt)
+    
+    return nowDate.getDate() === sessionDate.getDate() && 
+           nowDate.getMonth() === sessionDate.getMonth() &&
+           nowDate.getFullYear() === sessionDate.getFullYear()
   }
 
   private getDeviceInfo(): DeviceInfo {
@@ -372,7 +450,7 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
           console.error('Heartbeat failed:', error)
         }
       }
-    }, 5 * 60 * 1000) // Every 5 minutes
+    }, 1 * 60 * 1000) // Every 1 minute
   }
 
   private stopHeartbeat(): void {
@@ -403,7 +481,8 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
   private setupBeforeUnloadHandler(): void {
     window.addEventListener('beforeunload', () => {
       this.flush()
-      this.endSession()
+      // Don't clear stored session on page unload - let it persist for session continuation
+      this.endSession(false)
     })
   }
 }
