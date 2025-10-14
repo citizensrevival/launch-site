@@ -4,6 +4,7 @@ import { AdminLoginForm } from './AdminLoginForm';
 import AdminDashboard from './AdminDashboard';
 import LeadsPage from './leads/LeadsPage';
 import { AnalyticsOverview, UsersPage, SessionsPage, SessionDetailPage, EventsPage, ReferrersPage } from './analytics';
+import { PagesPage, ContentBlocksPage, AssetsPage } from './content';
 
 export function AdminRoute() {
   const { user, loading } = useAuth();
@@ -30,6 +31,9 @@ export function AdminRoute() {
           <Route path="analytics/sessions/:id" element={<SessionDetailPage />} />
           <Route path="analytics/events" element={<EventsPage />} />
           <Route path="analytics/referrers" element={<ReferrersPage />} />
+          <Route path="content/pages" element={<PagesPage />} />
+          <Route path="content/blocks" element={<ContentBlocksPage />} />
+          <Route path="content/assets" element={<AssetsPage />} />
           <Route path="*" element={<Navigate to="/manage" replace />} />
         </Routes>
   );
