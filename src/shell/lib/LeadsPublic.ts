@@ -40,7 +40,7 @@ export class LeadsPublic {
       errors.push('Lead kind is required');
     }
 
-    if (input.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(input.phone.replace(/[\s\-\(\)]/g, ''))) {
+    if (input.phone && !/^[+]?[1-9]\d{0,15}$/.test(input.phone.replace(/[\s\-()]/g, ''))) {
       errors.push('Invalid phone number format');
     }
 

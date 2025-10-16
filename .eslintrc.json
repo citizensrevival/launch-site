@@ -1,7 +1,6 @@
 {
-  "extends": ["next/core-web-vitals"],
+  "extends": ["@vitejs/plugin-react/recommended"],
   "rules": {
-    "@next/next/no-img-element": "off",
-    "@next/next/no-html-link-for-pages": "off"
+    "react/react-in-jsx-scope": "off"
   }
 }

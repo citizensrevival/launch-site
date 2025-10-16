@@ -70,14 +70,17 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
         const parsed = JSON.parse(raw) as Record<SidebarGroupKey, boolean>;
         setOpenGroups({ primary: parsed.primary ?? true, analytics: parsed.analytics ?? true, content: parsed.content ?? true, settings: parsed.settings ?? true });
       }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch {
+      // Ignore localStorage errors
+    }
   }, [storageKey]);
 
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(openGroups));
-    } catch {}
+    } catch {
+      // Ignore localStorage errors
+    }
   }, [openGroups, storageKey]);
 
   const primaryItems = [

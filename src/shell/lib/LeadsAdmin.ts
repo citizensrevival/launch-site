@@ -12,10 +12,8 @@ export class LeadsAdmin {
 
   constructor(configProvider: ConfigProvider) {
     const config = configProvider.getSupabaseConfig();
-    // Use admin client if service role key is available; otherwise fall back to regular client
-    this.supabase = config.serviceRoleKey
-      ? SupabaseClientFactory.createAdminClient(config)
-      : SupabaseClientFactory.createClient(config);
+    // Always use regular client - admin operations should be handled via RLS policies
+    this.supabase = SupabaseClientFactory.createClient(config);
   }
 
   /**
