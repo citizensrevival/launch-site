@@ -44,6 +44,10 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
   const { user, signOut } = useAuth();
   const [currentPath, setCurrentPath] = useState('');
   const { sites, selectedSite, selectSite } = useSites();
+  
+  // Debug logging
+  console.log('AdminLayout: sites:', sites);
+  console.log('AdminLayout: selectedSite:', selectedSite);
 
   // Get current path for active navigation
   useEffect(() => {
@@ -306,29 +310,36 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
                   <Icon path={mdiMenu} className="h-6 w-6" />
                 </button>
               </Tooltip>
+              
+              {/* Site Selector - Always visible and prominent */}
+              <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2 border border-gray-600">
+                <Icon path={mdiWebBox} className="h-5 w-5 text-indigo-400" />
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-400">Site</span>
+                  {sites.length > 0 ? (
+                    <select
+                      value={selectedSite?.id || ''}
+                      onChange={(e) => {
+                        const site = sites.find(s => s.id === e.target.value);
+                        if (site) selectSite(site);
+                      }}
+                      className="bg-transparent text-white text-sm font-medium focus:outline-none cursor-pointer"
+                    >
+                      {sites.map((site) => (
+                        <option key={site.id} value={site.id} className="bg-gray-800">
+                          {site.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-sm text-gray-400">Loading sites...</span>
+                  )}
+                </div>
+              </div>
+              
               <div className="hidden lg:block">
                 <a href="/" className="text-gray-300 hover:text-white text-sm">Home</a>
               </div>
-              {/* Site Selector */}
-              {sites.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Icon path={mdiWebBox} className="h-4 w-4 text-gray-400" />
-                  <select
-                    value={selectedSite?.id || ''}
-                    onChange={(e) => {
-                      const site = sites.find(s => s.id === e.target.value);
-                      if (site) selectSite(site);
-                    }}
-                    className="bg-gray-700 border border-gray-600 rounded-md px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    {sites.map((site) => (
-                      <option key={site.id} value={site.id}>
-                        {site.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </div>
             <div className="flex-1 max-w-xl mx-4 hidden sm:block">
               <label htmlFor="global-search" className="sr-only">Search leads</label>
