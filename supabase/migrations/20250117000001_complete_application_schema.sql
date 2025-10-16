@@ -51,69 +51,83 @@ create table if not exists public.admins (
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Analytics Schema
+-- Analytics Schema (Public Schema Tables)
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Create analytics schema
-create schema if not exists analytics;
-
--- Page views table
-create table if not exists analytics.page_views (
-  id uuid primary key default gen_random_uuid(),
-  session_id text not null,
-  user_id uuid,
-  anon_id text,
-  page_path text not null,
-  page_title text,
-  referrer text,
-  user_agent text,
-  ip_address inet,
-  country text,
-  city text,
-  device_type text,
-  browser text,
-  os text,
-  created_at timestamptz not null default now()
-);
-
--- Events table
-create table if not exists analytics.events (
-  id uuid primary key default gen_random_uuid(),
-  session_id text not null,
-  user_id uuid,
-  anon_id text,
-  event_name text not null,
-  event_properties jsonb default '{}',
-  page_path text,
-  created_at timestamptz not null default now()
+-- Users table (analytics users, not auth users)
+create table if not exists public.users (
+  id                uuid primary key default gen_random_uuid(),
+  anon_id           text unique not null,
+  first_seen_at     timestamptz not null default now(),
+  last_seen_at      timestamptz not null default now(),
+  first_referrer    text,
+  first_utm_source  text,
+  first_utm_medium  text,
+  first_utm_campaign text,
+  last_referrer     text,
+  last_utm_source   text,
+  last_utm_medium   text,
+  last_utm_campaign text,
+  properties        jsonb not null default '{}'::jsonb,
+  constraint users_anon_id_chk check (length(anon_id) > 0)
 );
 
 -- Sessions table
-create table if not exists analytics.sessions (
-  id text primary key,
-  user_id uuid,
-  anon_id text,
-  started_at timestamptz not null default now(),
-  ended_at timestamptz,
-  duration_seconds integer,
-  page_views integer default 0,
-  events integer default 0,
-  country text,
-  city text,
-  device_type text,
-  browser text,
-  os text
+create table if not exists public.sessions (
+  id                uuid primary key default gen_random_uuid(),
+  user_id           uuid not null references public.users(id) on delete cascade,
+  started_at        timestamptz not null default now(),
+  ended_at          timestamptz,
+  landing_page      text,
+  landing_path      text,
+  referrer          text,
+  utm_source        text,
+  utm_medium        text,
+  utm_campaign      text,
+  utm_term          text,
+  utm_content       text,
+  user_agent        text,
+  device_category   text,
+  browser_name      text,
+  os_name           text,
+  is_bot            boolean not null default false,
+  ip_address        inet,
+  geo_country       text,
+  geo_region        text,
+  geo_city          text
+);
+
+-- Pageviews table
+create table if not exists public.pageviews (
+  id                uuid primary key default gen_random_uuid(),
+  session_id        uuid not null references public.sessions(id) on delete cascade,
+  user_id           uuid not null references public.users(id) on delete cascade,
+  url               text not null,
+  path              text not null,
+  title             text,
+  referrer          text,
+  occurred_at       timestamptz not null default now()
+);
+
+-- Events table
+create table if not exists public.events (
+  id                uuid primary key default gen_random_uuid(),
+  session_id        uuid not null references public.sessions(id) on delete cascade,
+  user_id           uuid not null references public.users(id) on delete cascade,
+  name              text not null,
+  properties        jsonb not null default '{}'::jsonb,
+  occurred_at       timestamptz not null default now()
 );
 
 -- Excluded users table
-create table if not exists analytics.excluded_users (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid,
-  session_id text,
-  ip_address inet,
-  anon_id text,
-  excluded_at timestamptz not null default now(),
-  reason text
+create table if not exists public.excluded_users (
+  id                uuid primary key default gen_random_uuid(),
+  user_id           uuid,
+  session_id        uuid,
+  ip_address        inet,
+  anon_id           text,
+  excluded_at       timestamptz not null default now(),
+  reason            text
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -331,7 +345,7 @@ create table if not exists asset_usage (
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- Function to get analytics data with exclusions
-create or replace function analytics.get_analytics_data(
+create or replace function public.get_analytics_data(
   start_date timestamptz default (now() - interval '30 days'),
   end_date timestamptz default now()
 )
@@ -346,127 +360,89 @@ returns table (
 ) language plpgsql as $$
 begin
   return query
-  with excluded_sessions as (
-    select distinct session_id 
-    from analytics.excluded_users 
-    where session_id is not null
-  ),
-  filtered_page_views as (
+  with filtered_page_views as (
     select pv.*
-    from analytics.page_views pv
-    where pv.created_at >= start_date 
-      and pv.created_at <= end_date
-      and pv.session_id not in (select session_id from excluded_sessions)
-      and (pv.user_id is null or pv.user_id not in (select user_id from analytics.excluded_users where user_id is not null))
-      and (pv.anon_id is null or pv.anon_id not in (select anon_id from analytics.excluded_users where anon_id is not null))
-      and (pv.ip_address is null or pv.ip_address not in (select ip_address from analytics.excluded_users where ip_address is not null))
+    from public.v_analytics_pageviews pv
+    where pv.occurred_at >= start_date 
+      and pv.occurred_at <= end_date
   ),
   filtered_sessions as (
     select s.*
-    from analytics.sessions s
+    from public.v_analytics_sessions s
     where s.started_at >= start_date 
       and s.started_at <= end_date
-      and s.id not in (select session_id from excluded_sessions)
-      and (s.user_id is null or s.user_id not in (select user_id from analytics.excluded_users where user_id is not null))
-      and (s.anon_id is null or s.anon_id not in (select anon_id from analytics.excluded_users where anon_id is not null))
   )
   select 
     (select count(*) from filtered_page_views)::bigint as total_page_views,
-    (select count(distinct coalesce(user_id::text, anon_id)) from filtered_page_views)::bigint as unique_visitors,
+    (select count(distinct user_id) from filtered_page_views)::bigint as unique_visitors,
     (select count(*) from filtered_sessions)::bigint as total_sessions,
-    (select avg(duration_seconds) from filtered_sessions where duration_seconds is not null) as avg_session_duration,
-    (select jsonb_agg(jsonb_build_object('page', page_path, 'views', views)) 
+    (select avg(extract(epoch from coalesce(ended_at, now()) - started_at)) from filtered_sessions) as avg_session_duration,
+    (select jsonb_agg(jsonb_build_object('page', path, 'views', views)) 
      from (
-       select page_path, count(*) as views 
+       select path, count(*) as views 
        from filtered_page_views 
-       group by page_path 
+       group by path 
        order by views desc 
        limit 10
      ) top_pages) as top_pages,
-    (select jsonb_agg(jsonb_build_object('device', device_type, 'count', device_count)) 
+    (select jsonb_agg(jsonb_build_object('device', device_category, 'count', device_count)) 
      from (
-       select device_type, count(*) as device_count 
+       select device_category, count(*) as device_count 
        from filtered_sessions 
-       where device_type is not null
-       group by device_type
+       where device_category is not null
+       group by device_category
      ) device_stats) as device_breakdown,
-    (select jsonb_agg(jsonb_build_object('country', country, 'count', country_count)) 
+    (select jsonb_agg(jsonb_build_object('country', geo_country, 'count', country_count)) 
      from (
-       select country, count(*) as country_count 
+       select geo_country, count(*) as country_count 
        from filtered_sessions 
-       where country is not null
-       group by country 
+       where geo_country is not null
+       group by geo_country 
        order by country_count desc 
        limit 10
      ) country_stats) as country_breakdown;
 end $$;
 
 -- Function to track page view
-create or replace function analytics.track_page_view(
-  p_session_id text,
-  p_page_path text,
-  p_user_id uuid default null,
-  p_anon_id text default null,
-  p_page_title text default null,
-  p_referrer text default null,
-  p_user_agent text default null,
-  p_ip_address inet default null,
-  p_country text default null,
-  p_city text default null,
-  p_device_type text default null,
-  p_browser text default null,
-  p_os text default null
+create or replace function public.track_page_view(
+  p_session_id uuid,
+  p_user_id uuid,
+  p_url text,
+  p_path text,
+  p_title text default null,
+  p_referrer text default null
 )
 returns uuid language plpgsql as $$
 declare
   view_id uuid;
 begin
   -- Insert page view
-  insert into analytics.page_views (
-    session_id, user_id, anon_id, page_path, page_title, referrer, 
-    user_agent, ip_address, country, city, device_type, browser, os
+  insert into public.pageviews (
+    session_id, user_id, url, path, title, referrer
   ) values (
-    p_session_id, p_user_id, p_anon_id, p_page_path, p_page_title, p_referrer,
-    p_user_agent, p_ip_address, p_country, p_city, p_device_type, p_browser, p_os
+    p_session_id, p_user_id, p_url, p_path, p_title, p_referrer
   ) returning id into view_id;
-  
-  -- Update or create session
-  insert into analytics.sessions (id, user_id, anon_id, page_views, country, city, device_type, browser, os)
-  values (p_session_id, p_user_id, p_anon_id, 1, p_country, p_city, p_device_type, p_browser, p_os)
-  on conflict (id) do update set
-    page_views = sessions.page_views + 1,
-    ended_at = now(),
-    duration_seconds = extract(epoch from (now() - sessions.started_at))::integer;
   
   return view_id;
 end $$;
 
 -- Function to track event
-create or replace function analytics.track_event(
-  p_session_id text,
-  p_event_name text,
-  p_user_id uuid default null,
-  p_anon_id text default null,
-  p_event_properties jsonb default '{}',
-  p_page_path text default null
+create or replace function public.track_event(
+  p_session_id uuid,
+  p_user_id uuid,
+  p_name text,
+  p_properties jsonb default '{}'
 )
 returns uuid language plpgsql as $$
 declare
   event_id uuid;
 begin
   -- Insert event
-  insert into analytics.events (
-    session_id, user_id, anon_id, event_name, event_properties, page_path
+  insert into public.events (
+    session_id, user_id, name, properties
   ) values (
-    p_session_id, p_user_id, p_anon_id, p_event_name, p_event_properties, p_page_path
+    p_session_id, p_user_id, p_name, p_properties
   ) returning id into event_id;
-  
-  -- Update session event count
-  update analytics.sessions 
-  set events = events + 1,
-      ended_at = now(),
-      duration_seconds = extract(epoch from (now() - started_at))::integer
-  where id = p_session_id;
   
   return event_id;
 end $$;
@@ -505,125 +481,320 @@ begin
 end $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Analytics Views
+-- Analytics Views (Comprehensive Set)
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Unique users daily view
-create or replace view analytics.v_unique_users_daily as
+-- Core filtered views (excluding excluded users)
+create or replace view public.v_analytics_users as
+select u.*
+from public.users u
+where not exists (
+  select 1 from public.excluded_users eu
+  where (eu.user_id = u.id or eu.anon_id = u.anon_id)
+);
+
+create or replace view public.v_analytics_sessions as
+select s.*
+from public.sessions s
+where not exists (
+  select 1 from public.excluded_users eu
+  where (eu.user_id = s.user_id or eu.session_id = s.id or eu.ip_address = s.ip_address)
+    or (eu.anon_id is not null and exists (
+      select 1 from public.users u 
+      where u.id = s.user_id and u.anon_id = eu.anon_id
+    ))
+);
+
+create or replace view public.v_analytics_pageviews as
+select pv.*
+from public.pageviews pv
+where not exists (
+  select 1 from public.excluded_users eu
+  where eu.user_id = pv.user_id
+    or (eu.anon_id is not null and exists (
+      select 1 from public.users u 
+      where u.id = pv.user_id and u.anon_id = eu.anon_id
+    ))
+);
+
+create or replace view public.v_analytics_events as
+select ev.*
+from public.events ev
+where not exists (
+  select 1 from public.excluded_users eu
+  where eu.user_id = ev.user_id
+    or (eu.anon_id is not null and exists (
+      select 1 from public.users u 
+      where u.id = ev.user_id and u.anon_id = eu.anon_id
+    ))
+);
+
+-- Analytics overview views
+create or replace view public.v_unique_users_daily as
 with days as (
   select generate_series(
-    date_trunc('day', (select min(created_at) from analytics.page_views)),
+    date_trunc('day', (select min(first_seen_at) from public.v_analytics_users)),
     date_trunc('day', now()),
     interval '1 day'
   )::date as day
-),
-daily_users as (
-  select 
-    date_trunc('day', pv.created_at)::date as day,
-    count(distinct coalesce(pv.user_id::text, pv.anon_id)) as unique_users
-  from analytics.page_views pv
-  where pv.created_at >= (select min(created_at) from analytics.page_views)
-  group by date_trunc('day', pv.created_at)::date
 )
-select 
+select
   d.day,
-  coalesce(du.unique_users, 0) as unique_users
+  count(distinct u.id) as unique_users
 from days d
-left join daily_users du on d.day = du.day
+left join public.v_analytics_users u
+  on date_trunc('day', u.first_seen_at) <= d.day
+ and date_trunc('day', u.last_seen_at) >= d.day
+group by d.day
 order by d.day;
 
--- Sessions summary view
-create or replace view analytics.v_sessions_summary as
+create or replace view public.v_sessions_summary as
 select
   s.id as session_id,
   s.user_id,
   s.started_at,
   s.ended_at,
-  s.duration_seconds,
-  s.page_views,
-  s.events,
-  s.country,
-  s.city,
-  s.device_type,
-  s.browser,
-  s.os,
-  case 
-    when s.user_id is not null then 'authenticated'
-    else 'anonymous'
-  end as user_type
-from analytics.sessions s
-order by s.started_at desc;
+  extract(epoch from coalesce(s.ended_at, now()) - s.started_at)::bigint as duration_seconds,
+  s.landing_page,
+  s.landing_path,
+  s.referrer,
+  s.utm_source, s.utm_medium, s.utm_campaign, s.utm_term, s.utm_content,
+  s.device_category, s.browser_name, s.os_name, s.is_bot,
+  s.ip_address, s.geo_country, s.geo_region, s.geo_city,
+  (select count(*) from public.v_analytics_pageviews pv where pv.session_id = s.id) as pageviews_count,
+  (select count(*) from public.v_analytics_events ev where ev.session_id = s.id) as events_count
+from public.v_analytics_sessions s;
 
--- Event rollup daily view
-create or replace view analytics.v_event_rollup_daily as
+create or replace view public.v_event_rollup_daily as
 select
-  date_trunc('day', e.created_at)::date as day,
-  e.event_name,
+  date_trunc('day', occurred_at)::date as day,
+  name,
   count(*)::bigint as event_count,
-  count(distinct e.user_id)::bigint as unique_users
-from analytics.events e
-group by date_trunc('day', e.created_at)::date, e.event_name
-order by day desc, event_count desc;
+  count(distinct user_id)::bigint as unique_users
+from public.v_analytics_events
+group by 1, 2
+order by 1, 2;
 
--- Referrer stats view
-create or replace view analytics.v_referrer_stats as
+-- Users analytics views
+create or replace view public.v_users_analytics as
 select
-  coalesce(pv.referrer, 'direct') as referrer_domain,
-  count(distinct s.id) as total_sessions,
-  count(distinct s.user_id) as total_users,
-  count(distinct case when e.event_name = 'lead_form_submitted' then s.id end) as conversions,
-  round(
-    count(distinct case when e.event_name = 'lead_form_submitted' then s.id end)::numeric / 
-    nullif(count(distinct s.id), 0) * 100, 2
-  ) as conversion_rate
-from analytics.sessions s
-left join analytics.page_views pv on s.id = pv.session_id
-left join analytics.events e on s.id = e.session_id
-group by coalesce(pv.referrer, 'direct')
+  u.id,
+  u.anon_id,
+  u.first_seen_at,
+  u.last_seen_at,
+  u.first_referrer,
+  u.last_referrer,
+  u.first_utm_source,
+  u.last_utm_source,
+  u.properties,
+  count(distinct s.id) as sessions,
+  coalesce(avg(extract(epoch from coalesce(s.ended_at, now()) - s.started_at)), 0) as avg_duration,
+  exists(
+    select 1 from public.v_analytics_events ev 
+    where ev.user_id = u.id and ev.name = 'lead_submitted'
+  ) as has_lead,
+  (select s2.device_category from public.v_analytics_sessions s2 
+   where s2.user_id = u.id order by s2.started_at desc limit 1) as device_category,
+  (select s2.browser_name from public.v_analytics_sessions s2 
+   where s2.user_id = u.id order by s2.started_at desc limit 1) as browser_name,
+  (select s2.os_name from public.v_analytics_sessions s2 
+   where s2.user_id = u.id order by s2.started_at desc limit 1) as os_name,
+  (select s2.geo_country from public.v_analytics_sessions s2 
+   where s2.user_id = u.id order by s2.started_at desc limit 1) as geo_country,
+  (select s2.geo_city from public.v_analytics_sessions s2 
+   where s2.user_id = u.id order by s2.started_at desc limit 1) as geo_city
+from public.v_analytics_users u
+left join public.v_analytics_sessions s on s.user_id = u.id
+group by u.id, u.anon_id, u.first_seen_at, u.last_seen_at, u.first_referrer, u.last_referrer, u.first_utm_source, u.last_utm_source, u.properties;
+
+create or replace view public.v_new_users_daily as
+select
+  date_trunc('day', first_seen_at)::date as day,
+  count(*)::bigint as new_users
+from public.v_analytics_users
+group by 1
+order by 1;
+
+create or replace view public.v_new_vs_returning_users as
+with user_stats as (
+  select
+    u.id,
+    u.first_seen_at,
+    u.last_seen_at,
+    case 
+      when date_trunc('day', u.first_seen_at) = date_trunc('day', u.last_seen_at) then 'New'
+      else 'Returning'
+    end as user_type
+  from public.v_analytics_users u
+)
+select
+  user_type as type,
+  count(*) as count
+from user_stats
+group by user_type;
+
+-- Sessions analytics views
+create or replace view public.v_sessions_per_user_distribution as
+with user_session_counts as (
+  select
+    user_id,
+    count(*) as session_count
+  from public.v_analytics_sessions
+  group by user_id
+)
+select
+  session_count as sessions,
+  count(*) as users
+from user_session_counts
+group by session_count
+order by session_count;
+
+create or replace view public.v_session_metrics as
+select
+  count(*) as total_sessions,
+  avg(duration_seconds) as avg_duration,
+  avg(pageviews_count) as avg_pageviews
+from public.v_sessions_summary;
+
+-- Events analytics views
+create or replace view public.v_events_analytics as
+select
+  name,
+  count(*) as count,
+  count(distinct user_id) as unique_users,
+  max(occurred_at) as last_occurred
+from public.v_analytics_events
+group by name
+order by count desc;
+
+create or replace view public.v_event_trends_daily as
+select
+  date_trunc('day', occurred_at)::date as day,
+  name,
+  count(*) as count
+from public.v_analytics_events
+group by 1, 2
+order by 1, 2;
+
+-- Page analytics views
+create or replace view public.v_pageviews_daily as
+select
+  date_trunc('day', occurred_at)::date as day,
+  count(*)::bigint as pageviews,
+  count(distinct user_id)::bigint as unique_users
+from public.v_analytics_pageviews
+group by 1
+order by 1;
+
+create or replace view public.v_top_pages as
+select
+  path,
+  count(*)::bigint as views,
+  count(distinct user_id)::bigint as unique_users,
+  max(occurred_at) as last_viewed
+from public.v_analytics_pageviews
+group by 1
+order by views desc;
+
+-- Referrer analytics views
+create or replace view public.v_referrers_analytics as
+with referrer_sessions as (
+  select
+    s.id as session_id,
+    s.user_id,
+    s.started_at,
+    s.ended_at,
+    s.referrer,
+    case 
+      when s.referrer is null or s.referrer = '' then 'direct'
+      else split_part(split_part(s.referrer, '://', 2), '/', 1)
+    end as domain,
+    extract(epoch from coalesce(s.ended_at, now()) - s.started_at) as duration,
+    ss.pageviews_count as pageviews
+  from public.v_analytics_sessions s
+  left join public.v_sessions_summary ss on ss.session_id = s.id
+),
+referrer_conversions as (
+  select
+    rs.domain,
+    count(distinct rs.session_id) as total_sessions,
+    count(distinct rs.user_id) as total_users,
+    count(distinct case when ev.name = 'lead_submitted' then rs.session_id end) as conversions,
+    avg(rs.duration) as avg_duration,
+    avg(rs.pageviews) as avg_pageviews,
+    max(rs.started_at) as last_seen
+  from referrer_sessions rs
+  left join public.v_analytics_events ev on ev.session_id = rs.session_id
+  group by rs.domain
+)
+select
+  domain,
+  total_sessions,
+  total_users,
+  conversions,
+  round(avg_duration::numeric) as avg_session_duration,
+  round(avg_pageviews::numeric, 1) as pages_per_session,
+  round((case when total_sessions > 0 then (total_sessions - avg_pageviews) / total_sessions * 100 else 0 end)::numeric, 1) as bounce_rate,
+  last_seen,
+  round((case when (select count(*) from referrer_sessions) > 0 then total_sessions::float / (select count(*) from referrer_sessions) * 100 else 0 end)::numeric, 1) as traffic_share
+from referrer_conversions
 order by total_sessions desc;
 
--- Referral traffic daily view
-create or replace view analytics.v_referral_traffic_daily as
+create or replace view public.v_referral_traffic_daily as
 select
   date_trunc('day', s.started_at)::date as day,
-  count(distinct s.id) as referrals
-from analytics.sessions s
-left join analytics.page_views pv on s.id = pv.session_id
-where pv.referrer is not null
-group by date_trunc('day', s.started_at)::date
-order by day desc;
+  count(*) as referrals
+from public.v_analytics_sessions s
+where s.referrer is not null and s.referrer != ''
+group by 1
+order by 1;
 
--- Traffic share view
-create or replace view analytics.v_traffic_share as
+-- Device analytics views
+create or replace view public.v_device_breakdown as
 select
-  case 
-    when pv.referrer is null then 'Direct'
-    when pv.referrer like '%google%' then 'Google'
-    when pv.referrer like '%facebook%' then 'Facebook'
-    when pv.referrer like '%twitter%' then 'Twitter'
-    when pv.referrer like '%linkedin%' then 'LinkedIn'
-    when pv.referrer like '%instagram%' then 'Instagram'
-    when pv.referrer like '%youtube%' then 'YouTube'
-    when pv.referrer like '%tiktok%' then 'TikTok'
-    else 'Other'
-  end as traffic_source,
-  count(distinct s.id) as sessions,
-  count(distinct s.user_id) as users,
-  round(count(distinct s.id)::numeric / sum(count(distinct s.id)) over () * 100, 2) as percentage
-from analytics.sessions s
-left join analytics.page_views pv on s.id = pv.session_id
-group by 
-  case 
-    when pv.referrer is null then 'Direct'
-    when pv.referrer like '%google%' then 'Google'
-    when pv.referrer like '%facebook%' then 'Facebook'
-    when pv.referrer like '%twitter%' then 'Twitter'
-    when pv.referrer like '%linkedin%' then 'LinkedIn'
-    when pv.referrer like '%instagram%' then 'Instagram'
-    when pv.referrer like '%youtube%' then 'YouTube'
-    when pv.referrer like '%tiktok%' then 'TikTok'
-    else 'Other'
-  end
+  device_category,
+  count(*)::bigint as sessions,
+  count(distinct user_id)::bigint as unique_users
+from public.v_analytics_sessions
+group by 1
+order by sessions desc;
+
+create or replace view public.v_browser_breakdown as
+select
+  browser_name,
+  count(*)::bigint as sessions,
+  count(distinct user_id)::bigint as unique_users
+from public.v_analytics_sessions
+group by 1
+order by sessions desc;
+
+create or replace view public.v_os_breakdown as
+select
+  os_name,
+  count(*)::bigint as sessions,
+  count(distinct user_id)::bigint as unique_users
+from public.v_analytics_sessions
+group by 1
+order by sessions desc;
+
+-- Geographic analytics views
+create or replace view public.v_country_breakdown as
+select
+  coalesce(geo_country, 'Unknown') as country,
+  count(*)::bigint as sessions,
+  count(distinct user_id)::bigint as unique_users
+from public.v_analytics_sessions
+group by 1
+order by sessions desc;
+
+create or replace view public.v_city_breakdown as
+select
+  coalesce(geo_city, 'Unknown') as city,
+  coalesce(geo_country, 'Unknown') as country,
+  count(*)::bigint as sessions,
+  count(distinct user_id)::bigint as unique_users
+from public.v_analytics_sessions
+group by 1, 2
 order by sessions desc;
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -636,24 +807,32 @@ create index if not exists idx_leads_lead_kind on public.leads(lead_kind);
 create index if not exists idx_leads_created_at on public.leads(created_at);
 
 -- Analytics indexes
-create index if not exists idx_page_views_session_id on analytics.page_views(session_id);
-create index if not exists idx_page_views_user_id on analytics.page_views(user_id);
-create index if not exists idx_page_views_created_at on analytics.page_views(created_at);
-create index if not exists idx_page_views_page_path on analytics.page_views(page_path);
+create index if not exists idx_users_first_seen on public.users(first_seen_at);
+create index if not exists idx_users_last_seen on public.users(last_seen_at);
+create index if not exists idx_users_anon_id on public.users(anon_id);
 
-create index if not exists idx_events_session_id on analytics.events(session_id);
-create index if not exists idx_events_user_id on analytics.events(user_id);
-create index if not exists idx_events_created_at on analytics.events(created_at);
-create index if not exists idx_events_event_name on analytics.events(event_name);
+create index if not exists idx_sessions_user_id on public.sessions(user_id);
+create index if not exists idx_sessions_started_at on public.sessions(started_at);
+create index if not exists idx_sessions_ended_at on public.sessions(ended_at);
+create index if not exists idx_sessions_referrer on public.sessions(referrer);
+create index if not exists idx_sessions_device_category on public.sessions(device_category);
+create index if not exists idx_sessions_geo_country on public.sessions(geo_country);
 
-create index if not exists idx_sessions_user_id on analytics.sessions(user_id);
-create index if not exists idx_sessions_started_at on analytics.sessions(started_at);
+create index if not exists idx_pageviews_session_id on public.pageviews(session_id);
+create index if not exists idx_pageviews_user_id on public.pageviews(user_id);
+create index if not exists idx_pageviews_occurred_at on public.pageviews(occurred_at);
+create index if not exists idx_pageviews_path on public.pageviews(path);
 
-create index if not exists idx_excluded_users_user_id on analytics.excluded_users(user_id);
-create index if not exists idx_excluded_users_session_id on analytics.excluded_users(session_id);
-create index if not exists idx_excluded_users_ip_address on analytics.excluded_users(ip_address);
-create index if not exists idx_excluded_users_anon_id on analytics.excluded_users(anon_id);
-create index if not exists idx_excluded_users_excluded_at on analytics.excluded_users(excluded_at);
+create index if not exists idx_events_session_id on public.events(session_id);
+create index if not exists idx_events_user_id on public.events(user_id);
+create index if not exists idx_events_occurred_at on public.events(occurred_at);
+create index if not exists idx_events_name on public.events(name);
+
+create index if not exists idx_excluded_users_user_id on public.excluded_users(user_id);
+create index if not exists idx_excluded_users_session_id on public.excluded_users(session_id);
+create index if not exists idx_excluded_users_ip_address on public.excluded_users(ip_address);
+create index if not exists idx_excluded_users_anon_id on public.excluded_users(anon_id);
+create index if not exists idx_excluded_users_excluded_at on public.excluded_users(excluded_at);
 
 -- CMS indexes
 create index if not exists idx_page_site_slug on page(site_id, slug);
@@ -675,10 +854,11 @@ create index if not exists idx_audit_log_entity on cms_audit_log(entity_type, en
 -- Enable RLS on all tables
 alter table public.leads enable row level security;
 alter table public.admins enable row level security;
-alter table analytics.page_views enable row level security;
-alter table analytics.events enable row level security;
-alter table analytics.sessions enable row level security;
-alter table analytics.excluded_users enable row level security;
+alter table public.users enable row level security;
+alter table public.sessions enable row level security;
+alter table public.pageviews enable row level security;
+alter table public.events enable row level security;
+alter table public.excluded_users enable row level security;
 alter table site enable row level security;
 alter table page enable row level security;
 alter table page_version enable row level security;
@@ -731,25 +911,43 @@ create policy "self can select own admin row" on public.admins
   for select using (user_id = auth.uid());
 
 -- Analytics policies (admin only)
-create policy "admins can view analytics" on analytics.page_views
+create policy "admins can view analytics users" on public.users
   for select using (
     exists (select 1 from public.admins where user_id = auth.uid())
   );
 
-create policy "admins can view analytics events" on analytics.events
+create policy "admins can view analytics sessions" on public.sessions
   for select using (
     exists (select 1 from public.admins where user_id = auth.uid())
   );
 
-create policy "admins can view analytics sessions" on analytics.sessions
+create policy "admins can view analytics pageviews" on public.pageviews
   for select using (
     exists (select 1 from public.admins where user_id = auth.uid())
   );
 
-create policy "admins can manage excluded users" on analytics.excluded_users
+create policy "admins can view analytics events" on public.events
+  for select using (
+    exists (select 1 from public.admins where user_id = auth.uid())
+  );
+
+create policy "admins can manage excluded users" on public.excluded_users
   for all using (
     exists (select 1 from public.admins where user_id = auth.uid())
   );
+
+-- Public analytics tracking (allow inserts for tracking)
+create policy "public can insert analytics users" on public.users
+  for insert with check (true);
+
+create policy "public can insert analytics sessions" on public.sessions
+  for insert with check (true);
+
+create policy "public can insert analytics pageviews" on public.pageviews
+  for insert with check (true);
+
+create policy "public can insert analytics events" on public.events
+  for insert with check (true);
 
 -- Public read access to published content
 create policy "read_published_pages" on page_version
