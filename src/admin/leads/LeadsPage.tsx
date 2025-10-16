@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { AdminLayout } from '../AdminLayout'
 import { createLeadsAdminService } from '../../shell/lib'
 import type { Lead } from '../../shell/lib/types'
@@ -25,6 +25,11 @@ import {
   mdiEmail,
   mdiPhone,
   mdiWeb,
+  mdiPencil,
+  mdiContentSave,
+  mdiTrashCanOutline,
+  mdiPlus,
+  mdiMinus,
   // mdiContentDuplicate
 } from '@mdi/js'
 
@@ -48,6 +53,26 @@ export default function LeadsPage() {
   const [sortKey, setSortKey] = useState<SortKey>('created_at')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [drawerLead, setDrawerLead] = useState<Lead | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [form, setForm] = useState<{ 
+    business_name: string
+    contact_name: string
+    email: string
+    phone: string
+    website: string
+    social_links: string[]
+    tags: string[]
+  }>({
+    business_name: '',
+    contact_name: '',
+    email: '',
+    phone: '',
+    website: '',
+    social_links: [],
+    tags: [],
+  })
   const [refreshing, setRefreshing] = useState(false)
   const [exporting, setExporting] = useState(false)
   // const [showMergeDialog, setShowMergeDialog] = useState(false)
@@ -149,6 +174,70 @@ export default function LeadsPage() {
       setHasMore(res.data.hasMore)
     }
     setRefreshing(false)
+  }
+
+  // Initialize form when a lead is opened
+  useEffect(() => {
+    if (!drawerLead) {
+      setEditing(false)
+      return
+    }
+    setForm({
+      business_name: drawerLead.business_name || '',
+      contact_name: drawerLead.contact_name || '',
+      email: drawerLead.email || '',
+      phone: drawerLead.phone || '',
+      website: drawerLead.website || '',
+      social_links: drawerLead.social_links || [],
+      tags: drawerLead.tags || [],
+    })
+    setEditing(false)
+  }, [drawerLead])
+
+  const handleSave = async () => {
+    if (!drawerLead) return
+    setSaving(true)
+    try {
+      const service = createLeadsAdminService()
+      const updates = {
+        business_name: form.business_name || null,
+        contact_name: form.contact_name || null,
+        email: form.email || '',
+        phone: form.phone || null,
+        website: form.website || null,
+        social_links: form.social_links.length > 0 ? form.social_links : null,
+        tags: form.tags.length > 0 ? form.tags : null,
+      } as any
+      const res = await service.updateLead(drawerLead.id, updates)
+      if (res.success && res.data) {
+        // Update list
+        setLeads((prev) => prev.map((l) => (l.id === drawerLead.id ? res.data! : l)))
+        // Update drawer
+        setDrawerLead(res.data)
+        // Clear cache to force refresh on next fetch
+        dispatch(clearCacheType('leads'))
+        setEditing(false)
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!drawerLead) return
+    if (!confirm('Delete this lead? This action cannot be undone.')) return
+    setDeleting(true)
+    try {
+      const service = createLeadsAdminService()
+      const res = await service.deleteLead(drawerLead.id)
+      if (res.success) {
+        setLeads((prev) => prev.filter((l) => l.id !== drawerLead.id))
+        dispatch(clearCacheType('leads'))
+        setDrawerLead(null)
+      }
+    } finally {
+      setDeleting(false)
+    }
   }
 
   useEffect(() => {
@@ -591,20 +680,175 @@ export default function LeadsPage() {
                 <div className="text-white flex items-center gap-2">{leadKindIcon(drawerLead.lead_kind)}<span className="uppercase">{drawerLead.lead_kind}</span></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Contact Name" value={drawerLead.contact_name} />
-                <Field label="Business Name" value={drawerLead.business_name} />
-                <Field label="Email" value={drawerLead.email} isLink={`mailto:${drawerLead.email}`} />
-                <Field label="Phone" value={drawerLead.phone} isLink={drawerLead.phone ? `tel:${drawerLead.phone}` : undefined} />
-                <Field label="Website" value={drawerLead.website} isLink={drawerLead.website || undefined} />
-                <Field label="Source Path" value={drawerLead.source_path} />
-                <Field label="Tags" value={drawerLead.tags?.join(', ')} />
-                <Field label="Created At" value={new Date(drawerLead.created_at).toLocaleString(undefined, { weekday: 'short', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true, timeZoneName: 'short' })} />
+                {editing ? (
+                  <>
+                    <FormField label="Contact Name">
+                      <input
+                        className="w-full rounded bg-gray-800 text-white px-3 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        value={form.contact_name}
+                        onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
+                      />
+                    </FormField>
+                    <FormField label="Business Name">
+                      <input
+                        className="w-full rounded bg-gray-800 text-white px-3 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        value={form.business_name}
+                        onChange={(e) => setForm((f) => ({ ...f, business_name: e.target.value }))}
+                      />
+                    </FormField>
+                    <FormField label="Email">
+                      <input
+                        type="email"
+                        className="w-full rounded bg-gray-800 text-white px-3 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        value={form.email}
+                        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      />
+                    </FormField>
+                    <FormField label="Phone">
+                      <input
+                        className="w-full rounded bg-gray-800 text-white px-3 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        value={form.phone}
+                        onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                      />
+                    </FormField>
+                    <FormField label="Website">
+                      <input
+                        className="w-full rounded bg-gray-800 text-white px-3 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        value={form.website}
+                        onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
+                      />
+                    </FormField>
+                  </>
+                ) : (
+                  <>
+                    <Field label="Contact Name" value={drawerLead.contact_name} />
+                    <Field label="Business Name" value={drawerLead.business_name} />
+                    <Field label="Email" value={drawerLead.email} isLink={`mailto:${drawerLead.email}`} />
+                    <Field label="Phone" value={drawerLead.phone} isLink={drawerLead.phone ? `tel:${drawerLead.phone}` : undefined} />
+                    <Field label="Website" value={drawerLead.website} isLink={drawerLead.website ? (drawerLead.website.startsWith('http') ? drawerLead.website : `https://${drawerLead.website}`) : undefined} />
+                    <Field label="Source Path" value={drawerLead.source_path} />
+                  </>
+                )}
               </div>
-              <div>
-                <div className="text-xs text-gray-300 mb-1">Meta</div>
-                <pre className="bg-gray-800 text-white text-xs rounded p-3 overflow-auto">
+              {editing && (
+                <div className="space-y-4">
+                  <FormField label="Social Links">
+                    <ListEditor
+                      items={form.social_links}
+                      onChange={(items) => setForm((f) => ({ ...f, social_links: items }))}
+                      placeholder="Add social link..."
+                      emptyMessage="No social links"
+                    />
+                  </FormField>
+                  <FormField label="Tags">
+                    <ListEditor
+                      items={form.tags}
+                      onChange={(items) => setForm((f) => ({ ...f, tags: items }))}
+                      placeholder="Add tag..."
+                      emptyMessage="No tags"
+                    />
+                  </FormField>
+                </div>
+              )}
+              {!editing && (
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-xs text-gray-300">Social Links</div>
+                    <div className="text-white">
+                      {drawerLead.social_links && drawerLead.social_links.length > 0 ? (
+                        <div className="space-y-1">
+                          {drawerLead.social_links.map((link, index) => (
+                            <div key={index}>
+                              <a 
+                                href={link.startsWith('http') ? link : `https://${link}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-300 hover:text-purple-200 underline break-all"
+                              >
+                                {link}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        'None'
+                      )}
+                    </div>
+                  </div>
+                  <Field label="Tags" value={drawerLead.tags?.join(', ') || 'None'} />
+                </div>
+              )}
+              {!editing && (
+                <>
+                  <div>
+                    <Field label="Created At" value={new Date(drawerLead.created_at).toLocaleString(undefined, { weekday: 'short', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true, timeZoneName: 'short' })} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-300 mb-1">Meta</div>
+                    <pre className="bg-gray-800 text-white text-xs rounded p-3 overflow-auto">
 {JSON.stringify(drawerLead.meta, null, 2)}
-                </pre>
+                    </pre>
+                  </div>
+                </>
+              )}
+              <div className="flex items-center justify-between gap-2 pt-2">
+                {!editing ? (
+                  <div className="ml-auto">
+                    <Tooltip content="Edit lead">
+                      <button
+                        className="inline-flex items-center gap-2 rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700"
+                        onClick={() => setEditing(true)}
+                      >
+                        <Icon path={mdiPencil} className="h-4 w-4 text-white" />
+                        <span>Edit</span>
+                      </button>
+                    </Tooltip>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-end gap-2 w-full">
+                    <Tooltip content="Delete lead">
+                      <button
+                        className="inline-flex items-center gap-2 rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={deleting || saving}
+                        onClick={handleDelete}
+                      >
+                        <Icon path={mdiTrashCanOutline} className="h-4 w-4 text-white" />
+                        <span>{deleting ? 'Deleting…' : 'Delete'}</span>
+                      </button>
+                    </Tooltip>
+                    <button
+                      className="inline-flex items-center gap-2 rounded-md bg-gray-700 px-3 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => {
+                        // reset form to original and exit edit mode
+                        if (drawerLead) {
+                        setForm({
+                          business_name: drawerLead.business_name || '',
+                          contact_name: drawerLead.contact_name || '',
+                          email: drawerLead.email || '',
+                          phone: drawerLead.phone || '',
+                          website: drawerLead.website || '',
+                          social_links: drawerLead.social_links || [],
+                          tags: drawerLead.tags || [],
+                        })
+                        }
+                        setEditing(false)
+                      }}
+                    >
+                      <Icon path={mdiClose} className="h-4 w-4 text-white" />
+                      <span>Cancel</span>
+                    </button>
+                    <Tooltip content="Save changes">
+                      <button
+                        className="inline-flex items-center gap-2 rounded-md bg-purple-600 px-3 py-2 text-sm text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={saving || deleting}
+                        onClick={handleSave}
+                      >
+                        <Icon path={mdiContentSave} className={`h-4 w-4 text-white ${saving ? 'animate-spin' : ''}`} />
+                        <span>{saving ? 'Saving…' : 'Save'}</span>
+                      </button>
+                    </Tooltip>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -647,8 +891,178 @@ function Field({ label, value, isLink }: { label: string; value?: string | null;
       <div className="text-xs text-gray-300">{label}</div>
       <div className="text-white break-words">
         {value ? (
-          isLink ? <a className="text-purple-300 hover:text-purple-200" href={isLink} target={isLink.startsWith('http') ? '_blank' : undefined} rel={isLink.startsWith('http') ? 'noreferrer' : undefined}>{value}</a> : value
+          isLink ? (
+            <a 
+              className="text-purple-300 hover:text-purple-200" 
+              href={isLink} 
+              target={isLink.startsWith('http') ? '_blank' : undefined} 
+              rel={isLink.startsWith('http') ? 'noopener noreferrer' : undefined}
+            >
+              {value}
+            </a>
+          ) : value
         ) : ''}
+      </div>
+    </div>
+  )
+}
+
+function FormField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="text-xs text-gray-300">{label}</div>
+      <div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function ListEditor({ 
+  items, 
+  onChange, 
+  placeholder = "Add new item...",
+  emptyMessage = "No items"
+}: { 
+  items: string[]
+  onChange: (items: string[]) => void
+  placeholder?: string
+  emptyMessage?: string
+}) {
+  const [newItem, setNewItem] = useState('')
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingValue, setEditingValue] = useState('')
+
+  const handleAdd = () => {
+    if (newItem.trim()) {
+      onChange([...items, newItem.trim()])
+      setNewItem('')
+    }
+  }
+
+  const handleEdit = (index: number) => {
+    setEditingIndex(index)
+    setEditingValue(items[index])
+  }
+
+  const handleSaveEdit = () => {
+    if (editingValue.trim() && editingIndex !== null) {
+      const newItems = [...items]
+      newItems[editingIndex] = editingValue.trim()
+      onChange(newItems)
+      setEditingIndex(null)
+      setEditingValue('')
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null)
+    setEditingValue('')
+  }
+
+  const handleRemove = (index: number) => {
+    onChange(items.filter((_, i) => i !== index))
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAdd()
+    }
+  }
+
+  const handleEditKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit()
+    } else if (e.key === 'Escape') {
+      handleCancelEdit()
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder={placeholder}
+          className="flex-1 rounded bg-gray-800 text-white px-3 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+        />
+        <Tooltip content="Add item">
+          <button
+            onClick={handleAdd}
+            disabled={!newItem.trim()}
+            className="rounded bg-purple-600 p-2 text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Icon path={mdiPlus} className="h-4 w-4" />
+          </button>
+        </Tooltip>
+      </div>
+      
+      <div className="space-y-1">
+        {items.length === 0 ? (
+          <div className="text-gray-400 text-sm italic">{emptyMessage}</div>
+        ) : (
+          items.map((item, index) => (
+            <div key={index} className="flex items-center gap-2">
+              {editingIndex === index ? (
+                <input
+                  type="text"
+                  value={editingValue}
+                  onChange={(e) => setEditingValue(e.target.value)}
+                  onKeyPress={handleEditKeyPress}
+                  className="flex-1 rounded bg-gray-800 text-white px-3 py-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  autoFocus
+                />
+              ) : (
+                <span className="flex-1 text-white text-sm">{item}</span>
+              )}
+              
+              <div className="flex gap-1">
+                {editingIndex === index ? (
+                  <>
+                    <Tooltip content="Save">
+                      <button
+                        onClick={handleSaveEdit}
+                        className="rounded bg-green-600 p-1 text-white hover:bg-green-700"
+                      >
+                        <Icon path={mdiContentSave} className="h-3 w-3" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Cancel">
+                      <button
+                        onClick={handleCancelEdit}
+                        className="rounded bg-gray-600 p-1 text-white hover:bg-gray-700"
+                      >
+                        <Icon path={mdiClose} className="h-3 w-3" />
+                      </button>
+                    </Tooltip>
+                  </>
+                ) : (
+                  <>
+                    <Tooltip content="Edit">
+                      <button
+                        onClick={() => handleEdit(index)}
+                        className="rounded bg-blue-600 p-1 text-white hover:bg-blue-700"
+                      >
+                        <Icon path={mdiPencil} className="h-3 w-3" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Remove">
+                      <button
+                        onClick={() => handleRemove(index)}
+                        className="rounded bg-red-600 p-1 text-white hover:bg-red-700"
+                      >
+                        <Icon path={mdiMinus} className="h-3 w-3" />
+                      </button>
+                    </Tooltip>
+                  </>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )
