@@ -72,7 +72,6 @@ export interface LeadSearchResult {
 export interface SupabaseConfig {
   url: string;
   anonKey: string;
-  serviceRoleKey?: string;
 }
 
 export interface DatabaseError {

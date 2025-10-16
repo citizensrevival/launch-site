@@ -15,12 +15,11 @@ export class SupabaseClientFactory {
   }
 
   /**
-   * Creates a Supabase client with service role key for admin operations
+   * Creates a Supabase client for admin operations using RLS policies
+   * Note: Admin operations should be handled via Row Level Security policies, not service role keys
    */
   static createAdminClient(config: SupabaseConfig): SupabaseClient {
-    if (!config.anonKey) {
-      throw new Error('Service role key is required for admin operations');
-    }
+    // Always use anon key with RLS policies for security
     return createClient(config.url, config.anonKey);
   }
 
@@ -80,7 +79,6 @@ export class EnvironmentConfigProvider implements ConfigProvider {
     return {
       url,
       anonKey,
-      serviceRoleKey: undefined, // Service role key should never be used in client-side apps
     };
   }
 }

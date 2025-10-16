@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { supabase } from '../_lib/db.ts'
 import { BatchReq, type BatchRes } from '../_lib/validation.ts'
-import { UpsertUserReq, StartSessionReq, PageviewReq, EventReq } from '../_lib/validation.ts'
+// import { UpsertUserReq, StartSessionReq, PageviewReq, EventReq } from '../_lib/validation.ts'
 
 serve(async (req) => {
   // Handle CORS preflight requests

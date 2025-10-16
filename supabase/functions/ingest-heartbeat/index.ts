@@ -9,7 +9,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { sessionId, userId } = HeartbeatReq.parse(body)
+    const { sessionId } = HeartbeatReq.parse(body)
 
     // Update session's ended_at to extend the session
     const { error } = await supabase

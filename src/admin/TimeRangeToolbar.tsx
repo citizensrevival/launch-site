@@ -63,27 +63,31 @@ export function getTimeRangeDates(range: TimeRange): { start: Date; end: Date } 
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
   
   switch (range) {
-    case 'today':
+    case 'today': {
       const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
       return { start: startToday, end };
+    }
     
-    case '7days':
+    case '7days': {
       const start7Days = new Date(end);
       start7Days.setDate(start7Days.getDate() - 6);
       start7Days.setHours(0, 0, 0, 0);
       return { start: start7Days, end };
+    }
     
-    case '30days':
+    case '30days': {
       const start30Days = new Date(end);
       start30Days.setDate(start30Days.getDate() - 29);
       start30Days.setHours(0, 0, 0, 0);
       return { start: start30Days, end };
+    }
     
-    case 'year':
+    case 'year': {
       const startYear = new Date(end);
       startYear.setFullYear(startYear.getFullYear() - 1);
       startYear.setHours(0, 0, 0, 0);
       return { start: startYear, end };
+    }
     
     default:
       return { start: new Date(), end: new Date() };
