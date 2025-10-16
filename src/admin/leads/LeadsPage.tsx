@@ -30,6 +30,7 @@ import {
   mdiTrashCanOutline,
   mdiPlus,
   mdiMinus,
+  mdiTrashCan,
   // mdiContentDuplicate
 } from '@mdi/js'
 
@@ -75,6 +76,9 @@ export default function LeadsPage() {
   })
   const [refreshing, setRefreshing] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [bulkDeleteStatus, setBulkDeleteStatus] = useState<Record<string, { status: 'pending' | 'deleting' | 'success' | 'error'; error?: string }>>({})
   // const [showMergeDialog, setShowMergeDialog] = useState(false)
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
   const search = (searchParams.get('search') || '').trim()
@@ -240,6 +244,64 @@ export default function LeadsPage() {
     }
   }
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    
+    setBulkDeleting(true)
+    setBulkDeleteStatus({})
+    
+    // Initialize status for all selected leads
+    const initialStatus: Record<string, { status: 'pending' | 'deleting' | 'success' | 'error'; error?: string }> = {}
+    Array.from(selectedIds).forEach(id => {
+      initialStatus[id] = { status: 'pending' }
+    })
+    setBulkDeleteStatus(initialStatus)
+    
+    const service = createLeadsAdminService()
+    const results: string[] = []
+    const remainingSelectedIds = new Set(selectedIds)
+    
+    for (const leadId of selectedIds) {
+      // Update status to deleting
+      setBulkDeleteStatus(prev => ({
+        ...prev,
+        [leadId]: { status: 'deleting' }
+      }))
+      
+      try {
+        const res = await service.deleteLead(leadId)
+        if (res.success) {
+          setBulkDeleteStatus(prev => ({
+            ...prev,
+            [leadId]: { status: 'success' }
+          }))
+          results.push(leadId)
+          remainingSelectedIds.delete(leadId)
+          
+          // Immediately remove from table
+          setLeads((prev) => prev.filter((l) => l.id !== leadId))
+        } else {
+          setBulkDeleteStatus(prev => ({
+            ...prev,
+            [leadId]: { status: 'error', error: res.error?.message || 'Failed to delete' }
+          }))
+        }
+      } catch (error) {
+        setBulkDeleteStatus(prev => ({
+          ...prev,
+          [leadId]: { status: 'error', error: error instanceof Error ? error.message : 'Unknown error' }
+        }))
+      }
+    }
+    
+    // Update cache and selection
+    if (results.length > 0) {
+      dispatch(clearCacheType('leads'))
+    }
+    setSelectedIds(remainingSelectedIds)
+    setBulkDeleting(false)
+  }
+
   useEffect(() => {
     // Reset all state when filters change
     setLeads([])
@@ -326,6 +388,18 @@ export default function LeadsPage() {
         ))}
       </div>
       <div className="flex items-center gap-2">
+        {selectedIds.size > 0 && (
+          <Tooltip content={`Delete ${selectedIds.size} selected lead${selectedIds.size === 1 ? '' : 's'}`}>
+            <button
+              type="button"
+              onClick={() => setShowBulkDeleteDialog(true)}
+              aria-label="Delete selected leads"
+              className="rounded-md bg-red-600 p-2 text-sm text-white hover:bg-red-700"
+            >
+              <Icon path={mdiTrashCan} className="h-5 w-5 text-white" />
+            </button>
+          </Tooltip>
+        )}
         {/* <Tooltip content="Merge Duplicates">
           <button
             type="button"
@@ -849,6 +923,143 @@ export default function LeadsPage() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Dialog */}
+      {showBulkDeleteDialog && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={() => !bulkDeleting && setShowBulkDeleteDialog(false)} />
+          <div className="absolute inset-0 bg-gray-900 flex flex-col max-w-2xl mx-auto my-8 rounded-lg border border-gray-800">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+              <div className="text-white font-semibold text-lg">
+                Delete {selectedIds.size} Lead{selectedIds.size === 1 ? '' : 's'}
+              </div>
+              <Tooltip content="Close delete dialog">
+                <button 
+                  className="p-2 rounded hover:bg-gray-800" 
+                  onClick={() => setShowBulkDeleteDialog(false)} 
+                  aria-label="Close"
+                  disabled={bulkDeleting}
+                >
+                  <Icon path={mdiClose} className="h-5 w-5 text-white" />
+                </button>
+              </Tooltip>
+            </div>
+            <div className="flex-1 p-4 overflow-y-auto">
+              {!bulkDeleting && Object.keys(bulkDeleteStatus).length === 0 && (
+                <div className="space-y-4">
+                  <p className="text-gray-300">
+                    Are you sure you want to delete the following {selectedIds.size} lead{selectedIds.size === 1 ? '' : 's'}? This action cannot be undone.
+                  </p>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {Array.from(selectedIds).map(leadId => {
+                      const lead = leads.find(l => l.id === leadId)
+                      return (
+                        <div key={leadId} className="flex items-center gap-3 p-3 bg-gray-800 rounded">
+                          {leadKindIcon(lead?.lead_kind || 'subscriber')}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-white font-medium truncate">
+                              {lead?.business_name || lead?.contact_name || lead?.email || 'Unknown'}
+                            </div>
+                            <div className="text-gray-400 text-sm truncate">
+                              {lead?.email}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <button
+                      onClick={() => setShowBulkDeleteDialog(false)}
+                      className="px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleBulkDelete}
+                      className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+                    >
+                      Delete {selectedIds.size} Lead{selectedIds.size === 1 ? '' : 's'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {(bulkDeleting || Object.keys(bulkDeleteStatus).length > 0) && (
+                <div className="space-y-4">
+                  <p className="text-gray-300">
+                    {bulkDeleting ? 'Deleting leads...' : 'Deletion completed.'}
+                  </p>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {Object.entries(bulkDeleteStatus).map(([leadId, status]) => {
+                      // Try to find the lead in current leads, or use a fallback if it was deleted
+                      const lead = leads.find(l => l.id === leadId)
+                      const leadInfo = lead || {
+                        lead_kind: 'subscriber' as const,
+                        business_name: null,
+                        contact_name: null,
+                        email: 'Deleted lead',
+                        id: leadId
+                      }
+                      
+                      return (
+                        <div key={leadId} className="flex items-center gap-3 p-3 bg-gray-800 rounded">
+                          {leadKindIcon(leadInfo.lead_kind)}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-white font-medium truncate">
+                              {leadInfo.business_name || leadInfo.contact_name || leadInfo.email || 'Unknown'}
+                            </div>
+                            <div className="text-gray-400 text-sm truncate">
+                              {leadInfo.email}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {status.status === 'pending' && (
+                              <span className="text-gray-400 text-sm">Pending</span>
+                            )}
+                            {status.status === 'deleting' && (
+                              <span className="text-blue-400 text-sm flex items-center gap-1">
+                                <Icon path={mdiRefresh} className="h-4 w-4 animate-spin" />
+                                Deleting...
+                              </span>
+                            )}
+                            {status.status === 'success' && (
+                              <span className="text-green-400 text-sm flex items-center gap-1">
+                                <Icon path={mdiCheckCircleOutline} className="h-4 w-4" />
+                                Deleted
+                              </span>
+                            )}
+                            {status.status === 'error' && (
+                              <span className="text-red-400 text-sm flex items-center gap-1">
+                                <Icon path={mdiClose} className="h-4 w-4" />
+                                Error: {status.error}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {!bulkDeleting && (
+                    <div className="flex justify-end pt-4">
+                      <button
+                        onClick={() => {
+                          setShowBulkDeleteDialog(false)
+                          setBulkDeleteStatus({})
+                        }}
+                        className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              
             </div>
           </div>
         </div>
