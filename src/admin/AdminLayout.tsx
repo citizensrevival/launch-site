@@ -44,10 +44,6 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
   const { user, signOut } = useAuth();
   const [currentPath, setCurrentPath] = useState('');
   const { sites, selectedSite, selectSite } = useSites();
-  
-  // Debug logging
-  console.log('AdminLayout: sites:', sites);
-  console.log('AdminLayout: selectedSite:', selectedSite);
 
   // Get current path for active navigation
   useEffect(() => {
