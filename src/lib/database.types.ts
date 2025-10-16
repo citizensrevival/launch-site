@@ -98,6 +98,362 @@ export type Database = {
         }
         Relationships: []
       }
+      asset: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          created_by: string
+          duration_ms: number | null
+          height: number | null
+          id: string
+          is_system: boolean | null
+          kind: Database["public"]["Enums"]["asset_kind"]
+          site_id: string
+          storage_key: string
+          system_key: string | null
+          width: number | null
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          created_by: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          is_system?: boolean | null
+          kind: Database["public"]["Enums"]["asset_kind"]
+          site_id: string
+          storage_key: string
+          system_key?: string | null
+          width?: number | null
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          created_by?: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          is_system?: boolean | null
+          kind?: Database["public"]["Enums"]["asset_kind"]
+          site_id?: string
+          storage_key?: string
+          system_key?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_publish: {
+        Row: {
+          asset_id: string
+          published_at: string
+          published_by: string
+          version: number
+        }
+        Insert: {
+          asset_id: string
+          published_at?: string
+          published_by: string
+          version: number
+        }
+        Update: {
+          asset_id?: string
+          published_at?: string
+          published_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_publish_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: true
+            referencedRelation: "asset"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_usage: {
+        Row: {
+          asset_id: string
+          site_id: string
+          used_by_id: string
+          used_by_type: string
+        }
+        Insert: {
+          asset_id: string
+          site_id: string
+          used_by_id: string
+          used_by_type: string
+        }
+        Update: {
+          asset_id?: string
+          site_id?: string
+          used_by_id?: string
+          used_by_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_usage_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "asset"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_usage_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_variant: {
+        Row: {
+          asset_id: string
+          created_at: string
+          file_size: number | null
+          height: number | null
+          id: string
+          storage_key: string
+          variant_type: string
+          width: number | null
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          storage_key: string
+          variant_type: string
+          width?: number | null
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          storage_key?: string
+          variant_type?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_variant_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "asset"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_version: {
+        Row: {
+          asset_id: string
+          created_at: string
+          created_by: string
+          edit_operation: Json | null
+          id: string
+          meta: Json
+          status: Database["public"]["Enums"]["publish_status"]
+          updated_at: string | null
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          created_by: string
+          edit_operation?: Json | null
+          id?: string
+          meta?: Json
+          status?: Database["public"]["Enums"]["publish_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+          version: number
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          created_by?: string
+          edit_operation?: Json | null
+          id?: string
+          meta?: Json
+          status?: Database["public"]["Enums"]["publish_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_version_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "asset"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      block: {
+        Row: {
+          id: string
+          is_system: boolean | null
+          site_id: string
+          system_key: string | null
+          tag: string | null
+          type: string
+        }
+        Insert: {
+          id?: string
+          is_system?: boolean | null
+          site_id: string
+          system_key?: string | null
+          tag?: string | null
+          type: string
+        }
+        Update: {
+          id?: string
+          is_system?: boolean | null
+          site_id?: string
+          system_key?: string | null
+          tag?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "block_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      block_publish: {
+        Row: {
+          block_id: string
+          published_at: string
+          published_by: string
+          version: number
+        }
+        Insert: {
+          block_id: string
+          published_at?: string
+          published_by: string
+          version: number
+        }
+        Update: {
+          block_id?: string
+          published_at?: string
+          published_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "block_publish_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: true
+            referencedRelation: "block"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      block_version: {
+        Row: {
+          assets: Json
+          block_id: string
+          content: Json
+          created_at: string
+          created_by: string
+          id: string
+          layout_variant: string
+          status: Database["public"]["Enums"]["publish_status"]
+          updated_at: string | null
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          assets?: Json
+          block_id: string
+          content: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          layout_variant: string
+          status?: Database["public"]["Enums"]["publish_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+          version: number
+        }
+        Update: {
+          assets?: Json
+          block_id?: string
+          content?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          layout_variant?: string
+          status?: Database["public"]["Enums"]["publish_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "block_version_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "block"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_audit_log: {
+        Row: {
+          action: string
+          changes: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+          occurred_at: string
+          user_id: string
+          user_permissions: string[] | null
+          version: number | null
+        }
+        Insert: {
+          action: string
+          changes?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          occurred_at?: string
+          user_id: string
+          user_permissions?: string[] | null
+          version?: number | null
+        }
+        Update: {
+          action?: string
+          changes?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          occurred_at?: string
+          user_id?: string
+          user_permissions?: string[] | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           id: number
@@ -264,7 +620,6 @@ export type Database = {
           meta: Json | null
           phone: string | null
           social_links: string[] | null
-          source_path: string | null
           tags: string[] | null
           website: string | null
         }
@@ -278,7 +633,6 @@ export type Database = {
           meta?: Json | null
           phone?: string | null
           social_links?: string[] | null
-          source_path?: string | null
           tags?: string[] | null
           website?: string | null
         }
@@ -292,11 +646,235 @@ export type Database = {
           meta?: Json | null
           phone?: string | null
           social_links?: string[] | null
-          source_path?: string | null
           tags?: string[] | null
           website?: string | null
         }
         Relationships: []
+      }
+      menu: {
+        Row: {
+          handle: string
+          id: string
+          is_system: boolean | null
+          label: string
+          site_id: string
+          system_key: string | null
+        }
+        Insert: {
+          handle: string
+          id?: string
+          is_system?: boolean | null
+          label: string
+          site_id: string
+          system_key?: string | null
+        }
+        Update: {
+          handle?: string
+          id?: string
+          is_system?: boolean | null
+          label?: string
+          site_id?: string
+          system_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_publish: {
+        Row: {
+          menu_id: string
+          published_at: string
+          published_by: string
+          version: number
+        }
+        Insert: {
+          menu_id: string
+          published_at?: string
+          published_by: string
+          version: number
+        }
+        Update: {
+          menu_id?: string
+          published_at?: string
+          published_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_publish_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: true
+            referencedRelation: "menu"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_version: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          items: Json
+          menu_id: string
+          status: Database["public"]["Enums"]["publish_status"]
+          updated_at: string | null
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          items?: Json
+          menu_id: string
+          status?: Database["public"]["Enums"]["publish_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          items?: Json
+          menu_id?: string
+          status?: Database["public"]["Enums"]["publish_status"]
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_version_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      page: {
+        Row: {
+          id: string
+          is_system: boolean | null
+          site_id: string
+          slug: string
+          system_key: string | null
+        }
+        Insert: {
+          id?: string
+          is_system?: boolean | null
+          site_id: string
+          slug: string
+          system_key?: string | null
+        }
+        Update: {
+          id?: string
+          is_system?: boolean | null
+          site_id?: string
+          slug?: string
+          system_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      page_publish: {
+        Row: {
+          page_id: string
+          published_at: string
+          published_by: string
+          version: number
+        }
+        Insert: {
+          page_id: string
+          published_at?: string
+          published_by: string
+          version: number
+        }
+        Update: {
+          page_id?: string
+          published_at?: string
+          published_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_publish_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: true
+            referencedRelation: "page"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      page_version: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          layout_variant: string | null
+          nav_hints: Json
+          page_id: string
+          seo: Json
+          slots: Json
+          status: Database["public"]["Enums"]["publish_status"]
+          title: Json
+          updated_at: string | null
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          layout_variant?: string | null
+          nav_hints?: Json
+          page_id: string
+          seo?: Json
+          slots?: Json
+          status?: Database["public"]["Enums"]["publish_status"]
+          title: Json
+          updated_at?: string | null
+          updated_by?: string | null
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          layout_variant?: string | null
+          nav_hints?: Json
+          page_id?: string
+          seo?: Json
+          slots?: Json
+          status?: Database["public"]["Enums"]["publish_status"]
+          title?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_version_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "page"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pageviews: {
         Row: {
@@ -480,6 +1058,42 @@ export type Database = {
           },
         ]
       }
+      site: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          default_locale: string
+          handle: string
+          id: string
+          label: string
+          slug: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          default_locale?: string
+          handle: string
+          id?: string
+          label: string
+          slug: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          default_locale?: string
+          handle?: string
+          id?: string
+          label?: string
+          slug?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       unsubscribes: {
         Row: {
           created_at: string
@@ -507,6 +1121,27 @@ export type Database = {
           source_path?: string | null
           unsubscribed_lead_types?: Json
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      user_permissions: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          permission: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          permission: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          permission?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1161,6 +1796,15 @@ export type Database = {
       }
     }
     Functions: {
+      create_asset_variants: {
+        Args: {
+          p_asset_id: string
+          p_height: number
+          p_storage_key: string
+          p_width: number
+        }
+        Returns: undefined
+      }
       exclude_user: {
         Args: {
           p_anon_id?: string
@@ -1170,6 +1814,10 @@ export type Database = {
           p_session_id?: string
           p_user_id?: string
         }
+        Returns: string
+      }
+      get_asset_url: {
+        Args: { p_asset_id: string; p_variant_type?: string }
         Returns: string
       }
       gtrgm_compress: {
@@ -1192,6 +1840,10 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      has_permission: {
+        Args: { p_permission: string; p_user_id: string }
+        Returns: boolean
+      }
       is_user_excluded: {
         Args: {
           p_anon_id?: string
@@ -1200,6 +1852,17 @@ export type Database = {
           p_user_id?: string
         }
         Returns: boolean
+      }
+      log_cms_audit: {
+        Args: {
+          p_action: string
+          p_changes?: Json
+          p_entity_id: string
+          p_entity_type: string
+          p_user_id: string
+          p_version?: number
+        }
+        Returns: undefined
       }
       remove_exclusion: {
         Args: {
@@ -1243,7 +1906,9 @@ export type Database = {
       }
     }
     Enums: {
+      asset_kind: "image" | "video" | "file"
       lead_type: "subscriber" | "vendor" | "sponsor" | "volunteer"
+      publish_status: "draft" | "published" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1377,7 +2042,9 @@ export const Constants = {
   },
   public: {
     Enums: {
+      asset_kind: ["image", "video", "file"],
       lead_type: ["subscriber", "vendor", "sponsor", "volunteer"],
+      publish_status: ["draft", "published", "archived"],
     },
   },
 } as const
