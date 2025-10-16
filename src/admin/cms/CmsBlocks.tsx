@@ -3,11 +3,7 @@
 
 import { AdminLayout } from '../AdminLayout';
 
-interface CmsBlocksProps {
-  siteId?: string;
-}
-
-export function CmsBlocks({ siteId: _siteId }: CmsBlocksProps) {
+export function CmsBlocks() {
   return (
     <AdminLayout
       pageHeader={

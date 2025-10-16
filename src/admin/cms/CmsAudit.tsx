@@ -3,11 +3,7 @@
 
 import { AdminLayout } from '../AdminLayout';
 
-interface CmsAuditProps {
-  siteId?: string;
-}
-
-export function CmsAudit({ siteId: _siteId }: CmsAuditProps) {
+export function CmsAudit() {
   return (
     <AdminLayout
       pageHeader={

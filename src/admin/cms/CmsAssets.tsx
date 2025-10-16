@@ -7,27 +7,8 @@ import { useAssets, useAssetManagement } from '../../lib/cms/hooks';
 import { useAppSelector } from '../../shell/store/hooks';
 import type { Asset, AssetKind, ContentFilters, ContentSort } from '../../lib/cms/types';
 
-interface CmsAssetsProps {
-  siteId?: string;
-}
-
-export function CmsAssets({ siteId }: CmsAssetsProps) {
+export function CmsAssets() {
   const selectedSite = useAppSelector((state) => state.site.selectedSite);
-  const currentSiteId = siteId || selectedSite?.id;
-  
-  // Early return before any hooks to avoid Rules of Hooks violation
-  if (!currentSiteId) {
-    return (
-      <AdminLayout>
-        <div className="p-6">
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Site Selected</h3>
-            <p className="text-gray-500">Please select a site from the dropdown in the header to manage assets.</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
   
   const [filters, setFilters] = useState<ContentFilters>({});
   const [sort] = useState<ContentSort>({ field: 'created_at', direction: 'desc' });
@@ -37,7 +18,7 @@ export function CmsAssets({ siteId }: CmsAssetsProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { assets, loading, error } = useAssets(currentSiteId, filters, sort, page, 20);
+  const { assets, loading, error } = useAssets(selectedSite?.id || '', filters, sort, page, 20);
   const { uploadAsset, deleteAsset, loading: actionLoading, error: actionError } = useAssetManagement();
 
   const handleFileSelect = useCallback((files: FileList | null) => {
@@ -47,16 +28,16 @@ export function CmsAssets({ siteId }: CmsAssetsProps) {
   }, []);
 
   const handleUpload = useCallback(async () => {
-    if (selectedFiles.length === 0 || !currentSiteId) return;
+    if (selectedFiles.length === 0 || !selectedSite?.id) return;
 
     for (const file of selectedFiles) {
-      await uploadAsset(currentSiteId, file);
+      await uploadAsset(selectedSite.id, file);
     }
     
     setSelectedFiles([]);
     // Refresh assets list
     window.location.reload();
-  }, [selectedFiles, uploadAsset, currentSiteId]);
+  }, [selectedFiles, uploadAsset, selectedSite?.id]);
 
   const handleDelete = useCallback(async (assetId: string) => {
     if (confirm('Are you sure you want to delete this asset?')) {
