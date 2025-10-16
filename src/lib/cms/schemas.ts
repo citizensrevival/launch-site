@@ -93,7 +93,7 @@ export const zAssetEditOperation = z.object({
     z.object({
       operation: z.literal('rotate'),
       params: z.object({
-        degrees: z.enum([90, 180, 270])
+        degrees: z.enum(['90', '180', '270'])
       })
     })
   ])
@@ -139,7 +139,7 @@ export const zBlockInstance = z.object({
   slot: z.string(),
   order: z.number().int(),
   block_id: z.string().uuid(),
-  instance_props: z.record(z.unknown()).optional()
+  instance_props: z.record(z.string(), z.unknown()).optional()
 });
 
 export const zResolvedBlock = z.object({
@@ -147,12 +147,12 @@ export const zResolvedBlock = z.object({
   block_version_id: z.string().uuid(),
   type: z.string(),
   layout_variant: z.string(),
-  content: zLocalizedContent(z.record(z.unknown())),
+  content: zLocalizedContent(z.record(z.string(), z.unknown())),
   assets: z.array(z.object({
     role: z.string(),
     asset: zResolvedAsset
   })),
-  instance_props: z.record(z.unknown()).optional()
+  instance_props: z.record(z.string(), z.unknown()).optional()
 });
 
 export const zBlock = z.object({
@@ -169,7 +169,7 @@ export const zBlockVersion = z.object({
   block_id: z.string().uuid(),
   version: z.number().int(),
   layout_variant: z.string(),
-  content: zLocalizedContent(z.record(z.unknown())),
+  content: zLocalizedContent(z.record(z.string(), z.unknown())),
   assets: z.array(z.object({
     role: z.string(),
     asset_id: z.string().uuid()
@@ -203,8 +203,8 @@ export const zPageVersion = z.object({
   version: z.number().int(),
   title: zLocalizedContent(z.string()),
   layout_variant: z.string().optional(),
-  seo: zLocalizedContent(z.record(z.unknown())),
-  nav_hints: zLocalizedContent(z.record(z.unknown())),
+  seo: zLocalizedContent(z.record(z.string(), z.unknown())),
+  nav_hints: zLocalizedContent(z.record(z.string(), z.unknown())),
   slots: z.array(zBlockInstance),
   status: z.enum(['draft', 'published', 'archived']),
   created_at: z.string(),
@@ -227,9 +227,9 @@ export const zResolvedPage = z.object({
   version: z.number().int(),
   title: z.string(),
   layout_variant: z.string().optional(),
-  seo: z.record(z.unknown()),
-  nav_hints: z.record(z.unknown()),
-  slots: z.record(z.array(zResolvedBlock))
+  seo: z.record(z.string(), z.unknown()),
+  nav_hints: z.record(z.string(), z.unknown()),
+  slots: z.record(z.string(), z.array(zResolvedBlock))
 });
 
 // Menu schemas
@@ -336,7 +336,7 @@ export const zAuditLogEntry = z.object({
   entity_type: z.enum(['page', 'block', 'menu', 'asset']),
   entity_id: z.string().uuid(),
   version: z.number().int().optional(),
-  changes: z.record(z.unknown()).optional(),
+  changes: z.record(z.string(), z.unknown()).optional(),
   occurred_at: z.string()
 });
 

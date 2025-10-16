@@ -7,7 +7,7 @@ interface CmsAuditProps {
   siteId?: string;
 }
 
-export function CmsAudit({ siteId }: CmsAuditProps) {
+export function CmsAudit({ siteId: _siteId }: CmsAuditProps) {
   return (
     <AdminLayout
       pageHeader={

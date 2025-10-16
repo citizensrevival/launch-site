@@ -15,6 +15,7 @@ Build the asset management system incrementally:
 - [x] Create asset and asset_version records
 - [x] Display uploaded assets in a grid/list view
 - [x] Files: `src/admin/cms/CmsAssets.tsx`, `src/lib/cms/client.ts`
+- [x] **COMMITTED**: 640b92f - feat(cms): Phase 1.1: Asset Upload (Basic)
 
 #### 1.2 Asset Variants Generation 🔄 IN PROGRESS
 - [ ] Implement automatic variant generation for images

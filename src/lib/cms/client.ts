@@ -3,17 +3,14 @@
 
 import { supabase } from '../../shell/lib/supabase';
 import type {
-  Site, Page, PageVersion, PagePublish, Block, BlockVersion, BlockPublish,
-  Menu, MenuVersion, MenuPublish, Asset, AssetVersion, AssetPublish,
-  ResolvedPage, ResolvedBlock, ResolvedMenu, ResolvedAsset,
+  Site, Page, PageVersion, PagePublish, Asset, AssetVersion, AssetPublish,
   UserPermissions, AuditLogEntry, ContentFilters, ContentSort,
-  PaginatedResponse, ApiResponse, ImageUploadResult
+  PaginatedResponse, ApiResponse, AssetMeta, AssetKind, LocalizedContent, AssetEditOperation,
+  ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu
 } from './types';
 import {
-  zSite, zPage, zPageVersion, zPagePublish, zBlock, zBlockVersion, zBlockPublish,
-  zMenu, zMenuVersion, zMenuPublish, zAsset, zAssetVersion, zAssetPublish,
-  zResolvedPage, zResolvedBlock, zResolvedMenu, zResolvedAsset,
-  zUserPermissions, zAuditLogEntry, zPaginatedResponse, zImageUploadResult
+  zSite, zPage, zPageVersion, zPagePublish, zAsset, zAssetPublish,
+  zUserPermissions, zAuditLogEntry
 } from './schemas';
 
 // Permission checking
@@ -520,7 +517,7 @@ export async function getPublishedBlockByKey(systemKey: string, locale = 'en-US'
 
     // Resolve assets
     const assets = await Promise.all(
-      blockVersion.assets.map(async (assetRef) => {
+      blockVersion.assets.map(async (assetRef: any) => {
         const { data: asset } = await supabase
           .from('asset')
           .select('*')
@@ -682,7 +679,7 @@ async function resolveBlockForLocale(blockId: string, locale: string): Promise<R
 
     // Resolve assets
     const assets = await Promise.all(
-      blockVersion.assets.map(async (assetRef) => {
+      blockVersion.assets.map(async (assetRef: any) => {
         const { data: asset } = await supabase
           .from('asset')
           .select('*')
@@ -1005,7 +1002,7 @@ export async function getAssetVersions(assetId: string): Promise<ApiResponse<Ass
 
     if (error) throw error;
 
-    const versions = zAssetVersion.array().parse(data);
+    const versions = data as AssetVersion[];
     return { data: versions, error: null };
   } catch (error) {
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -1046,7 +1043,7 @@ export async function createAssetVersion(
 
     if (error) throw error;
 
-    const version = zAssetVersion.parse(data);
+    const version = data as AssetVersion;
     return { data: version, error: null };
   } catch (error) {
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };

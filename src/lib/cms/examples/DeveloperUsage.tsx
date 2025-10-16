@@ -46,10 +46,10 @@ export function HomePageExample() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                {heroBlock.content['en-US']?.headline || 'Welcome'}
+                {String(heroBlock.content['en-US']?.headline || 'Welcome')}
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                {heroBlock.content['en-US']?.body || 'Join our community'}
+                {String(heroBlock.content['en-US']?.body || 'Join our community')}
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export function NavigationExample() {
           {menu.items.map((item) => (
             <a
               key={item.id}
-              href={item.type === 'page' ? `/${item.page_id}` : item.url}
+              href={item.type === 'page' ? `/${item.page_id}` : (item as any).url || '#'}
               className="text-gray-600 hover:text-gray-900 px-3 py-4 text-sm font-medium"
             >
               {item.label?.['en-US'] || item.id}

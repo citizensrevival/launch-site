@@ -3,19 +3,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type {
-  Site, Page, PageVersion, Block, BlockVersion, Asset, AssetVersion,
+  Site, Page, PageVersion, Asset, AssetVersion,
   ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu,
   UserPermissions, AuditLogEntry, ContentFilters, ContentSort,
-  PaginatedResponse, ApiResponse
+  PaginatedResponse, AssetMeta
 } from './types';
 import {
-  getSites, getSite, getPages, getPage, getPageBySystemKey,
-  getPageVersions, getPageVersion, createPage, updatePage, deletePage,
-  createPageVersion, updatePageVersion, publishPage, unpublishPage,
+  getSites, getSite, getPages, getPage,
+  getPageVersions, createPage, updatePage, deletePage,
+  publishPage, unpublishPage,
   getPublishedPage, getPublishedPageByKey, getPublishedBlockByKey,
   getPublishedAssetByKey, getPublishedMenuByKey, getUserPermissions,
-  getAuditLog, hasPermission, getAssets, getAsset, uploadAsset,
-  updateAsset, deleteAsset, getAssetVersions, createAssetVersion,
+  getAuditLog, hasPermission as checkPermission, getAssets, getAsset, uploadAsset,
+  updateAsset, deleteAsset, getAssetVersions,
   publishAsset, unpublishAsset
 } from './client';
 
@@ -363,10 +363,10 @@ export function usePermission(permission: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function checkPermission() {
+    async function checkUserPermission() {
       try {
         setLoading(true);
-        const result = await hasPermission(permission);
+        const result = await checkPermission(permission);
         setHasPermission(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -376,7 +376,7 @@ export function usePermission(permission: string) {
       }
     }
 
-    checkPermission();
+    checkUserPermission();
   }, [permission]);
 
   return { hasPermission, loading, error };

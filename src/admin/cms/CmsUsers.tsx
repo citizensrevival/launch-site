@@ -7,7 +7,7 @@ interface CmsUsersProps {
   siteId?: string;
 }
 
-export function CmsUsers({ siteId }: CmsUsersProps) {
+export function CmsUsers({ siteId: _siteId }: CmsUsersProps) {
   return (
     <AdminLayout
       pageHeader={
