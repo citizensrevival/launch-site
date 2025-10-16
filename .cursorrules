@@ -5,6 +5,7 @@
 - Verify no processes on ports 3000-3010 before considering task complete
 - Use `npm run db:ensure` to verify Supabase is running before starting development
 - Never commit `.env.local` files; use `npm run update-supabase-keys` for environment setup
+- Do not start the development server so that the user can test. The user will manually start the server
 
 ## Database & Build
 - Generate types after schema changes: `npm run db:generate`
