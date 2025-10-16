@@ -1,54 +1,49 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface Site {
-  id: string
-  handle: string
-  label: string
-  default_locale: string
-  slug: string
-  created_at: string
-  updated_at: string
+  id: string;
+  handle: string;
+  label: string;
+  default_locale: string;
+  slug?: string;
 }
 
-export interface SiteState {
-  currentSite: Site | null
-  loading: boolean
-  error: string | null
+interface SiteState {
+  selectedSite: Site | null;
+  sites: Site[];
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: SiteState = {
-  currentSite: null,
+  selectedSite: null,
+  sites: [],
   loading: false,
-  error: null
-}
+  error: null,
+};
 
 const siteSlice = createSlice({
   name: 'site',
   initialState,
   reducers: {
-    setSite: (state, action: PayloadAction<Site>) => {
-      state.currentSite = action.payload
-      state.loading = false
-      state.error = null
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload
-      if (action.payload) {
-        state.error = null
+    setSites: (state, action: PayloadAction<Site[]>) => {
+      state.sites = action.payload;
+      // Auto-select first site if none selected
+      if (!state.selectedSite && action.payload.length > 0) {
+        state.selectedSite = action.payload[0];
       }
     },
-    setError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload
-      state.loading = false
+    setSelectedSite: (state, action: PayloadAction<Site>) => {
+      state.selectedSite = action.payload;
     },
-    clearSite: (state) => {
-      state.currentSite = null
-      state.loading = false
-      state.error = null
-    }
-  }
-})
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+  },
+});
 
-export const { setSite, setLoading, setError, clearSite } = siteSlice.actions
-
-export default siteSlice.reducer
+export const { setSites, setSelectedSite, setLoading, setError } = siteSlice.actions;
+export default siteSlice.reducer;
