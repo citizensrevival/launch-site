@@ -9,6 +9,27 @@ create extension if not exists "uuid-ossp";
 -- Grant schema access
 grant usage on schema public to anon, authenticated;
 
+-- Grant table permissions
+grant select, insert, update, delete on all tables in schema public to anon, authenticated;
+grant usage, select on all sequences in schema public to anon, authenticated;
+
+-- Permission checking function
+create or replace function has_permission(user_id uuid, permission text)
+returns boolean
+language plpgsql
+security definer
+as $$
+begin
+  -- Check if user has the specific permission
+  return exists (
+    select 1 
+    from user_permissions 
+    where user_permissions.user_id = has_permission.user_id 
+    and permission = any(user_permissions.permissions)
+  );
+end;
+$$;
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Core Application Enums
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -1056,33 +1077,272 @@ create policy "read_audit_log" on cms_audit_log
 create policy "manage_sites" on site
   for all using (has_permission(auth.uid(), 'system.admin'));
 
--- Base table access (pages, blocks, menus, assets)
-create policy "cms_pages_read" on page
+-- Allow authenticated users to read sites (needed for site selection)
+create policy "read_sites" on site
+  for select using (auth.role() = 'authenticated');
+
+-- Storage policies for file uploads
+-- Allow authenticated users to upload files to any bucket
+create policy "storage_upload_policy" on storage.objects
+  for insert with check (auth.role() = 'authenticated');
+
+-- Allow authenticated users to read files from any bucket
+create policy "storage_read_policy" on storage.objects
+  for select using (auth.role() = 'authenticated');
+
+-- Allow authenticated users to update files in any bucket
+create policy "storage_update_policy" on storage.objects
+  for update using (auth.role() = 'authenticated');
+
+-- Allow authenticated users to delete files from any bucket
+create policy "storage_delete_policy" on storage.objects
+  for delete using (auth.role() = 'authenticated');
+
+-- =============================================================================
+-- COMPREHENSIVE CMS RLS POLICIES
+-- =============================================================================
+
+-- SITE TABLE POLICIES
+-- Allow authenticated users to read sites (needed for site selection)
+create policy "sites_read" on site
+  for select using (auth.role() = 'authenticated');
+
+-- Only system admins can manage sites
+create policy "sites_manage" on site
+  for all using (has_permission(auth.uid(), 'system.admin'));
+
+-- PAGE TABLE POLICIES
+-- Read pages (requires cms.pages.read permission)
+create policy "pages_read" on page
   for select using (has_permission(auth.uid(), 'cms.pages.read'));
 
-create policy "cms_blocks_read" on block
+-- Create pages (requires cms.pages.write permission)
+create policy "pages_create" on page
+  for insert with check (has_permission(auth.uid(), 'cms.pages.write'));
+
+-- Update pages (requires cms.pages.write permission)
+create policy "pages_update" on page
+  for update using (has_permission(auth.uid(), 'cms.pages.write'));
+
+-- Delete pages (requires cms.pages.write permission, but not system pages)
+create policy "pages_delete" on page
+  for delete using (
+    has_permission(auth.uid(), 'cms.pages.write') and 
+    not is_system
+  );
+
+-- PAGE VERSION POLICIES
+-- Read page versions (requires cms.pages.read permission)
+create policy "page_versions_read" on page_version
+  for select using (has_permission(auth.uid(), 'cms.pages.read'));
+
+-- Create page versions (requires cms.pages.write permission)
+create policy "page_versions_create" on page_version
+  for insert with check (has_permission(auth.uid(), 'cms.pages.write'));
+
+-- Update page versions (requires cms.pages.write permission)
+create policy "page_versions_update" on page_version
+  for update using (has_permission(auth.uid(), 'cms.pages.write'));
+
+-- PAGE PUBLISH POLICIES
+-- Read page publish records (requires cms.pages.read permission)
+create policy "page_publish_read" on page_publish
+  for select using (has_permission(auth.uid(), 'cms.pages.read'));
+
+-- Publish pages (requires cms.pages.publish permission)
+create policy "page_publish" on page_publish
+  for insert with check (has_permission(auth.uid(), 'cms.pages.publish'));
+
+-- Unpublish pages (requires cms.pages.publish permission)
+create policy "page_unpublish" on page_publish
+  for delete using (has_permission(auth.uid(), 'cms.pages.publish'));
+
+-- BLOCK TABLE POLICIES
+-- Read blocks (requires cms.blocks.read permission)
+create policy "blocks_read" on block
   for select using (has_permission(auth.uid(), 'cms.blocks.read'));
 
-create policy "cms_menus_read" on menu
+-- Create blocks (requires cms.blocks.write permission)
+create policy "blocks_create" on block
+  for insert with check (has_permission(auth.uid(), 'cms.blocks.write'));
+
+-- Update blocks (requires cms.blocks.write permission)
+create policy "blocks_update" on block
+  for update using (has_permission(auth.uid(), 'cms.blocks.write'));
+
+-- Delete blocks (requires cms.blocks.write permission, but not system blocks)
+create policy "blocks_delete" on block
+  for delete using (
+    has_permission(auth.uid(), 'cms.blocks.write') and 
+    not is_system
+  );
+
+-- BLOCK VERSION POLICIES
+-- Read block versions (requires cms.blocks.read permission)
+create policy "block_versions_read" on block_version
+  for select using (has_permission(auth.uid(), 'cms.blocks.read'));
+
+-- Create block versions (requires cms.blocks.write permission)
+create policy "block_versions_create" on block_version
+  for insert with check (has_permission(auth.uid(), 'cms.blocks.write'));
+
+-- Update block versions (requires cms.blocks.write permission)
+create policy "block_versions_update" on block_version
+  for update using (has_permission(auth.uid(), 'cms.blocks.write'));
+
+-- BLOCK PUBLISH POLICIES
+-- Read block publish records (requires cms.blocks.read permission)
+create policy "block_publish_read" on block_publish
+  for select using (has_permission(auth.uid(), 'cms.blocks.read'));
+
+-- Publish blocks (requires cms.blocks.publish permission)
+create policy "block_publish" on block_publish
+  for insert with check (has_permission(auth.uid(), 'cms.blocks.publish'));
+
+-- Unpublish blocks (requires cms.blocks.publish permission)
+create policy "block_unpublish" on block_publish
+  for delete using (has_permission(auth.uid(), 'cms.blocks.publish'));
+
+-- MENU TABLE POLICIES
+-- Read menus (requires cms.menus.read permission)
+create policy "menus_read" on menu
   for select using (has_permission(auth.uid(), 'cms.menus.read'));
 
-create policy "cms_assets_read" on asset
+-- Create menus (requires cms.menus.write permission)
+create policy "menus_create" on menu
+  for insert with check (has_permission(auth.uid(), 'cms.menus.write'));
+
+-- Update menus (requires cms.menus.write permission)
+create policy "menus_update" on menu
+  for update using (has_permission(auth.uid(), 'cms.menus.write'));
+
+-- Delete menus (requires cms.menus.write permission, but not system menus)
+create policy "menus_delete" on menu
+  for delete using (
+    has_permission(auth.uid(), 'cms.menus.write') and 
+    not is_system
+  );
+
+-- MENU VERSION POLICIES
+-- Read menu versions (requires cms.menus.read permission)
+create policy "menu_versions_read" on menu_version
+  for select using (has_permission(auth.uid(), 'cms.menus.read'));
+
+-- Create menu versions (requires cms.menus.write permission)
+create policy "menu_versions_create" on menu_version
+  for insert with check (has_permission(auth.uid(), 'cms.menus.write'));
+
+-- Update menu versions (requires cms.menus.write permission)
+create policy "menu_versions_update" on menu_version
+  for update using (has_permission(auth.uid(), 'cms.menus.write'));
+
+-- MENU PUBLISH POLICIES
+-- Read menu publish records (requires cms.menus.read permission)
+create policy "menu_publish_read" on menu_publish
+  for select using (has_permission(auth.uid(), 'cms.menus.read'));
+
+-- Publish menus (requires cms.menus.publish permission)
+create policy "menu_publish" on menu_publish
+  for insert with check (has_permission(auth.uid(), 'cms.menus.publish'));
+
+-- Unpublish menus (requires cms.menus.publish permission)
+create policy "menu_unpublish" on menu_publish
+  for delete using (has_permission(auth.uid(), 'cms.menus.publish'));
+
+-- ASSET TABLE POLICIES
+-- Read assets (requires cms.assets.read permission)
+create policy "assets_read" on asset
   for select using (has_permission(auth.uid(), 'cms.assets.read'));
 
--- Asset table write policies
-create policy "cms_assets_write" on asset
+-- Create assets (requires cms.assets.write permission)
+create policy "assets_create" on asset
   for insert with check (has_permission(auth.uid(), 'cms.assets.write'));
 
-create policy "cms_assets_update" on asset
+-- Update assets (requires cms.assets.write permission)
+create policy "assets_update" on asset
   for update using (has_permission(auth.uid(), 'cms.assets.write'));
 
-create policy "cms_assets_delete" on asset
+-- Delete assets (requires cms.assets.write permission, but not system assets)
+create policy "assets_delete" on asset
+  for delete using (
+    has_permission(auth.uid(), 'cms.assets.write') and 
+    not is_system
+  );
+
+-- ASSET VERSION POLICIES
+-- Read asset versions (requires cms.assets.read permission)
+create policy "asset_versions_read" on asset_version
+  for select using (has_permission(auth.uid(), 'cms.assets.read'));
+
+-- Create asset versions (requires cms.assets.write permission)
+create policy "asset_versions_create" on asset_version
+  for insert with check (has_permission(auth.uid(), 'cms.assets.write'));
+
+-- Update asset versions (requires cms.assets.write permission)
+create policy "asset_versions_update" on asset_version
+  for update using (has_permission(auth.uid(), 'cms.assets.write'));
+
+-- ASSET PUBLISH POLICIES
+-- Read asset publish records (requires cms.assets.read permission)
+create policy "asset_publish_read" on asset_publish
+  for select using (has_permission(auth.uid(), 'cms.assets.read'));
+
+-- Publish assets (requires cms.assets.publish permission)
+create policy "asset_publish" on asset_publish
+  for insert with check (has_permission(auth.uid(), 'cms.assets.publish'));
+
+-- Unpublish assets (requires cms.assets.publish permission)
+create policy "asset_unpublish" on asset_publish
+  for delete using (has_permission(auth.uid(), 'cms.assets.publish'));
+
+-- ASSET VARIANT POLICIES
+-- Read asset variants (requires cms.assets.read permission)
+create policy "asset_variants_read" on asset_variant
+  for select using (has_permission(auth.uid(), 'cms.assets.read'));
+
+-- Create asset variants (requires cms.assets.write permission)
+create policy "asset_variants_create" on asset_variant
+  for insert with check (has_permission(auth.uid(), 'cms.assets.write'));
+
+-- Update asset variants (requires cms.assets.write permission)
+create policy "asset_variants_update" on asset_variant
+  for update using (has_permission(auth.uid(), 'cms.assets.write'));
+
+-- Delete asset variants (requires cms.assets.write permission)
+create policy "asset_variants_delete" on asset_variant
   for delete using (has_permission(auth.uid(), 'cms.assets.write'));
 
--- Asset version read policies
-create policy "cms_assets_read_versions" on asset_version
+-- ASSET USAGE POLICIES
+-- Read asset usage (requires cms.assets.read permission)
+create policy "asset_usage_read" on asset_usage
   for select using (has_permission(auth.uid(), 'cms.assets.read'));
 
--- Asset publish read policies
-create policy "cms_assets_read_publish" on asset_publish
-  for select using (has_permission(auth.uid(), 'cms.assets.read'));
+-- Create asset usage (requires cms.assets.write permission)
+create policy "asset_usage_create" on asset_usage
+  for insert with check (has_permission(auth.uid(), 'cms.assets.write'));
+
+-- Update asset usage (requires cms.assets.write permission)
+create policy "asset_usage_update" on asset_usage
+  for update using (has_permission(auth.uid(), 'cms.assets.write'));
+
+-- Delete asset usage (requires cms.assets.write permission)
+create policy "asset_usage_delete" on asset_usage
+  for delete using (has_permission(auth.uid(), 'cms.assets.write'));
+
+-- USER PERMISSIONS POLICIES
+-- Allow authenticated users to read their own permissions (needed for has_permission function)
+create policy "user_permissions_read_own" on user_permissions
+  for select using (user_id = auth.uid());
+
+-- Only system admins can manage user permissions
+create policy "user_permissions_manage" on user_permissions
+  for all using (has_permission(auth.uid(), 'system.admin'));
+
+-- CMS AUDIT LOG POLICIES
+-- Only system admins can read audit logs
+create policy "audit_log_read" on cms_audit_log
+  for select using (has_permission(auth.uid(), 'system.admin'));
+
+-- Only system admins can create audit log entries
+create policy "audit_log_create" on cms_audit_log
+  for insert with check (has_permission(auth.uid(), 'system.admin'));

@@ -2,6 +2,7 @@
 // This file contains all the Supabase client functions for CMS operations
 
 import { supabase } from '../../shell/lib/supabase';
+import { getAssetUrl } from './utils';
 import type {
   Site, Page, PageVersion, PagePublish, Asset, AssetVersion, AssetPublish,
   UserPermissions, AuditLogEntry, ContentFilters, ContentSort,
@@ -548,7 +549,7 @@ export async function getPublishedBlockByKey(systemKey: string, locale = 'en-US'
           asset: {
             id: asset.id,
             kind: asset.kind,
-            url: `https://your-project.supabase.co/storage/v1/object/public/cms-assets/${asset.storage_key}`,
+            url: getAssetUrl(asset.storage_key, asset.site_id),
             width: asset.width,
             height: asset.height,
             durationMs: asset.duration_ms,
@@ -604,7 +605,7 @@ export async function getPublishedAssetByKey(systemKey: string): Promise<ApiResp
     const resolvedAsset: ResolvedAsset = {
       id: asset.id,
       kind: asset.kind,
-      url: `https://your-project.supabase.co/storage/v1/object/public/cms-assets/${asset.storage_key}`,
+      url: getAssetUrl(asset.storage_key, asset.site_id),
       width: asset.width,
       height: asset.height,
       durationMs: asset.duration_ms,
@@ -710,7 +711,7 @@ async function resolveBlockForLocale(blockId: string, locale: string): Promise<R
           asset: {
             id: asset.id,
             kind: asset.kind,
-            url: `https://your-project.supabase.co/storage/v1/object/public/cms-assets/${asset.storage_key}`,
+            url: getAssetUrl(asset.storage_key, asset.site_id),
             width: asset.width,
             height: asset.height,
             durationMs: asset.duration_ms,
@@ -818,19 +819,58 @@ export async function getAssets(
 
     if (error) throw error;
 
-    const assets = zAsset.array().parse(data);
-    const totalPages = Math.ceil((count || 0) / pageSize);
+    // Debug: Log the raw data to see what we're getting
+    console.log('Raw asset data from database:', JSON.stringify(data, null, 2));
 
-    return {
-      data: {
-        data: assets,
-        count: count || 0,
-        page,
-        page_size: pageSize,
-        total_pages: totalPages
-      },
-      error: null
-    };
+    // Transform data to handle invalid UUIDs
+    const transformedData = data?.map((asset: any) => {
+      // Check if UUIDs are valid, if not, generate new ones or skip
+      const isValidUuid = (uuid: string) => {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(uuid);
+      };
+
+      // If UUIDs are invalid, we'll need to handle this
+      if (!isValidUuid(asset.id) || !isValidUuid(asset.site_id) || !isValidUuid(asset.created_by)) {
+        console.warn('Invalid UUID found in asset data:', asset);
+        return null; // Filter out invalid records
+      }
+
+      return asset;
+    }).filter(Boolean) || [];
+
+    console.log('Transformed asset data:', JSON.stringify(transformedData, null, 2));
+
+    try {
+      const assets = zAsset.array().parse(transformedData);
+      const totalPages = Math.ceil((count || 0) / pageSize);
+
+      return {
+        data: {
+          data: assets,
+          total_pages: totalPages,
+          count: count || 0,
+          page,
+          page_size: pageSize
+        },
+        error: null
+      };
+    } catch (parseError) {
+      console.error('Asset data validation failed:', parseError);
+      console.error('Invalid data:', JSON.stringify(data, null, 2));
+      
+      // Return empty result with error
+      return {
+        data: {
+          data: [],
+          total_pages: 0,
+          count: 0,
+          page,
+          page_size: pageSize
+        },
+        error: `Asset data validation failed: ${parseError instanceof Error ? parseError.message : 'Unknown validation error'}`
+      };
+    }
   } catch (error) {
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }
@@ -853,6 +893,47 @@ export async function getAsset(assetId: string): Promise<ApiResponse<Asset>> {
   }
 }
 
+// Utility function to ensure the site-specific bucket exists
+export async function ensureSiteBucket(siteId: string): Promise<ApiResponse<boolean>> {
+  try {
+    // Try to list buckets first
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    
+    if (listError) {
+      console.warn('Could not list buckets (RLS restriction), assuming bucket exists:', listError);
+      // If we can't list buckets due to RLS, assume the bucket exists and continue
+      return { data: true, error: null };
+    }
+    
+    const bucketExists = buckets?.some(bucket => bucket.name === siteId);
+    
+    if (bucketExists) {
+      console.log(`Site bucket ${siteId} already exists`);
+      return { data: true, error: null };
+    }
+
+    console.log(`Site bucket ${siteId} not found. Attempting to create...`);
+    const { error: bucketError } = await supabase.storage.createBucket(siteId, {
+      public: true,
+      allowedMimeTypes: ['image/*', 'video/*', 'application/*'],
+      fileSizeLimit: 50 * 1024 * 1024 // 50MB limit
+    });
+    
+    if (bucketError) {
+      console.error('Failed to create bucket (this is expected in local development):', bucketError);
+      console.log(`Please create the ${siteId} bucket manually in the Supabase dashboard or run the seed script`);
+      // Don't return error - just log it and continue
+      return { data: false, error: `Bucket creation failed: ${bucketError.message}. Please create the bucket manually.` };
+    }
+
+    console.log(`Site bucket ${siteId} created successfully`);
+    return { data: true, error: null };
+  } catch (error) {
+    console.error('Error checking/creating bucket:', error);
+    return { data: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
 export async function uploadAsset(
   siteId: string,
   file: File,
@@ -865,14 +946,29 @@ export async function uploadAsset(
     // Generate unique storage key
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const storageKey = `cms-assets/${siteId}/${fileName}`;
+    const storageKey = `assets/${fileName}`;
 
-    // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from('cms-assets')
+    // Use the same bucket name format as the seed script
+    const bucketName = `site-${siteId.replace(/-/g, '')}`;
+    console.log(`Attempting upload to bucket: ${bucketName}`);
+
+    // Upload to Supabase Storage using the standard bucket name format
+    console.log(`Uploading to bucket: ${bucketName}, path: ${storageKey}`);
+    console.log(`File details: name=${file.name}, size=${file.size}, type=${file.type}`);
+    
+    // Try the upload with the standard bucket name format
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(bucketName)
       .upload(storageKey, file);
+    
+    console.log('Upload response:', { data: uploadData, error: uploadError });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('Upload failed:', uploadError);
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
+    
+    console.log('Upload successful:', storageKey);
 
     // Get file metadata
     const isImage = file.type.startsWith('image/');
@@ -897,22 +993,31 @@ export async function uploadAsset(
     }
 
     // Create asset record
+    const assetData = {
+      site_id: siteId,
+      kind,
+      storage_key: storageKey,
+      width,
+      height,
+      duration_ms: durationMs,
+      checksum: '', // TODO: Calculate checksum
+      created_by: user.id
+    };
+    
+    console.log('Creating asset record with data:', assetData);
+    
     const { data: asset, error: assetError } = await supabase
       .from('asset')
-      .insert({
-        site_id: siteId,
-        kind,
-        storage_key: storageKey,
-        width,
-        height,
-        duration_ms: durationMs,
-        checksum: '', // TODO: Calculate checksum
-        created_by: user.id
-      })
+      .insert(assetData)
       .select()
       .single();
 
-    if (assetError) throw assetError;
+    console.log('Asset insert response:', { data: asset, error: assetError });
+
+    if (assetError) {
+      console.error('Asset insert failed:', assetError);
+      throw assetError;
+    }
 
     // Create initial asset version
     const { error: versionError } = await supabase
