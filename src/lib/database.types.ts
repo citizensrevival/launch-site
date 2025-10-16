@@ -176,7 +176,96 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_event_rollup_daily: {
+        Row: {
+          day: string | null
+          event_count: number | null
+          event_name: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_referral_traffic_daily: {
+        Row: {
+          day: string | null
+          referrals: number | null
+        }
+        Relationships: []
+      }
+      v_referrer_stats: {
+        Row: {
+          conversion_rate: number | null
+          conversions: number | null
+          referrer_domain: string | null
+          total_sessions: number | null
+          total_users: number | null
+        }
+        Relationships: []
+      }
+      v_sessions_summary: {
+        Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          device_type: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          events: number | null
+          os: string | null
+          page_views: number | null
+          session_id: string | null
+          started_at: string | null
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          events?: number | null
+          os?: string | null
+          page_views?: number | null
+          session_id?: string | null
+          started_at?: string | null
+          user_id?: string | null
+          user_type?: never
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          device_type?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          events?: number | null
+          os?: string | null
+          page_views?: number | null
+          session_id?: string | null
+          started_at?: string | null
+          user_id?: string | null
+          user_type?: never
+        }
+        Relationships: []
+      }
+      v_traffic_share: {
+        Row: {
+          percentage: number | null
+          sessions: number | null
+          traffic_source: string | null
+          users: number | null
+        }
+        Relationships: []
+      }
+      v_unique_users_daily: {
+        Row: {
+          day: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_analytics_data: {

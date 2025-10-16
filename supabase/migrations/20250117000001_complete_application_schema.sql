@@ -505,6 +505,128 @@ begin
 end $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Analytics Views
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- Unique users daily view
+create or replace view analytics.v_unique_users_daily as
+with days as (
+  select generate_series(
+    date_trunc('day', (select min(created_at) from analytics.page_views)),
+    date_trunc('day', now()),
+    interval '1 day'
+  )::date as day
+),
+daily_users as (
+  select 
+    date_trunc('day', pv.created_at)::date as day,
+    count(distinct coalesce(pv.user_id::text, pv.anon_id)) as unique_users
+  from analytics.page_views pv
+  where pv.created_at >= (select min(created_at) from analytics.page_views)
+  group by date_trunc('day', pv.created_at)::date
+)
+select 
+  d.day,
+  coalesce(du.unique_users, 0) as unique_users
+from days d
+left join daily_users du on d.day = du.day
+order by d.day;
+
+-- Sessions summary view
+create or replace view analytics.v_sessions_summary as
+select
+  s.id as session_id,
+  s.user_id,
+  s.started_at,
+  s.ended_at,
+  s.duration_seconds,
+  s.page_views,
+  s.events,
+  s.country,
+  s.city,
+  s.device_type,
+  s.browser,
+  s.os,
+  case 
+    when s.user_id is not null then 'authenticated'
+    else 'anonymous'
+  end as user_type
+from analytics.sessions s
+order by s.started_at desc;
+
+-- Event rollup daily view
+create or replace view analytics.v_event_rollup_daily as
+select
+  date_trunc('day', e.created_at)::date as day,
+  e.event_name,
+  count(*)::bigint as event_count,
+  count(distinct e.user_id)::bigint as unique_users
+from analytics.events e
+group by date_trunc('day', e.created_at)::date, e.event_name
+order by day desc, event_count desc;
+
+-- Referrer stats view
+create or replace view analytics.v_referrer_stats as
+select
+  coalesce(pv.referrer, 'direct') as referrer_domain,
+  count(distinct s.id) as total_sessions,
+  count(distinct s.user_id) as total_users,
+  count(distinct case when e.event_name = 'lead_form_submitted' then s.id end) as conversions,
+  round(
+    count(distinct case when e.event_name = 'lead_form_submitted' then s.id end)::numeric / 
+    nullif(count(distinct s.id), 0) * 100, 2
+  ) as conversion_rate
+from analytics.sessions s
+left join analytics.page_views pv on s.id = pv.session_id
+left join analytics.events e on s.id = e.session_id
+group by coalesce(pv.referrer, 'direct')
+order by total_sessions desc;
+
+-- Referral traffic daily view
+create or replace view analytics.v_referral_traffic_daily as
+select
+  date_trunc('day', s.started_at)::date as day,
+  count(distinct s.id) as referrals
+from analytics.sessions s
+left join analytics.page_views pv on s.id = pv.session_id
+where pv.referrer is not null
+group by date_trunc('day', s.started_at)::date
+order by day desc;
+
+-- Traffic share view
+create or replace view analytics.v_traffic_share as
+select
+  case 
+    when pv.referrer is null then 'Direct'
+    when pv.referrer like '%google%' then 'Google'
+    when pv.referrer like '%facebook%' then 'Facebook'
+    when pv.referrer like '%twitter%' then 'Twitter'
+    when pv.referrer like '%linkedin%' then 'LinkedIn'
+    when pv.referrer like '%instagram%' then 'Instagram'
+    when pv.referrer like '%youtube%' then 'YouTube'
+    when pv.referrer like '%tiktok%' then 'TikTok'
+    else 'Other'
+  end as traffic_source,
+  count(distinct s.id) as sessions,
+  count(distinct s.user_id) as users,
+  round(count(distinct s.id)::numeric / sum(count(distinct s.id)) over () * 100, 2) as percentage
+from analytics.sessions s
+left join analytics.page_views pv on s.id = pv.session_id
+group by 
+  case 
+    when pv.referrer is null then 'Direct'
+    when pv.referrer like '%google%' then 'Google'
+    when pv.referrer like '%facebook%' then 'Facebook'
+    when pv.referrer like '%twitter%' then 'Twitter'
+    when pv.referrer like '%linkedin%' then 'LinkedIn'
+    when pv.referrer like '%instagram%' then 'Instagram'
+    when pv.referrer like '%youtube%' then 'YouTube'
+    when pv.referrer like '%tiktok%' then 'TikTok'
+    else 'Other'
+  end
+order by sessions desc;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- Indexes for Performance
 -- ─────────────────────────────────────────────────────────────────────────────
 
