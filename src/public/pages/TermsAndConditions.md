@@ -90,6 +90,13 @@ These Terms shall be interpreted and governed by the laws of the State of New Me
 
 We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect.
 
+## Unsubscribe from Communications
+
+You can unsubscribe from our communications at any time by:
+- Visiting our [unsubscribe page](/unsubscribe)
+- Using the unsubscribe link in any email we send you
+- Contacting us directly
+
 ## Contact Information
 
 If you have any questions about these Terms and Conditions, please contact us.
