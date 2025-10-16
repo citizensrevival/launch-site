@@ -2,7 +2,7 @@
 // This script helps migrate existing hard-coded content into the CMS
 
 import { supabase } from '../../../shell/lib/supabase';
-import type { Site, Page, Block, Asset, PageVersion, BlockVersion, AssetVersion } from '../types';
+import type { Page, Block, Asset } from '../types';
 
 export interface MigrationOptions {
   siteHandle: string;
@@ -164,7 +164,7 @@ export class ContentMigration {
         if (assetError) throw assetError;
 
         // Create asset version
-        const { data: assetVersion, error: versionError } = await supabase
+        const { data: _assetVersion, error: versionError } = await supabase
           .from('asset_version')
           .insert({
             asset_id: asset.id,
@@ -306,7 +306,7 @@ export class ContentMigration {
         }).filter(ref => ref.asset_id) || [];
 
         // Create block version
-        const { data: blockVersion, error: versionError } = await supabase
+        const { data: _blockVersion, error: versionError } = await supabase
           .from('block_version')
           .insert({
             block_id: block.id,
@@ -476,7 +476,7 @@ export class ContentMigration {
         }).filter(instance => instance.block_id);
 
         // Create page version
-        const { data: pageVersion, error: versionError } = await supabase
+        const { data: _pageVersion, error: versionError } = await supabase
           .from('page_version')
           .insert({
             page_id: page.id,

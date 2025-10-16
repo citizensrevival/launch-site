@@ -13,6 +13,7 @@ export interface Lead {
   phone: string | null;
   website: string | null;
   social_links: string[] | null;
+  source_path: string | null;
   tags: string[] | null;
   meta: Record<string, any> | null;
   created_at: string;

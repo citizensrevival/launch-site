@@ -7,7 +7,7 @@ interface CmsMenusProps {
   siteId?: string;
 }
 
-export function CmsMenus({ siteId }: CmsMenusProps) {
+export function CmsMenus({ siteId: _siteId }: CmsMenusProps) {
   return (
     <AdminLayout
       pageHeader={

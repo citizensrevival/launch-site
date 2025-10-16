@@ -7,7 +7,7 @@ interface CmsBlocksProps {
   siteId?: string;
 }
 
-export function CmsBlocks({ siteId }: CmsBlocksProps) {
+export function CmsBlocks({ siteId: _siteId }: CmsBlocksProps) {
   return (
     <AdminLayout
       pageHeader={
