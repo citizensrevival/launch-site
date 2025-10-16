@@ -1,6 +1,13 @@
+// CMS Blocks Component
+// Block management interface
+
 import { AdminLayout } from '../AdminLayout';
 
-export function ContentBlocksPage() {
+interface CmsBlocksProps {
+  siteId?: string;
+}
+
+export function CmsBlocks({ siteId }: CmsBlocksProps) {
   return (
     <AdminLayout
       pageHeader={

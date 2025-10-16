@@ -1,6 +1,13 @@
+// CMS Assets Component
+// Asset management interface
+
 import { AdminLayout } from '../AdminLayout';
 
-export function AssetsPage() {
+interface CmsAssetsProps {
+  siteId?: string;
+}
+
+export function CmsAssets({ siteId }: CmsAssetsProps) {
   return (
     <AdminLayout
       pageHeader={

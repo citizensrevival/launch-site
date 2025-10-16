@@ -22,7 +22,8 @@
     "db:logs": "supabase logs",
     "db:ensure": "supabase status || supabase start",
     "db:clear-analytics": "./scripts/clear-analytics.sh",
-    "update-supabase-keys": "./scripts/update-supabase-keys.sh"
+    "update-supabase-keys": "./scripts/update-supabase-keys.sh",
+    "cms:migrate": "tsx scripts/migrate-content.ts"
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
