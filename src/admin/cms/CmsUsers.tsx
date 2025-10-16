@@ -3,11 +3,7 @@
 
 import { AdminLayout } from '../AdminLayout';
 
-interface CmsUsersProps {
-  siteId?: string;
-}
-
-export function CmsUsers({ siteId: _siteId }: CmsUsersProps) {
+export function CmsUsers() {
   return (
     <AdminLayout
       pageHeader={

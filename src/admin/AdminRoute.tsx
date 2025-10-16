@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { useAuth } from '../shell/contexts/AuthContext';
 import { AdminLoginForm } from './AdminLoginForm';
+import { CmsRoute } from './cms/CmsRoute';
 
 // Lazy load admin components
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
@@ -50,13 +51,13 @@ export function AdminRoute() {
         <Route path="analytics/sessions/:id" element={<SessionDetailPage />} />
         <Route path="analytics/events" element={<EventsPage />} />
         <Route path="analytics/referrers" element={<ReferrersPage />} />
-        <Route path="cms" element={<CmsDashboard />} />
-        <Route path="cms/pages" element={<CmsPages />} />
-        <Route path="cms/blocks" element={<CmsBlocks />} />
-        <Route path="cms/assets" element={<CmsAssets />} />
-        <Route path="cms/menus" element={<CmsMenus />} />
-        <Route path="cms/users" element={<CmsUsers />} />
-        <Route path="cms/audit" element={<CmsAudit />} />
+        <Route path="cms" element={<CmsRoute><CmsDashboard /></CmsRoute>} />
+        <Route path="cms/pages" element={<CmsRoute><CmsPages /></CmsRoute>} />
+        <Route path="cms/blocks" element={<CmsRoute><CmsBlocks /></CmsRoute>} />
+        <Route path="cms/assets" element={<CmsRoute><CmsAssets /></CmsRoute>} />
+        <Route path="cms/menus" element={<CmsRoute><CmsMenus /></CmsRoute>} />
+        <Route path="cms/users" element={<CmsRoute><CmsUsers /></CmsRoute>} />
+        <Route path="cms/audit" element={<CmsRoute><CmsAudit /></CmsRoute>} />
         <Route path="*" element={<Navigate to="/manage" replace />} />
       </Routes>
     </Suspense>
