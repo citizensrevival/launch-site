@@ -13,8 +13,7 @@ export function CmsDashboard({ siteId }: CmsDashboardProps) {
   const selectedSite = useAppSelector((state) => state.site.selectedSite);
   const currentSiteId = siteId || selectedSite?.id;
   
-  const { pages, loading, error } = usePages(currentSiteId || '', {}, { field: 'created_at', direction: 'desc' }, 1, 10);
-
+  // Early return before any hooks to avoid Rules of Hooks violation
   if (!currentSiteId) {
     return (
       <AdminLayout>
@@ -27,6 +26,8 @@ export function CmsDashboard({ siteId }: CmsDashboardProps) {
       </AdminLayout>
     );
   }
+  
+  const { pages, loading, error } = usePages(currentSiteId, {}, { field: 'created_at', direction: 'desc' }, 1, 10);
 
   if (loading) {
     return (
