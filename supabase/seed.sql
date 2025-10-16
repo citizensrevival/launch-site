@@ -107,56 +107,6 @@ SELECT
 FROM auth.users 
 WHERE email = 'pwningcode@gmail.com';
 
--- Create system assets
-INSERT INTO asset (id, site_id, kind, storage_key, is_system, system_key, created_by)
-VALUES 
-  (
-    '00000000-0000-0000-0000-000000000010',
-    '00000000-0000-0000-0000-000000000001',
-    'image',
-    'assets/logo-primary.png',
-    true,
-    'logo-primary',
-    (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com')
-  ),
-  (
-    '00000000-0000-0000-0000-000000000011',
-    '00000000-0000-0000-0000-000000000001',
-    'image',
-    'assets/logo-transparent.png',
-    true,
-    'logo-transparent',
-    (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com')
-  );
-
--- Create initial asset versions
-INSERT INTO asset_version (asset_id, version, meta, created_by)
-VALUES 
-  (
-    '00000000-0000-0000-0000-000000000010',
-    1,
-    '{
-      "alt": {"en-US": "Aztec Citizens Revival Logo"},
-      "caption": {"en-US": "Main logo for Aztec Citizens Revival"}
-    }',
-    (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com')
-  ),
-  (
-    '00000000-0000-0000-0000-000000000011',
-    1,
-    '{
-      "alt": {"en-US": "Aztec Citizens Revival Logo (Transparent)"},
-      "caption": {"en-US": "Transparent logo for Aztec Citizens Revival"}
-    }',
-    (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com')
-  );
-
--- Publish the assets
-INSERT INTO asset_publish (asset_id, version, published_by)
-VALUES 
-  ('00000000-0000-0000-0000-000000000010', 1, (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com')),
-  ('00000000-0000-0000-0000-000000000011', 1, (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com'));
-
 -- Log the initial setup
 INSERT INTO cms_audit_log (user_id, user_permissions, action, entity_type, entity_id, version)
 VALUES 
