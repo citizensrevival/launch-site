@@ -1,21 +1,110 @@
 # Cursor Rules for Launch Site Project
 
-## Server Management
-- Always shutdown any development servers (npm run dev, npm start, etc.) after completing changes
-- Use `pkill -f "next dev"` or similar commands to ensure servers are properly terminated
-- Do not leave background processes running after task completion
+## Development & Cleanup
+- Always shutdown development servers after completing changes: `pkill -f "vite" && npm run db:stop`
+- Verify no processes on ports 3000-3010 before considering task complete
+- Use `npm run db:ensure` to verify Supabase is running before starting development
+- Never commit `.env.local` files; use `npm run update-supabase-keys` for environment setup
 
-## Development Workflow
-- When testing builds or running development servers, always clean up processes
-- If a server is started for testing, explicitly stop it before considering the task complete
-- Use `jobs` command to check for running background processes and terminate them
+## Database & Build
+- Generate types after schema changes: `npm run db:generate`
+- Test migrations locally: `npm run db:reset` 
+- Use `./scripts/db-workflow.sh` for complex database operations
+- Build for GitHub Pages: `npm run build:github`
+- Test with remote Supabase before deploying (backup data first)
+- Verify CNAME file for custom domain (citizens.fvcsolutions.com)
 
 ## Code Quality
-- Ensure all linting errors are resolved before completing tasks
+- Resolve all linting errors before completing tasks
 - Run builds to verify changes work correctly
-- Clean up any temporary files, backup files, or processes created during development
-- Do not generate markdown file summaries of work completed unless asked
-- Please update the readme.md file with developer documentation instead of creating additional files
+- Update README.md instead of creating additional documentation files
+- Never commit sensitive data to migration files
+- Use `VITE_` prefix for client-side environment variables
 
-## Package Dependencies
-- Do not downgrade package dependencies
+## Quick Commands
+```bash
+# Kill all development processes
+pkill -f "vite" && pkill -f "npm run start" && npm run db:stop
+
+# Daily workflow
+npm start → make changes → npm run db:generate → pkill -f "vite" && npm run db:stop
+
+# Before deploying
+npm run start:remote → ./scripts/db-workflow.sh push → npm run build:github
+```
+
+# Open Source
+Ensure all AI-generated code and content in this repo is **immediately open-source-ready**:
+legally clear, secure, documented, reproducible, and maintainable by one person.
+
+## 📁 Repository Hygiene
+1. Required top-level files:
+   - `README.md` ✅
+   - `.gitignore` ✅
+   - `package.json` ✅
+   - `vite.config.ts` ✅
+   - `tailwind.config.js` ✅
+   - `tsconfig.json` ✅
+
+2. Directory layout:
+   - `src/` - Source code ✅
+   - `scripts/` - Development scripts ✅
+   - `supabase/` - Database configuration ✅
+   - `public/` - Static assets ✅
+   - `dist/` - Build output (gitignored) ✅
+
+3. Config hygiene:
+   - `prettier.config.js` checked into source control ✅
+   - `postcss.config.js` for Tailwind CSS ✅
+   - `tsconfig.node.json` for Vite configuration ✅
+   - `.cursorrules` for development guidelines ✅
+
+4. Secrets:
+   - Never store credentials in `.env.local` ✅
+   - Use `npm run update-supabase-keys` for environment setup ✅
+   - Never commit service role keys ✅
+   - Use environment variables for all configuration ✅
+
+## 🔒 Security & Supply Chain
+1. Pin dependencies; maintain `package-lock.json` ✅
+2. Prefer reproducible builds with Vite ✅
+3. Run vulnerability audits (`npm audit`) before release ✅
+4. Avoid dangerous patterns (`eval`, arbitrary shell exec) ✅
+5. Default to least privilege and safe ports (`127.0.0.1` for dev) ✅
+6. **Supabase Security**:
+   - Never use service role keys in client-side code ✅
+   - Always use Row Level Security (RLS) policies ✅
+   - Test with both local and remote Supabase environments ✅
+   - Never commit sensitive data to migration files ✅
+7. **Environment Security**:
+   - Use `VITE_` prefix for client-side environment variables ✅
+   - Never commit `.env.local` files ✅
+   - Use `npm run update-supabase-keys` for secure key management ✅
+
+## 🧰 Documentation
+1. **README.md**
+   - One-screen overview, install, quickstart, test command, license badge.
+2. **API Docs**
+   - Use docstrings / JSDoc / GoDoc style comments.
+
+## 🧪 Testing & CI
+1. **Local Testing**:
+   - Test with local Supabase: `npm start`
+   - Test with remote Supabase: `npm run start:remote`
+   - Test builds: `npm run build` and `npm run build:github`
+   - Preview builds: `npm run preview`
+
+2. **Database Testing**:
+   - Test migrations locally: `npm run db:reset`
+   - Generate types after changes: `npm run db:generate`
+   - Use Supabase Studio for database inspection: `npm run db:studio`
+
+3. **Deployment Testing**:
+   - Test GitHub Pages build: `npm run build:github`
+   - Verify CNAME file for custom domain
+   - Test with remote Supabase before deploying
+
+4. **CI Pipeline** (GitHub Actions):
+   - Install dependencies: `npm install`
+   - Build for GitHub Pages: `npm run build:github`
+   - Deploy to GitHub Pages automatically
