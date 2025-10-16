@@ -508,29 +508,29 @@ export function useAssets(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchAssets() {
-      try {
-        setLoading(true);
-        const response = await getAssets(siteId, filters, sort, page, pageSize);
-        if (response.error) {
-          setError(response.error);
-        } else {
-          setAssets(response.data || null);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
+  const fetchAssets = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getAssets(siteId, filters, sort, page, pageSize);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setAssets(response.data || null);
       }
-    }
-
-    if (siteId) {
-      fetchAssets();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
     }
   }, [siteId, filters, sort, page, pageSize]);
 
-  return { assets, loading, error };
+  useEffect(() => {
+    if (siteId) {
+      fetchAssets();
+    }
+  }, [siteId, fetchAssets]);
+
+  return { assets, loading, error, refresh: fetchAssets };
 }
 
 export function useAsset(assetId: string) {
@@ -606,6 +606,10 @@ export function useAssetManagement() {
     try {
       setLoading(true);
       setError(null);
+      
+      // Skip bucket initialization - bucket should exist from seed script
+      console.log('Skipping bucket initialization, proceeding with upload');
+      
       const response = await uploadAsset(siteId, file, meta);
       if (response.error) {
         setError(response.error);

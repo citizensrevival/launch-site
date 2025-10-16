@@ -90,12 +90,12 @@ export interface Asset {
   site_id: string;
   kind: AssetKind;
   storage_key: string;
-  width?: number;
-  height?: number;
-  duration_ms?: number;
-  checksum?: string;
+  width?: number | null;
+  height?: number | null;
+  duration_ms?: number | null;
+  checksum?: string | null;
   is_system: boolean;
-  system_key?: string;
+  system_key?: string | null;
   created_at: string;
   created_by: string;
 }

@@ -46,16 +46,52 @@ INSERT INTO auth.users (
 INSERT INTO public.admins (user_id) 
 SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com';
 
--- Create the main site
+-- Create the main site with a proper UUID
 INSERT INTO site (id, handle, label, default_locale, slug, created_by)
 VALUES (
-  '00000000-0000-0000-0000-000000000001',
+  gen_random_uuid(),
   'aztec-citizens-revival',
   'Aztec Citizens Revival',
   'en-US',
   'aztec',
   (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com')
 );
+
+-- Verify the site was created
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM site WHERE handle = 'aztec-citizens-revival') THEN
+    RAISE EXCEPTION 'Site creation failed - no site found with handle aztec-citizens-revival';
+  END IF;
+  RAISE NOTICE 'Site created successfully: aztec-citizens-revival';
+END $$;
+
+-- Create the site-specific storage bucket
+-- Note: This requires the service role key or manual creation in dashboard
+-- We'll create the bucket with the site ID as the bucket name
+DO $$
+DECLARE
+  site_uuid uuid;
+BEGIN
+  -- Get the site ID
+  SELECT id INTO site_uuid FROM site WHERE handle = 'aztec-citizens-revival';
+  
+  IF site_uuid IS NOT NULL THEN
+    -- Create bucket with a more standard name format
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES (
+      'site-' || replace(site_uuid::text, '-', ''),
+      'site-' || replace(site_uuid::text, '-', ''),
+      true,
+      52428800, -- 50MB in bytes
+      ARRAY['image/*', 'video/*', 'application/*']
+    ) ON CONFLICT (id) DO NOTHING;
+    
+    RAISE NOTICE 'Created storage bucket for site: %', site_uuid;
+  ELSE
+    RAISE EXCEPTION 'Site not found - cannot create bucket';
+  END IF;
+END $$;
 
 -- Grant full CMS permissions to the authenticated user
 INSERT INTO user_permissions (user_id, permissions)
@@ -109,12 +145,11 @@ WHERE email = 'pwningcode@gmail.com';
 
 -- Log the initial setup
 INSERT INTO cms_audit_log (user_id, user_permissions, action, entity_type, entity_id, version)
-VALUES 
-  (
-    (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com'),
-    ARRAY['system.admin'],
-    'create',
-    'site',
-    '00000000-0000-0000-0000-000000000001',
-    null
-  );
+SELECT 
+  (SELECT id FROM auth.users WHERE email = 'pwningcode@gmail.com'),
+  ARRAY['system.admin'],
+  'create',
+  'site',
+  id,
+  null
+FROM site WHERE handle = 'aztec-citizens-revival';

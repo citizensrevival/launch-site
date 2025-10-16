@@ -104,12 +104,12 @@ export const zAsset = z.object({
   site_id: z.string().uuid(),
   kind: z.enum(['image', 'video', 'file']),
   storage_key: z.string(),
-  width: z.number().int().optional(),
-  height: z.number().int().optional(),
-  duration_ms: z.number().int().optional(),
-  checksum: z.string().optional(),
+  width: z.number().int().nullable().optional(),
+  height: z.number().int().nullable().optional(),
+  duration_ms: z.number().int().nullable().optional(),
+  checksum: z.string().nullable().optional(),
   is_system: z.boolean(),
-  system_key: z.string().optional(),
+  system_key: z.string().nullable().optional(),
   created_at: z.string(),
   created_by: z.string().uuid()
 });
