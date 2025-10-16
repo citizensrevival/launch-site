@@ -17,6 +17,7 @@ const VendorsPage = lazy(() => import('./public/pages/VendorsPage'))
 const VolunteersPage = lazy(() => import('./public/pages/VolunteersPage'))
 const PrivacyPolicyPage = lazy(() => import('./public/pages/PrivacyPolicyPage'))
 const TermsAndConditionsPage = lazy(() => import('./public/pages/TermsAndConditionsPage'))
+const UnsubscribePage = lazy(() => import('./public/pages/UnsubscribePage'))
 
 function AppContent() {
   const { isDialogOpen, preselectedType } = useGetInvolvedDialog();
@@ -57,6 +58,7 @@ function AppContent() {
           <Route path="/volunteers" element={<VolunteersPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsAndConditionsPage />} />
+          <Route path="/unsubscribe" element={<UnsubscribePage />} />
           <Route path="/manage/*" element={<AdminRoute />} />
         </Routes>
       </Suspense>

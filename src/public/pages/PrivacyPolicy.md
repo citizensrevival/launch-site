@@ -87,6 +87,13 @@ You have the right to:
 - Opt-out of analytics tracking
 - Access information about how your data is being used
 
+### Unsubscribe from Communications
+
+You can unsubscribe from our communications at any time by:
+- Visiting our [unsubscribe page](/unsubscribe)
+- Using the unsubscribe link in any email we send you
+- Contacting us directly
+
 To exercise these rights, please contact us using the information provided below.
 
 ## Analytics and Website Tracking

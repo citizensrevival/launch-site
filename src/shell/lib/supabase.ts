@@ -56,7 +56,6 @@ export class EnvironmentConfigProvider implements ConfigProvider {
   getSupabaseConfig(): SupabaseConfig {
     const url = import.meta.env.VITE_SUPABASE_URL;
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const serviceRoleKey = undefined;
 
     console.log('[EnvironmentConfigProvider] Loading Supabase config:', {
       url,
@@ -64,20 +63,24 @@ export class EnvironmentConfigProvider implements ConfigProvider {
       anonKeyPrefix: anonKey ? anonKey.substring(0, 20) + '...' : 'NOT SET'
     });
 
-    if (!url || !anonKey) {
-      console.warn('Missing Supabase configuration. Using local development defaults.');
-      // Return local development config
-      return {
-        url: 'http://127.0.0.1:54321',
-        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MzkxNjcsImV4cCI6MTk4MzgxMjk5Nn0.q33rUb0c3Ev16YaB_PbEwsCMmwIaJ-RFtsqcTBQsves',
-        serviceRoleKey: undefined,
-      };
+    if (!url) {
+      throw new Error(
+        'VITE_SUPABASE_URL environment variable is required. ' +
+        'Please set it in your .env.local file or environment variables.'
+      );
+    }
+
+    if (!anonKey) {
+      throw new Error(
+        'VITE_SUPABASE_ANON_KEY environment variable is required. ' +
+        'Please set it in your .env.local file or environment variables.'
+      );
     }
 
     return {
       url,
       anonKey,
-      serviceRoleKey,
+      serviceRoleKey: undefined, // Service role key should never be used in client-side apps
     };
   }
 }

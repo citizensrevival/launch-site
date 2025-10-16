@@ -773,6 +773,7 @@ export class AnalyticsService {
       .map(ref => ({ domain: ref.domain, sessions: ref.totalSessions }))
   }
 
+  // @ts-ignore - Private method for future use
   private processReferralTrafficOverTime(sessionsData: Array<{ started_at: string; referrer: string }>, dateRange: { start: Date; end: Date }): Array<{ day: string; referrals: number }> {
     // Group sessions by day
     const sessionsByDay = new Map<string, number>()
@@ -1188,6 +1189,7 @@ export class AnalyticsService {
     return days
   }
 
+  // @ts-ignore - Private method for future use
   private processEventTrendsData(eventTrendsData: Array<{ name: string; occurred_at: string }>, dateRange: { start: Date; end: Date }): Array<{ day: string; [key: string]: number | string }> {
     // Group events by day and event type
     const eventsByDay: { [day: string]: { [eventName: string]: number } } = {}
