@@ -784,3 +784,313 @@ export async function getAuditLog(
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
+
+// Asset management functions
+export async function getAssets(
+  siteId: string,
+  filters?: ContentFilters,
+  sort?: ContentSort,
+  page = 1,
+  pageSize = 20
+): Promise<ApiResponse<PaginatedResponse<Asset>>> {
+  try {
+    let query = supabase
+      .from('asset')
+      .select('*', { count: 'exact' })
+      .eq('site_id', siteId);
+
+    if (filters?.kind) {
+      query = query.eq('kind', filters.kind);
+    }
+
+    if (filters?.search) {
+      query = query.ilike('storage_key', `%${filters.search}%`);
+    }
+
+    if (sort) {
+      query = query.order(sort.field, { ascending: sort.direction === 'asc' });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    const assets = zAsset.array().parse(data);
+    const totalPages = Math.ceil((count || 0) / pageSize);
+
+    return {
+      data: {
+        data: assets,
+        count: count || 0,
+        page,
+        page_size: pageSize,
+        total_pages: totalPages
+      },
+      error: null
+    };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function getAsset(assetId: string): Promise<ApiResponse<Asset>> {
+  try {
+    const { data, error } = await supabase
+      .from('asset')
+      .select('*')
+      .eq('id', assetId)
+      .single();
+
+    if (error) throw error;
+
+    const asset = zAsset.parse(data);
+    return { data: asset, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function uploadAsset(
+  siteId: string,
+  file: File,
+  meta?: Partial<AssetMeta>
+): Promise<ApiResponse<Asset>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Generate unique storage key
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const storageKey = `cms-assets/${siteId}/${fileName}`;
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('cms-assets')
+      .upload(storageKey, file);
+
+    if (uploadError) throw uploadError;
+
+    // Get file metadata
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    const kind: AssetKind = isImage ? 'image' : isVideo ? 'video' : 'file';
+
+    let width: number | undefined;
+    let height: number | undefined;
+    let durationMs: number | undefined;
+
+    if (isImage) {
+      // Get image dimensions
+      const img = new Image();
+      const imgPromise = new Promise<{ width: number; height: number }>((resolve) => {
+        img.onload = () => resolve({ width: img.width, height: img.height });
+      });
+      img.src = URL.createObjectURL(file);
+      const dimensions = await imgPromise;
+      width = dimensions.width;
+      height = dimensions.height;
+      URL.revokeObjectURL(img.src);
+    }
+
+    // Create asset record
+    const { data: asset, error: assetError } = await supabase
+      .from('asset')
+      .insert({
+        site_id: siteId,
+        kind,
+        storage_key: storageKey,
+        width,
+        height,
+        duration_ms: durationMs,
+        checksum: '', // TODO: Calculate checksum
+        created_by: user.id
+      })
+      .select()
+      .single();
+
+    if (assetError) throw assetError;
+
+    // Create initial asset version
+    const { error: versionError } = await supabase
+      .from('asset_version')
+      .insert({
+        asset_id: asset.id,
+        version: 1,
+        meta: {
+          'en-US': {
+            alt: meta?.alt?.['en-US'] || '',
+            caption: meta?.caption?.['en-US'] || '',
+            license: meta?.license || '',
+            tags: meta?.tags || [],
+            focal_point: meta?.focal_point
+          }
+        },
+        created_by: user.id
+      });
+
+    if (versionError) throw versionError;
+
+    const parsedAsset = zAsset.parse(asset);
+    return { data: parsedAsset, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function updateAsset(
+  assetId: string,
+  updates: Partial<Asset>
+): Promise<ApiResponse<Asset>> {
+  try {
+    const { data, error } = await supabase
+      .from('asset')
+      .update(updates)
+      .eq('id', assetId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const asset = zAsset.parse(data);
+    return { data: asset, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function deleteAsset(assetId: string): Promise<ApiResponse<void>> {
+  try {
+    // Get asset to find storage key
+    const { data: asset } = await supabase
+      .from('asset')
+      .select('storage_key')
+      .eq('id', assetId)
+      .single();
+
+    if (asset) {
+      // Delete from storage
+      await supabase.storage
+        .from('cms-assets')
+        .remove([asset.storage_key]);
+    }
+
+    // Delete from database (cascade will handle related records)
+    const { error } = await supabase
+      .from('asset')
+      .delete()
+      .eq('id', assetId);
+
+    if (error) throw error;
+
+    return { data: undefined, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function getAssetVersions(assetId: string): Promise<ApiResponse<AssetVersion[]>> {
+  try {
+    const { data, error } = await supabase
+      .from('asset_version')
+      .select('*')
+      .eq('asset_id', assetId)
+      .order('version', { ascending: false });
+
+    if (error) throw error;
+
+    const versions = zAssetVersion.array().parse(data);
+    return { data: versions, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function createAssetVersion(
+  assetId: string,
+  meta: LocalizedContent<AssetMeta>,
+  editOperation?: AssetEditOperation
+): Promise<ApiResponse<AssetVersion>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Get current max version
+    const { data: maxVersion } = await supabase
+      .from('asset_version')
+      .select('version')
+      .eq('asset_id', assetId)
+      .order('version', { ascending: false })
+      .limit(1)
+      .single();
+
+    const newVersion = (maxVersion?.version || 0) + 1;
+
+    const { data, error } = await supabase
+      .from('asset_version')
+      .insert({
+        asset_id: assetId,
+        version: newVersion,
+        meta,
+        edit_operation: editOperation,
+        created_by: user.id
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const version = zAssetVersion.parse(data);
+    return { data: version, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function publishAsset(
+  assetId: string,
+  version: number
+): Promise<ApiResponse<AssetPublish>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('asset_publish')
+      .upsert({
+        asset_id: assetId,
+        version,
+        published_by: user.id
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const publish = zAssetPublish.parse(data);
+    return { data: publish, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function unpublishAsset(assetId: string): Promise<ApiResponse<void>> {
+  try {
+    const { error } = await supabase
+      .from('asset_publish')
+      .delete()
+      .eq('asset_id', assetId);
+
+    if (error) throw error;
+
+    return { data: undefined, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}

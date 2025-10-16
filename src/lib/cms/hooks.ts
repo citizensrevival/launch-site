@@ -14,7 +14,9 @@ import {
   createPageVersion, updatePageVersion, publishPage, unpublishPage,
   getPublishedPage, getPublishedPageByKey, getPublishedBlockByKey,
   getPublishedAssetByKey, getPublishedMenuByKey, getUserPermissions,
-  getAuditLog, hasPermission
+  getAuditLog, hasPermission, getAssets, getAsset, uploadAsset,
+  updateAsset, deleteAsset, getAssetVersions, createAssetVersion,
+  publishAsset, unpublishAsset
 } from './client';
 
 // Site hooks
@@ -515,6 +517,213 @@ export function usePageManagement() {
     deletePage: deletePageHandler,
     publishPage: publishPageHandler,
     unpublishPage: unpublishPageHandler,
+    loading,
+    error
+  };
+}
+
+// Asset hooks
+export function useAssets(
+  siteId: string,
+  filters?: ContentFilters,
+  sort?: ContentSort,
+  page = 1,
+  pageSize = 20
+) {
+  const [assets, setAssets] = useState<PaginatedResponse<Asset> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchAssets() {
+      try {
+        setLoading(true);
+        const response = await getAssets(siteId, filters, sort, page, pageSize);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setAssets(response.data || null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (siteId) {
+      fetchAssets();
+    }
+  }, [siteId, filters, sort, page, pageSize]);
+
+  return { assets, loading, error };
+}
+
+export function useAsset(assetId: string) {
+  const [asset, setAsset] = useState<Asset | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchAsset() {
+      try {
+        setLoading(true);
+        const response = await getAsset(assetId);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setAsset(response.data || null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (assetId) {
+      fetchAsset();
+    }
+  }, [assetId]);
+
+  return { asset, loading, error };
+}
+
+export function useAssetVersions(assetId: string) {
+  const [versions, setVersions] = useState<AssetVersion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchVersions() {
+      try {
+        setLoading(true);
+        const response = await getAssetVersions(assetId);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setVersions(response.data || []);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (assetId) {
+      fetchVersions();
+    }
+  }, [assetId]);
+
+  return { versions, loading, error };
+}
+
+// Asset management hooks
+export function useAssetManagement() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const uploadAssetHandler = useCallback(async (
+    siteId: string,
+    file: File,
+    meta?: Partial<AssetMeta>
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await uploadAsset(siteId, file, meta);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateAssetHandler = useCallback(async (assetId: string, updates: Partial<Asset>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await updateAsset(assetId, updates);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteAssetHandler = useCallback(async (assetId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await deleteAsset(assetId);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const publishAssetHandler = useCallback(async (assetId: string, version: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await publishAsset(assetId, version);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const unpublishAssetHandler = useCallback(async (assetId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await unpublishAsset(assetId);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    uploadAsset: uploadAssetHandler,
+    updateAsset: updateAssetHandler,
+    deleteAsset: deleteAssetHandler,
+    publishAsset: publishAssetHandler,
+    unpublishAsset: unpublishAssetHandler,
     loading,
     error
   };
