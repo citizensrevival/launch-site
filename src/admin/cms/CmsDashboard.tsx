@@ -9,7 +9,7 @@ interface CmsDashboardProps {
 }
 
 export function CmsDashboard({ siteId }: CmsDashboardProps) {
-  const { pages, loading, error } = usePages(siteId || 'default', {}, { field: 'created_at', direction: 'desc' }, 1, 10);
+  const { pages, loading, error } = usePages(siteId || '00000000-0000-0000-0000-000000000001', {}, { field: 'created_at', direction: 'desc' }, 1, 10);
 
   if (loading) {
     return (
