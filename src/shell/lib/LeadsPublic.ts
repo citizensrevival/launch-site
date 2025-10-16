@@ -55,7 +55,8 @@ export class LeadsPublic {
   }
 
   /**
-   * Creates a new lead in the database
+   * Creates or updates a lead in the database (upsert)
+   * Prevents duplicate entries based on email + lead_kind combination
    */
   async createLead(input: CreateLeadInput): Promise<{ success: boolean; data?: Lead; error?: DatabaseError }> {
     try {
@@ -71,7 +72,7 @@ export class LeadsPublic {
         };
       }
 
-      // Prepare data for insertion
+      // Prepare data for upsert
       const leadData = {
         lead_kind: input.lead_kind,
         business_name: input.business_name || null,
@@ -85,14 +86,24 @@ export class LeadsPublic {
         meta: input.meta || null,
       };
 
-      // Insert into database
-      console.log('Attempting to insert lead with data:', leadData);
+      // Use stored procedure to handle upsert logic
+      console.log('Attempting to upsert lead with data:', leadData);
       
       const { data, error } = await this.supabase
-        .from('leads')
-        .insert([leadData]);
+        .rpc('upsert_lead', {
+          p_lead_kind: leadData.lead_kind,
+          p_email: leadData.email,
+          p_business_name: leadData.business_name,
+          p_contact_name: leadData.contact_name,
+          p_phone: leadData.phone,
+          p_website: leadData.website,
+          p_social_links: leadData.social_links,
+          p_source_path: leadData.source_path,
+          p_tags: leadData.tags,
+          p_meta: leadData.meta
+        });
       
-      console.log('Insert result:', { data, error });
+      console.log('Upsert result:', { data, error });
 
       if (error) {
         return {
@@ -108,7 +119,7 @@ export class LeadsPublic {
       return {
         success: true,
         // Note: data is null because anonymous users can't read leads
-        // The insert was successful, but we can't return the inserted record
+        // The upsert was successful, but we can't return the upserted record
         data: undefined,
       };
     } catch (error) {
