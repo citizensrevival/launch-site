@@ -7,316 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  analytics: {
-    Tables: {
-      events: {
-        Row: {
-          anon_id: string | null
-          created_at: string
-          event_name: string
-          event_properties: Json | null
-          id: string
-          page_path: string | null
-          session_id: string
-          user_id: string | null
-        }
-        Insert: {
-          anon_id?: string | null
-          created_at?: string
-          event_name: string
-          event_properties?: Json | null
-          id?: string
-          page_path?: string | null
-          session_id: string
-          user_id?: string | null
-        }
-        Update: {
-          anon_id?: string | null
-          created_at?: string
-          event_name?: string
-          event_properties?: Json | null
-          id?: string
-          page_path?: string | null
-          session_id?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      excluded_users: {
-        Row: {
-          anon_id: string | null
-          excluded_at: string
-          id: string
-          ip_address: unknown | null
-          reason: string | null
-          session_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          anon_id?: string | null
-          excluded_at?: string
-          id?: string
-          ip_address?: unknown | null
-          reason?: string | null
-          session_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          anon_id?: string | null
-          excluded_at?: string
-          id?: string
-          ip_address?: unknown | null
-          reason?: string | null
-          session_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      page_views: {
-        Row: {
-          anon_id: string | null
-          browser: string | null
-          city: string | null
-          country: string | null
-          created_at: string
-          device_type: string | null
-          id: string
-          ip_address: unknown | null
-          os: string | null
-          page_path: string
-          page_title: string | null
-          referrer: string | null
-          session_id: string
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          anon_id?: string | null
-          browser?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          device_type?: string | null
-          id?: string
-          ip_address?: unknown | null
-          os?: string | null
-          page_path: string
-          page_title?: string | null
-          referrer?: string | null
-          session_id: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          anon_id?: string | null
-          browser?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          device_type?: string | null
-          id?: string
-          ip_address?: unknown | null
-          os?: string | null
-          page_path?: string
-          page_title?: string | null
-          referrer?: string | null
-          session_id?: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      sessions: {
-        Row: {
-          anon_id: string | null
-          browser: string | null
-          city: string | null
-          country: string | null
-          device_type: string | null
-          duration_seconds: number | null
-          ended_at: string | null
-          events: number | null
-          id: string
-          os: string | null
-          page_views: number | null
-          started_at: string
-          user_id: string | null
-        }
-        Insert: {
-          anon_id?: string | null
-          browser?: string | null
-          city?: string | null
-          country?: string | null
-          device_type?: string | null
-          duration_seconds?: number | null
-          ended_at?: string | null
-          events?: number | null
-          id: string
-          os?: string | null
-          page_views?: number | null
-          started_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          anon_id?: string | null
-          browser?: string | null
-          city?: string | null
-          country?: string | null
-          device_type?: string | null
-          duration_seconds?: number | null
-          ended_at?: string | null
-          events?: number | null
-          id?: string
-          os?: string | null
-          page_views?: number | null
-          started_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      v_event_rollup_daily: {
-        Row: {
-          day: string | null
-          event_count: number | null
-          event_name: string | null
-          unique_users: number | null
-        }
-        Relationships: []
-      }
-      v_referral_traffic_daily: {
-        Row: {
-          day: string | null
-          referrals: number | null
-        }
-        Relationships: []
-      }
-      v_referrer_stats: {
-        Row: {
-          conversion_rate: number | null
-          conversions: number | null
-          referrer_domain: string | null
-          total_sessions: number | null
-          total_users: number | null
-        }
-        Relationships: []
-      }
-      v_sessions_summary: {
-        Row: {
-          browser: string | null
-          city: string | null
-          country: string | null
-          device_type: string | null
-          duration_seconds: number | null
-          ended_at: string | null
-          events: number | null
-          os: string | null
-          page_views: number | null
-          session_id: string | null
-          started_at: string | null
-          user_id: string | null
-          user_type: string | null
-        }
-        Insert: {
-          browser?: string | null
-          city?: string | null
-          country?: string | null
-          device_type?: string | null
-          duration_seconds?: number | null
-          ended_at?: string | null
-          events?: number | null
-          os?: string | null
-          page_views?: number | null
-          session_id?: string | null
-          started_at?: string | null
-          user_id?: string | null
-          user_type?: never
-        }
-        Update: {
-          browser?: string | null
-          city?: string | null
-          country?: string | null
-          device_type?: string | null
-          duration_seconds?: number | null
-          ended_at?: string | null
-          events?: number | null
-          os?: string | null
-          page_views?: number | null
-          session_id?: string | null
-          started_at?: string | null
-          user_id?: string | null
-          user_type?: never
-        }
-        Relationships: []
-      }
-      v_traffic_share: {
-        Row: {
-          percentage: number | null
-          sessions: number | null
-          traffic_source: string | null
-          users: number | null
-        }
-        Relationships: []
-      }
-      v_unique_users_daily: {
-        Row: {
-          day: string | null
-          unique_users: number | null
-        }
-        Relationships: []
-      }
-    }
-    Functions: {
-      get_analytics_data: {
-        Args: { end_date?: string; start_date?: string }
-        Returns: {
-          avg_session_duration: number
-          country_breakdown: Json
-          device_breakdown: Json
-          top_pages: Json
-          total_page_views: number
-          total_sessions: number
-          unique_visitors: number
-        }[]
-      }
-      track_event: {
-        Args: {
-          p_anon_id?: string
-          p_event_name: string
-          p_event_properties?: Json
-          p_page_path?: string
-          p_session_id: string
-          p_user_id?: string
-        }
-        Returns: string
-      }
-      track_page_view: {
-        Args: {
-          p_anon_id?: string
-          p_browser?: string
-          p_city?: string
-          p_country?: string
-          p_device_type?: string
-          p_ip_address?: unknown
-          p_os?: string
-          p_page_path: string
-          p_page_title?: string
-          p_referrer?: string
-          p_session_id: string
-          p_user_agent?: string
-          p_user_id?: string
-        }
-        Returns: string
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -718,6 +408,106 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          id: string
+          name: string
+          occurred_at: string
+          properties: Json
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          occurred_at?: string
+          properties?: Json
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          occurred_at?: string
+          properties?: Json
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_sessions_summary"
+            referencedColumns: ["session_id"]
+          },
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_users_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      excluded_users: {
+        Row: {
+          anon_id: string | null
+          excluded_at: string
+          id: string
+          ip_address: unknown | null
+          reason: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          anon_id?: string | null
+          excluded_at?: string
+          id?: string
+          ip_address?: unknown | null
+          reason?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          anon_id?: string | null
+          excluded_at?: string
+          id?: string
+          ip_address?: unknown | null
+          reason?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           business_name: string | null
@@ -985,6 +775,176 @@ export type Database = {
           },
         ]
       }
+      pageviews: {
+        Row: {
+          id: string
+          occurred_at: string
+          path: string
+          referrer: string | null
+          session_id: string
+          title: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          occurred_at?: string
+          path: string
+          referrer?: string | null
+          session_id: string
+          title?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          occurred_at?: string
+          path?: string
+          referrer?: string | null
+          session_id?: string
+          title?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pageviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_sessions_summary"
+            referencedColumns: ["session_id"]
+          },
+          {
+            foreignKeyName: "pageviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_users_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          browser_name: string | null
+          device_category: string | null
+          ended_at: string | null
+          geo_city: string | null
+          geo_country: string | null
+          geo_region: string | null
+          id: string
+          ip_address: unknown | null
+          is_bot: boolean
+          landing_page: string | null
+          landing_path: string | null
+          os_name: string | null
+          referrer: string | null
+          started_at: string
+          user_agent: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          browser_name?: string | null
+          device_category?: string | null
+          ended_at?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_region?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_bot?: boolean
+          landing_page?: string | null
+          landing_path?: string | null
+          os_name?: string | null
+          referrer?: string | null
+          started_at?: string
+          user_agent?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          browser_name?: string | null
+          device_category?: string | null
+          ended_at?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_region?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_bot?: boolean
+          landing_page?: string | null
+          landing_path?: string | null
+          os_name?: string | null
+          referrer?: string | null
+          started_at?: string
+          user_agent?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_users_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site: {
         Row: {
           created_at: string
@@ -1045,14 +1005,644 @@ export type Database = {
         }
         Relationships: []
       }
+      users: {
+        Row: {
+          anon_id: string
+          first_referrer: string | null
+          first_seen_at: string
+          first_utm_campaign: string | null
+          first_utm_medium: string | null
+          first_utm_source: string | null
+          id: string
+          last_referrer: string | null
+          last_seen_at: string
+          last_utm_campaign: string | null
+          last_utm_medium: string | null
+          last_utm_source: string | null
+          properties: Json
+        }
+        Insert: {
+          anon_id: string
+          first_referrer?: string | null
+          first_seen_at?: string
+          first_utm_campaign?: string | null
+          first_utm_medium?: string | null
+          first_utm_source?: string | null
+          id?: string
+          last_referrer?: string | null
+          last_seen_at?: string
+          last_utm_campaign?: string | null
+          last_utm_medium?: string | null
+          last_utm_source?: string | null
+          properties?: Json
+        }
+        Update: {
+          anon_id?: string
+          first_referrer?: string | null
+          first_seen_at?: string
+          first_utm_campaign?: string | null
+          first_utm_medium?: string | null
+          first_utm_source?: string | null
+          id?: string
+          last_referrer?: string | null
+          last_seen_at?: string
+          last_utm_campaign?: string | null
+          last_utm_medium?: string | null
+          last_utm_source?: string | null
+          properties?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      v_analytics_events: {
+        Row: {
+          id: string | null
+          name: string | null
+          occurred_at: string | null
+          properties: Json | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string | null
+          name?: string | null
+          occurred_at?: string | null
+          properties?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string | null
+          name?: string | null
+          occurred_at?: string | null
+          properties?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_sessions_summary"
+            referencedColumns: ["session_id"]
+          },
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_users_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_analytics_pageviews: {
+        Row: {
+          id: string | null
+          occurred_at: string | null
+          path: string | null
+          referrer: string | null
+          session_id: string | null
+          title: string | null
+          url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string | null
+          occurred_at?: string | null
+          path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          title?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string | null
+          occurred_at?: string | null
+          path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          title?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pageviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "v_sessions_summary"
+            referencedColumns: ["session_id"]
+          },
+          {
+            foreignKeyName: "pageviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pageviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_users_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_analytics_sessions: {
+        Row: {
+          browser_name: string | null
+          device_category: string | null
+          ended_at: string | null
+          geo_city: string | null
+          geo_country: string | null
+          geo_region: string | null
+          id: string | null
+          ip_address: unknown | null
+          is_bot: boolean | null
+          landing_page: string | null
+          landing_path: string | null
+          os_name: string | null
+          referrer: string | null
+          started_at: string | null
+          user_agent: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          browser_name?: string | null
+          device_category?: string | null
+          ended_at?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_region?: string | null
+          id?: string | null
+          ip_address?: unknown | null
+          is_bot?: boolean | null
+          landing_page?: string | null
+          landing_path?: string | null
+          os_name?: string | null
+          referrer?: string | null
+          started_at?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          browser_name?: string | null
+          device_category?: string | null
+          ended_at?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_region?: string | null
+          id?: string | null
+          ip_address?: unknown | null
+          is_bot?: boolean | null
+          landing_page?: string | null
+          landing_path?: string | null
+          os_name?: string | null
+          referrer?: string | null
+          started_at?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_users_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_analytics_users: {
+        Row: {
+          anon_id: string | null
+          first_referrer: string | null
+          first_seen_at: string | null
+          first_utm_campaign: string | null
+          first_utm_medium: string | null
+          first_utm_source: string | null
+          id: string | null
+          last_referrer: string | null
+          last_seen_at: string | null
+          last_utm_campaign: string | null
+          last_utm_medium: string | null
+          last_utm_source: string | null
+          properties: Json | null
+        }
+        Insert: {
+          anon_id?: string | null
+          first_referrer?: string | null
+          first_seen_at?: string | null
+          first_utm_campaign?: string | null
+          first_utm_medium?: string | null
+          first_utm_source?: string | null
+          id?: string | null
+          last_referrer?: string | null
+          last_seen_at?: string | null
+          last_utm_campaign?: string | null
+          last_utm_medium?: string | null
+          last_utm_source?: string | null
+          properties?: Json | null
+        }
+        Update: {
+          anon_id?: string | null
+          first_referrer?: string | null
+          first_seen_at?: string | null
+          first_utm_campaign?: string | null
+          first_utm_medium?: string | null
+          first_utm_source?: string | null
+          id?: string | null
+          last_referrer?: string | null
+          last_seen_at?: string | null
+          last_utm_campaign?: string | null
+          last_utm_medium?: string | null
+          last_utm_source?: string | null
+          properties?: Json | null
+        }
+        Relationships: []
+      }
+      v_browser_breakdown: {
+        Row: {
+          browser_name: string | null
+          sessions: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_city_breakdown: {
+        Row: {
+          city: string | null
+          country: string | null
+          sessions: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_country_breakdown: {
+        Row: {
+          country: string | null
+          sessions: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_device_breakdown: {
+        Row: {
+          device_category: string | null
+          sessions: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_event_rollup_daily: {
+        Row: {
+          day: string | null
+          event_count: number | null
+          name: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_event_trends_daily: {
+        Row: {
+          count: number | null
+          day: string | null
+          name: string | null
+        }
+        Relationships: []
+      }
+      v_events_analytics: {
+        Row: {
+          count: number | null
+          last_occurred: string | null
+          name: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_new_users_daily: {
+        Row: {
+          day: string | null
+          new_users: number | null
+        }
+        Relationships: []
+      }
+      v_new_vs_returning_users: {
+        Row: {
+          count: number | null
+          type: string | null
+        }
+        Relationships: []
+      }
+      v_os_breakdown: {
+        Row: {
+          os_name: string | null
+          sessions: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_pageviews_daily: {
+        Row: {
+          day: string | null
+          pageviews: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_referral_traffic_daily: {
+        Row: {
+          day: string | null
+          referrals: number | null
+        }
+        Relationships: []
+      }
+      v_referrers_analytics: {
+        Row: {
+          avg_session_duration: number | null
+          bounce_rate: number | null
+          conversions: number | null
+          domain: string | null
+          last_seen: string | null
+          pages_per_session: number | null
+          total_sessions: number | null
+          total_users: number | null
+          traffic_share: number | null
+        }
+        Relationships: []
+      }
+      v_session_metrics: {
+        Row: {
+          avg_duration: number | null
+          avg_pageviews: number | null
+          total_sessions: number | null
+        }
+        Relationships: []
+      }
+      v_sessions_per_user_distribution: {
+        Row: {
+          sessions: number | null
+          users: number | null
+        }
+        Relationships: []
+      }
+      v_sessions_summary: {
+        Row: {
+          browser_name: string | null
+          device_category: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          events_count: number | null
+          geo_city: string | null
+          geo_country: string | null
+          geo_region: string | null
+          ip_address: unknown | null
+          is_bot: boolean | null
+          landing_page: string | null
+          landing_path: string | null
+          os_name: string | null
+          pageviews_count: number | null
+          referrer: string | null
+          session_id: string | null
+          started_at: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          browser_name?: string | null
+          device_category?: string | null
+          duration_seconds?: never
+          ended_at?: string | null
+          events_count?: never
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_region?: string | null
+          ip_address?: unknown | null
+          is_bot?: boolean | null
+          landing_page?: string | null
+          landing_path?: string | null
+          os_name?: string | null
+          pageviews_count?: never
+          referrer?: string | null
+          session_id?: string | null
+          started_at?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          browser_name?: string | null
+          device_category?: string | null
+          duration_seconds?: never
+          ended_at?: string | null
+          events_count?: never
+          geo_city?: string | null
+          geo_country?: string | null
+          geo_region?: string | null
+          ip_address?: unknown | null
+          is_bot?: boolean | null
+          landing_page?: string | null
+          landing_path?: string | null
+          os_name?: string | null
+          pageviews_count?: never
+          referrer?: string | null
+          session_id?: string | null
+          started_at?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_analytics_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_users_analytics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_top_pages: {
+        Row: {
+          last_viewed: string | null
+          path: string | null
+          unique_users: number | null
+          views: number | null
+        }
+        Relationships: []
+      }
+      v_unique_users_daily: {
+        Row: {
+          day: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
+      v_users_analytics: {
+        Row: {
+          anon_id: string | null
+          avg_duration: number | null
+          browser_name: string | null
+          device_category: string | null
+          first_referrer: string | null
+          first_seen_at: string | null
+          first_utm_source: string | null
+          geo_city: string | null
+          geo_country: string | null
+          has_lead: boolean | null
+          id: string | null
+          last_referrer: string | null
+          last_seen_at: string | null
+          last_utm_source: string | null
+          os_name: string | null
+          properties: Json | null
+          sessions: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_analytics_data: {
+        Args: { end_date?: string; start_date?: string }
+        Returns: {
+          avg_session_duration: number
+          country_breakdown: Json
+          device_breakdown: Json
+          top_pages: Json
+          total_page_views: number
+          total_sessions: number
+          unique_visitors: number
+        }[]
+      }
       has_permission: {
         Args: { permission: string; user_id: string }
         Returns: boolean
+      }
+      track_event: {
+        Args: {
+          p_name: string
+          p_properties?: Json
+          p_session_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      track_page_view: {
+        Args: {
+          p_path: string
+          p_referrer?: string
+          p_session_id: string
+          p_title?: string
+          p_url: string
+          p_user_id: string
+        }
+        Returns: string
       }
       upsert_lead: {
         Args: {
@@ -1197,9 +1787,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  analytics: {
-    Enums: {},
-  },
   graphql_public: {
     Enums: {},
   },

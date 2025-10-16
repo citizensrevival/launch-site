@@ -21,6 +21,9 @@
 - Never commit sensitive data to migration files
 - Use `VITE_` prefix for client-side environment variables
 
+## Supabase
+- All objects that are not default Supabase features should be in the `public` schema
+
 ## Quick Commands
 ```bash
 # Kill all development processes
