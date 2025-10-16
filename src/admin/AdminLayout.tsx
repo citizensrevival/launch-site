@@ -111,14 +111,14 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
   ];
 
   const contentItems = [
+    { name: 'Assets', href: '/manage/content/assets', icon: (
+      <Icon path={mdiChartLine} className="h-5 w-5" />
+    ) },
     { name: 'Pages', href: '/manage/content/pages', icon: (
       <Icon path={mdiWeb} className="h-5 w-5" />
     ) },
     { name: 'Content Blocks', href: '/manage/content/blocks', icon: (
       <Icon path={mdiAccountGroup} className="h-5 w-5" />
-    ) },
-    { name: 'Assets', href: '/manage/content/assets', icon: (
-      <Icon path={mdiChartLine} className="h-5 w-5" />
     ) },
     { name: 'Site Settings', href: '/manage/content/settings', icon: (
       <Icon path={mdiCog} className="h-5 w-5" />
