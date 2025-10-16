@@ -5,6 +5,7 @@ import { store } from './shell/store'
 import { ThemeProvider } from './shell/contexts/ThemeContext'
 import { AuthProvider } from './shell/contexts/AuthContext'
 import { AnalyticsProvider } from './shell/contexts/AnalyticsContext'
+import { SiteProvider } from './shell/contexts/SiteContext'
 import { GetInvolvedDialog } from './shell/GetInvolvedDialog'
 import { useGetInvolvedDialog } from './shell/hooks/useGetInvolvedDialog'
 import { useAnalyticsPageview } from './shell/hooks/useAnalyticsPageview'
@@ -20,10 +21,9 @@ const TermsAndConditionsPage = lazy(() => import('./public/pages/TermsAndConditi
 const UnsubscribePage = lazy(() => import('./public/pages/UnsubscribePage'))
 
 
-function AppContent() {
+function PublicRoutes() {
   const { isDialogOpen, preselectedType } = useGetInvolvedDialog();
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/manage');
   const [isAnimating, setIsAnimating] = useState(false);
   
   // Initialize analytics pageview tracking
@@ -46,7 +46,7 @@ function AppContent() {
   }, [location.pathname]);
 
   return (
-    <div className={`route-transition ${isAdminRoute ? 'admin-route' : 'public-route'} ${isAnimating ? 'animating' : ''}`}>
+    <div className={`route-transition public-route ${isAnimating ? 'animating' : ''}`}>
       <Suspense fallback={
         <div className="min-h-screen flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
@@ -60,10 +60,33 @@ function AppContent() {
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsAndConditionsPage />} />
           <Route path="/unsubscribe" element={<UnsubscribePage />} />
-          <Route path="/manage/*" element={<AdminRoute />} />
         </Routes>
       </Suspense>
       {isDialogOpen && <GetInvolvedDialog preselectedType={preselectedType || undefined} />}
+    </div>
+  )
+}
+
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/manage');
+
+  return (
+    <div className={`route-transition ${isAdminRoute ? 'admin-route' : 'public-route'}`}>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
+        </div>
+      }>
+        <Routes>
+          <Route path="/manage/*" element={<AdminRoute />} />
+          <Route path="/*" element={
+            <SiteProvider slug="aztec">
+              <PublicRoutes />
+            </SiteProvider>
+          } />
+        </Routes>
+      </Suspense>
     </div>
   )
 }

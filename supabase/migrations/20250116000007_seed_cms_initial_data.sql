@@ -2,12 +2,13 @@
 -- This migration seeds the initial site and creates default permissions
 
 -- Create the main site
-insert into site (id, handle, label, default_locale, created_by)
+insert into site (id, handle, label, default_locale, slug, created_by)
 values (
   '00000000-0000-0000-0000-000000000001',
   'aztec-citizens-revival',
   'Aztec Citizens Revival',
   'en-US',
+  'aztec',
   '00000000-0000-0000-0000-000000000000'
 );
 
