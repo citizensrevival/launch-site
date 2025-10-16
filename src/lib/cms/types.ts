@@ -353,6 +353,7 @@ export interface PaginatedResponse<T> {
 export interface ContentFilters {
   status?: PublishStatus;
   type?: string;
+  kind?: AssetKind;
   is_system?: boolean;
   created_by?: string;
   search?: string;
