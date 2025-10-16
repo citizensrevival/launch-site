@@ -15,7 +15,6 @@ export function useSites() {
 
   useEffect(() => {
     if (!initialized) {
-      console.log('useSites: Fetching sites...');
       fetchSites();
       setInitialized(true);
     }
@@ -35,7 +34,6 @@ export function useSites() {
         throw error;
       }
 
-      console.log('useSites: Fetched sites:', data);
       dispatch(setSites(data || []));
     } catch (err) {
       console.error('Error fetching sites:', err);
