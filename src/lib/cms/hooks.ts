@@ -2,6 +2,7 @@
 // This file contains React hooks for CMS content management
 
 import { useState, useEffect, useCallback } from 'react';
+export { useSites } from './hooks/sites';
 import type {
   Site, Page, PageVersion, Asset, AssetVersion,
   ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu,
@@ -9,7 +10,7 @@ import type {
   PaginatedResponse, AssetMeta
 } from './types';
 import {
-  getSites, getSite, getPages, getPage,
+  getSite, getPages, getPage,
   getPageVersions, createPage, updatePage, deletePage,
   publishPage, unpublishPage,
   getPublishedPage, getPublishedPageByKey, getPublishedBlockByKey,
@@ -20,33 +21,6 @@ import {
 } from './client';
 
 // Site hooks
-export function useSites() {
-  const [sites, setSites] = useState<Site[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchSites() {
-      try {
-        setLoading(true);
-        const response = await getSites();
-        if (response.error) {
-          setError(response.error);
-        } else {
-          setSites(response.data || []);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchSites();
-  }, []);
-
-  return { sites, loading, error };
-}
 
 export function useSite(siteId: string) {
   const [site, setSite] = useState<Site | null>(null);

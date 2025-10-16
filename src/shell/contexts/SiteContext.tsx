@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, ReactNode } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '../store'
-import { setSite, setLoading, setError } from '../store/slices/siteSlice'
+import { setSelectedSite, setLoading, setError } from '../store/slices/siteSlice'
 import { createClient } from '@supabase/supabase-js'
 
 interface SiteContextType {
@@ -19,7 +19,7 @@ interface SiteProviderProps {
 
 export function SiteProvider({ children, slug }: SiteProviderProps) {
   const dispatch = useDispatch<AppDispatch>()
-  const { currentSite, loading, error } = useSelector((state: RootState) => state.site)
+  const { selectedSite, loading, error } = useSelector((state: RootState) => state.site)
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -50,7 +50,7 @@ export function SiteProvider({ children, slug }: SiteProviderProps) {
         }
 
         if (data) {
-          dispatch(setSite(data))
+          dispatch(setSelectedSite(data))
         } else {
           dispatch(setError(`Site with slug '${slug}' not found`))
         }
@@ -64,7 +64,7 @@ export function SiteProvider({ children, slug }: SiteProviderProps) {
   }, [slug, dispatch])
 
   const value: SiteContextType = {
-    site: currentSite,
+    site: selectedSite,
     loading,
     error
   }

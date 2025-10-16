@@ -3,13 +3,30 @@
 
 import { AdminLayout } from '../AdminLayout';
 import { usePages } from '../../lib/cms/hooks';
+import { useAppSelector } from '../../shell/store/hooks';
 
 interface CmsDashboardProps {
   siteId?: string;
 }
 
 export function CmsDashboard({ siteId }: CmsDashboardProps) {
-  const { pages, loading, error } = usePages(siteId || '00000000-0000-0000-0000-000000000001', {}, { field: 'created_at', direction: 'desc' }, 1, 10);
+  const selectedSite = useAppSelector((state) => state.site.selectedSite);
+  const currentSiteId = siteId || selectedSite?.id;
+  
+  const { pages, loading, error } = usePages(currentSiteId || '', {}, { field: 'created_at', direction: 'desc' }, 1, 10);
+
+  if (!currentSiteId) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Site Selected</h3>
+            <p className="text-gray-500">Please select a site from the dropdown in the header to view the dashboard.</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   if (loading) {
     return (
