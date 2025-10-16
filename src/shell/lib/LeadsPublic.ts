@@ -81,7 +81,6 @@ export class LeadsPublic {
         phone: input.phone || null,
         website: input.website || null,
         social_links: input.social_links || null,
-        source_path: input.source_path || null,
         tags: input.tags || null,
         meta: input.meta || null,
       };
@@ -98,7 +97,7 @@ export class LeadsPublic {
           p_phone: leadData.phone,
           p_website: leadData.website,
           p_social_links: leadData.social_links,
-          p_source_path: leadData.source_path,
+          p_source_path: input.source_path || null,
           p_tags: leadData.tags,
           p_meta: leadData.meta
         });

@@ -726,7 +726,6 @@ export default function LeadsPage() {
                     <Field label="Email" value={drawerLead.email} isLink={`mailto:${drawerLead.email}`} />
                     <Field label="Phone" value={drawerLead.phone} isLink={drawerLead.phone ? `tel:${drawerLead.phone}` : undefined} />
                     <Field label="Website" value={drawerLead.website} isLink={drawerLead.website ? (drawerLead.website.startsWith('http') ? drawerLead.website : `https://${drawerLead.website}`) : undefined} />
-                    <Field label="Source Path" value={drawerLead.source_path} />
                   </>
                 )}
               </div>
