@@ -10,7 +10,7 @@ interface CmsAssetsProps {
   siteId?: string;
 }
 
-export function CmsAssets({ siteId = 'default' }: CmsAssetsProps) {
+export function CmsAssets({ siteId = '00000000-0000-0000-0000-000000000001' }: CmsAssetsProps) {
   const [filters, setFilters] = useState<ContentFilters>({});
   const [sort] = useState<ContentSort>({ field: 'created_at', direction: 'desc' });
   const [page, setPage] = useState(1);
