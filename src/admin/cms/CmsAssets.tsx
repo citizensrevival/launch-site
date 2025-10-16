@@ -15,17 +15,7 @@ export function CmsAssets({ siteId }: CmsAssetsProps) {
   const selectedSite = useAppSelector((state) => state.site.selectedSite);
   const currentSiteId = siteId || selectedSite?.id;
   
-  const [filters, setFilters] = useState<ContentFilters>({});
-  const [sort] = useState<ContentSort>({ field: 'created_at', direction: 'desc' });
-  const [page, setPage] = useState(1);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { assets, loading, error } = useAssets(currentSiteId || '', filters, sort, page, 20);
-  const { uploadAsset, deleteAsset, loading: actionLoading, error: actionError } = useAssetManagement();
-
+  // Early return before any hooks to avoid Rules of Hooks violation
   if (!currentSiteId) {
     return (
       <AdminLayout>
@@ -38,6 +28,17 @@ export function CmsAssets({ siteId }: CmsAssetsProps) {
       </AdminLayout>
     );
   }
+  
+  const [filters, setFilters] = useState<ContentFilters>({});
+  const [sort] = useState<ContentSort>({ field: 'created_at', direction: 'desc' });
+  const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { assets, loading, error } = useAssets(currentSiteId, filters, sort, page, 20);
+  const { uploadAsset, deleteAsset, loading: actionLoading, error: actionError } = useAssetManagement();
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (files) {
