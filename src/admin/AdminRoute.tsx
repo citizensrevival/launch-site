@@ -12,10 +12,13 @@ const SessionsPage = lazy(() => import('./analytics').then(module => ({ default:
 const SessionDetailPage = lazy(() => import('./analytics').then(module => ({ default: module.SessionDetailPage })));
 const EventsPage = lazy(() => import('./analytics').then(module => ({ default: module.EventsPage })));
 const ReferrersPage = lazy(() => import('./analytics').then(module => ({ default: module.ReferrersPage })));
-const PagesPage = lazy(() => import('./content').then(module => ({ default: module.PagesPage })));
-const ContentBlocksPage = lazy(() => import('./content').then(module => ({ default: module.ContentBlocksPage })));
-const AssetsPage = lazy(() => import('./content').then(module => ({ default: module.AssetsPage })));
-const SettingsPage = lazy(() => import('./content').then(module => ({ default: module.SettingsPage })));
+const CmsDashboard = lazy(() => import('./cms/CmsDashboard').then(module => ({ default: module.CmsDashboard })));
+const CmsPages = lazy(() => import('./cms/CmsPages').then(module => ({ default: module.CmsPages })));
+const CmsBlocks = lazy(() => import('./cms/CmsBlocks').then(module => ({ default: module.CmsBlocks })));
+const CmsAssets = lazy(() => import('./cms/CmsAssets').then(module => ({ default: module.CmsAssets })));
+const CmsMenus = lazy(() => import('./cms/CmsMenus').then(module => ({ default: module.CmsMenus })));
+const CmsUsers = lazy(() => import('./cms/CmsUsers').then(module => ({ default: module.CmsUsers })));
+const CmsAudit = lazy(() => import('./cms/CmsAudit').then(module => ({ default: module.CmsAudit })));
 
 export function AdminRoute() {
   const { user, loading } = useAuth();
@@ -47,10 +50,13 @@ export function AdminRoute() {
         <Route path="analytics/sessions/:id" element={<SessionDetailPage />} />
         <Route path="analytics/events" element={<EventsPage />} />
         <Route path="analytics/referrers" element={<ReferrersPage />} />
-        <Route path="content/pages" element={<PagesPage />} />
-        <Route path="content/blocks" element={<ContentBlocksPage />} />
-        <Route path="content/assets" element={<AssetsPage />} />
-        <Route path="content/settings" element={<SettingsPage />} />
+        <Route path="cms" element={<CmsDashboard />} />
+        <Route path="cms/pages" element={<CmsPages />} />
+        <Route path="cms/blocks" element={<CmsBlocks />} />
+        <Route path="cms/assets" element={<CmsAssets />} />
+        <Route path="cms/menus" element={<CmsMenus />} />
+        <Route path="cms/users" element={<CmsUsers />} />
+        <Route path="cms/audit" element={<CmsAudit />} />
         <Route path="*" element={<Navigate to="/manage" replace />} />
       </Routes>
     </Suspense>

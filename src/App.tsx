@@ -19,6 +19,7 @@ const PrivacyPolicyPage = lazy(() => import('./public/pages/PrivacyPolicyPage'))
 const TermsAndConditionsPage = lazy(() => import('./public/pages/TermsAndConditionsPage'))
 const UnsubscribePage = lazy(() => import('./public/pages/UnsubscribePage'))
 
+
 function AppContent() {
   const { isDialogOpen, preselectedType } = useGetInvolvedDialog();
   const location = useLocation();

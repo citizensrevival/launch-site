@@ -13,8 +13,7 @@ import {
   mdiMenu,
   mdiMagnify,
   mdiChartLine,
-  mdiWeb,
-  mdiCog
+  mdiWeb
 } from '@mdi/js';
 
 interface AdminLayoutProps {
@@ -111,17 +110,20 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
   ];
 
   const contentItems = [
-    { name: 'Assets', href: '/manage/content/assets', icon: (
-      <Icon path={mdiChartLine} className="h-5 w-5" />
-    ) },
-    { name: 'Pages', href: '/manage/content/pages', icon: (
+    { name: 'CMS Dashboard', href: '/manage/cms', icon: (
       <Icon path={mdiWeb} className="h-5 w-5" />
     ) },
-    { name: 'Content Blocks', href: '/manage/content/blocks', icon: (
+    { name: 'Pages', href: '/manage/cms/pages', icon: (
+      <Icon path={mdiWeb} className="h-5 w-5" />
+    ) },
+    { name: 'Content Blocks', href: '/manage/cms/blocks', icon: (
       <Icon path={mdiAccountGroup} className="h-5 w-5" />
     ) },
-    { name: 'Site Settings', href: '/manage/content/settings', icon: (
-      <Icon path={mdiCog} className="h-5 w-5" />
+    { name: 'Assets', href: '/manage/cms/assets', icon: (
+      <Icon path={mdiChartLine} className="h-5 w-5" />
+    ) },
+    { name: 'Menus', href: '/manage/cms/menus', icon: (
+      <Icon path={mdiMenu} className="h-5 w-5" />
     ) },
   ];
 
@@ -429,28 +431,20 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
               <span>Analytics</span>
             </a>
             <a 
-              href="/manage/content/pages" 
+              href="/manage/cms" 
               className={classNames(
                 'flex flex-col items-center justify-center py-2 text-xs transition-colors',
-                isActive('/manage/content') 
+                isActive('/manage/cms') 
                   ? 'text-gray-200' 
                   : 'text-gray-300 hover:text-white'
               )}
             >
               <Icon path={mdiWeb} className="h-5 w-5" />
-              <span>Content</span>
+              <span>CMS</span>
             </a>
           </div>
         </div>
 
-        {/* Mobile FAB */}
-        {/* <button
-          className="lg:hidden fixed bottom-16 right-4 z-30 h-12 w-12 rounded-full bg-indigo-600 text-white shadow-lg flex items-center justify-center hover:bg-indigo-500"
-          aria-label="Add Lead"
-          onClick={() => (window.location.href = '/manage/leads/new')}
-        >
-          <Icon path={mdiPlus} className="h-6 w-6" />
-        </button> */}
       </div>
     </div>
   );
