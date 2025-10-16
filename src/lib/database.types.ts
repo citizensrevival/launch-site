@@ -224,7 +224,7 @@ export type Database = {
           height: number | null
           id: string
           storage_key: string
-          variant_type: string
+          variant_name: string
           width: number | null
         }
         Insert: {
@@ -234,7 +234,7 @@ export type Database = {
           height?: number | null
           id?: string
           storage_key: string
-          variant_type: string
+          variant_name: string
           width?: number | null
         }
         Update: {
@@ -244,7 +244,7 @@ export type Database = {
           height?: number | null
           id?: string
           storage_key?: string
-          variant_type?: string
+          variant_name?: string
           width?: number | null
         }
         Relationships: [
@@ -427,7 +427,7 @@ export type Database = {
           id: string
           occurred_at: string
           user_id: string
-          user_permissions: string[] | null
+          user_permissions: string[]
           version: number | null
         }
         Insert: {
@@ -438,7 +438,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           user_id: string
-          user_permissions?: string[] | null
+          user_permissions: string[]
           version?: number | null
         }
         Update: {
@@ -449,7 +449,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           user_id?: string
-          user_permissions?: string[] | null
+          user_permissions?: string[]
           version?: number | null
         }
         Relationships: []
@@ -620,6 +620,7 @@ export type Database = {
           meta: Json | null
           phone: string | null
           social_links: string[] | null
+          source_path: string | null
           tags: string[] | null
           website: string | null
         }
@@ -633,6 +634,7 @@ export type Database = {
           meta?: Json | null
           phone?: string | null
           social_links?: string[] | null
+          source_path?: string | null
           tags?: string[] | null
           website?: string | null
         }
@@ -646,6 +648,7 @@ export type Database = {
           meta?: Json | null
           phone?: string | null
           social_links?: string[] | null
+          source_path?: string | null
           tags?: string[] | null
           website?: string | null
         }
@@ -1066,7 +1069,7 @@ export type Database = {
           handle: string
           id: string
           label: string
-          slug: string
+          slug: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -1077,7 +1080,7 @@ export type Database = {
           handle: string
           id?: string
           label: string
-          slug: string
+          slug?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -1088,7 +1091,7 @@ export type Database = {
           handle?: string
           id?: string
           label?: string
-          slug?: string
+          slug?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -1126,21 +1129,24 @@ export type Database = {
       }
       user_permissions: {
         Row: {
-          granted_at: string
-          granted_by: string | null
-          permission: string
+          created_at: string
+          id: string
+          permissions: string[]
+          updated_at: string
           user_id: string
         }
         Insert: {
-          granted_at?: string
-          granted_by?: string | null
-          permission: string
+          created_at?: string
+          id?: string
+          permissions?: string[]
+          updated_at?: string
           user_id: string
         }
         Update: {
-          granted_at?: string
-          granted_by?: string | null
-          permission?: string
+          created_at?: string
+          id?: string
+          permissions?: string[]
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1796,15 +1802,6 @@ export type Database = {
       }
     }
     Functions: {
-      create_asset_variants: {
-        Args: {
-          p_asset_id: string
-          p_height: number
-          p_storage_key: string
-          p_width: number
-        }
-        Returns: undefined
-      }
       exclude_user: {
         Args: {
           p_anon_id?: string
@@ -1814,10 +1811,6 @@ export type Database = {
           p_session_id?: string
           p_user_id?: string
         }
-        Returns: string
-      }
-      get_asset_url: {
-        Args: { p_asset_id: string; p_variant_type?: string }
         Returns: string
       }
       gtrgm_compress: {
@@ -1841,7 +1834,7 @@ export type Database = {
         Returns: unknown
       }
       has_permission: {
-        Args: { p_permission: string; p_user_id: string }
+        Args: { permission: string; user_id: string }
         Returns: boolean
       }
       is_user_excluded: {
@@ -1852,17 +1845,6 @@ export type Database = {
           p_user_id?: string
         }
         Returns: boolean
-      }
-      log_cms_audit: {
-        Args: {
-          p_action: string
-          p_changes?: Json
-          p_entity_id: string
-          p_entity_type: string
-          p_user_id: string
-          p_version?: number
-        }
-        Returns: undefined
       }
       remove_exclusion: {
         Args: {

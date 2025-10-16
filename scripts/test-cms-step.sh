@@ -39,16 +39,5 @@ echo ""
 echo "4️⃣ Building project to check for errors..."
 npm run build
 
-# Step 5: Start development server
-echo ""
-echo "5️⃣ Starting development server..."
-echo "   You can now test the implemented features at:"
-echo "   - Public site: http://localhost:3000"
-echo "   - Admin panel: http://localhost:3000/manage"
-echo "   - CMS Assets: http://localhost:3000/manage/cms/assets"
-echo ""
-echo "   Press Ctrl+C to stop the server when done testing"
-echo ""
 
-# Start the development server
-npm start
+echo "Done building project"
