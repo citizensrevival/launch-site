@@ -44,9 +44,13 @@ export function AssetDetails({ assetId, siteId, onAssetUpdated }: AssetDetailsPr
           message: 'Variants generation started',
           type: 'success',
         });
-        // Wait a bit for variants to be generated
+        // Wait a bit for variants to be generated, then refresh
         setTimeout(() => {
           refreshVariants();
+          // Also refresh the gallery to show updated thumbnails
+          if (onAssetUpdated) {
+            onAssetUpdated();
+          }
         }, 2000);
       }
     } catch (err) {
@@ -72,13 +76,14 @@ export function AssetDetails({ assetId, siteId, onAssetUpdated }: AssetDetailsPr
             : 'The asset has been updated and variants regenerated.',
         });
         setIsEditing(false);
-        // Refresh the current asset if updated, or refresh the parent list if new
-        if (createNew) {
-          if (onAssetUpdated) {
-            onAssetUpdated();
-          }
-        } else {
-          // Refresh current asset view
+        
+        // Always refresh the gallery to show updates
+        if (onAssetUpdated) {
+          onAssetUpdated();
+        }
+        
+        // If updating existing asset, also refresh the current view
+        if (!createNew) {
           refreshAsset();
           setTimeout(() => {
             refreshVariants();
