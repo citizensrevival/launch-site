@@ -12,6 +12,7 @@ import type {
 import {
   getSite, getPages, getPage,
   getPageVersions, createPage, updatePage, deletePage,
+  createPageVersion, updatePageVersion,
   publishPage, unpublishPage,
   getPublishedPage, getPublishedPageByKey, getPublishedBlockByKey,
   getPublishedAssetByKey, getPublishedMenuByKey, getUserPermissions,
@@ -493,6 +494,55 @@ export function usePageManagement() {
     deletePage: deletePageHandler,
     publishPage: publishPageHandler,
     unpublishPage: unpublishPageHandler,
+    loading,
+    error
+  };
+}
+
+// Page version management hook
+export function usePageVersionManagement() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createPageVersionHandler = useCallback(async (versionData: Omit<PageVersion, 'id' | 'created_at' | 'created_by'>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await createPageVersion(versionData);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updatePageVersionHandler = useCallback(async (pageId: string, version: number, updates: Partial<PageVersion>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await updatePageVersion(pageId, version, updates);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    createPageVersion: createPageVersionHandler,
+    updatePageVersion: updatePageVersionHandler,
     loading,
     error
   };

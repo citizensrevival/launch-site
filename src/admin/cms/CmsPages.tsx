@@ -5,7 +5,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { AdminLayout } from '../AdminLayout';
 import { usePages, usePageManagement } from '../../lib/cms/hooks';
 import { useAppSelector } from '../../shell/store/hooks';
-import type { Page, PublishStatus } from '../../lib/cms/types';
+import type { Page, PageVersion, PublishStatus } from '../../lib/cms/types';
+import { PageVersionEditor } from './PageVersionEditor';
 import { Icon } from '@mdi/react';
 import { 
   mdiPlus, 
@@ -36,6 +37,7 @@ export function CmsPages() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [showNewPageDialog, setShowNewPageDialog] = useState(false);
   const [selectedPage, setSelectedPage] = useState<Page | null>(null);
+  const [showPageVersionEditor, setShowPageVersionEditor] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const filters = useMemo(() => ({
@@ -62,6 +64,23 @@ export function CmsPages() {
 
   const handleRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleEditPageVersion = (page: Page) => {
+    setSelectedPage(page);
+    setShowPageVersionEditor(true);
+  };
+
+  const handlePageVersionSaved = (version: PageVersion) => {
+    console.log('Page version saved:', version);
+    setShowPageVersionEditor(false);
+    setSelectedPage(null);
+    handleRefresh(); // Refresh the page list
+  };
+
+  const handleClosePageVersionEditor = () => {
+    setShowPageVersionEditor(false);
+    setSelectedPage(null);
   };
 
   const changeSort = (key: SortKey) => {
@@ -230,11 +249,11 @@ export function CmsPages() {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Tooltip content="Edit page">
+                        <Tooltip content="Edit page version">
                           <button 
                             className="p-2 rounded hover:bg-gray-800" 
-                            aria-label="Edit page"
-                            onClick={() => setSelectedPage(page)}
+                            aria-label="Edit page version"
+                            onClick={() => handleEditPageVersion(page)}
                           >
                             <Icon path={mdiPencil} className="h-5 w-5 text-white" />
                           </button>
@@ -295,11 +314,11 @@ export function CmsPages() {
                   )}
                 </div>
                 <div className="flex items-center gap-1 ml-3">
-                  <Tooltip content="Edit page">
+                  <Tooltip content="Edit page version">
                     <button
-                      onClick={() => setSelectedPage(page)}
+                      onClick={() => handleEditPageVersion(page)}
                       className="p-2 rounded hover:bg-gray-700"
-                      aria-label="Edit page"
+                      aria-label="Edit page version"
                     >
                       <Icon path={mdiPencil} className="h-5 w-5 text-white" />
                     </button>
@@ -343,7 +362,7 @@ export function CmsPages() {
       )}
 
       {/* Edit Page Dialog */}
-      {selectedPage && (
+      {selectedPage && !showPageVersionEditor && (
         <EditPageDialog
           page={selectedPage}
           onClose={() => setSelectedPage(null)}
@@ -355,6 +374,15 @@ export function CmsPages() {
             setSelectedPage(null);
             handleRefresh();
           }}
+        />
+      )}
+
+      {/* Page Version Editor */}
+      {selectedPage && showPageVersionEditor && (
+        <PageVersionEditor
+          page={selectedPage}
+          onClose={handleClosePageVersionEditor}
+          onSave={handlePageVersionSaved}
         />
       )}
     </AdminLayout>
