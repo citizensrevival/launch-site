@@ -44,7 +44,7 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [activeTab, setActiveTab] = useState<'edit' | 'meta' | 'variants'>('edit');
+  // No tabs - single unified view
   
   // Edit state
   const [editState, setEditState] = useState<EditState>({
@@ -483,162 +483,132 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   return (
     <>
       <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
-        <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
-          {/* Header with Toolbar */}
-          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600" title="Close">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <span className="text-sm font-medium text-gray-900">{metadata.fileName}</span>
-            </div>
-
-            {/* Toolbar - Edit Controls */}
-            {asset.kind === 'image' && activeTab === 'edit' && (
-              <div className="flex items-center gap-2">
-                {/* Rotate */}
-                <button
-                  onClick={() => handleRotate('left')}
-                  className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
-                  title="Rotate left"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleRotate('right')}
-                  className="p-1.5 text-gray-600 hover:bg-gray-100 rounded"
-                  title="Rotate right"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
-                  </svg>
-                </button>
-
-                <div className="w-px h-6 bg-gray-300"></div>
-
-                {/* Resize */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">Size:</span>
-                  <input
-                    type="range"
-                    min="25"
-                    max="200"
-                    step="25"
-                    value={editState.resizePercent}
-                    onChange={(e) => setEditState(prev => ({ ...prev, resizePercent: parseInt(e.target.value) }))}
-                    className="w-32"
-                  />
-                  <span className="text-xs text-gray-700 w-10">{editState.resizePercent}%</span>
-                </div>
-
-                <div className="w-px h-6 bg-gray-300"></div>
-
-                {/* Crop controls */}
-                {editState.crop && (
-                  <button
-                    onClick={handleClearCrop}
-                    className="text-xs px-2 py-1 text-red-600 hover:bg-red-50 rounded"
-                  >
-                    Clear Crop
-                  </button>
-                )}
-
-                {hasEdits() && (
-                  <button
-                    onClick={handleResetEdits}
-                    className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-100 rounded"
-                  >
-                    Reset
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              {onDelete && (
-                <button
-                  onClick={() => onDelete(assetId)}
-                  disabled={isProcessing}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
-                >
-                  Delete
-                </button>
-              )}
-              {asset.kind === 'image' && activeTab === 'edit' && (
-                <>
-                  <button
-                    onClick={() => handleSave(false)}
-                    disabled={!hasEdits() || isProcessing}
-                    className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Update
-                  </button>
-                  <button
-                    onClick={() => handleSave(true)}
-                    disabled={!hasEdits() || isProcessing}
-                    className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Save New
-                  </button>
-                </>
-              )}
-              {activeTab === 'meta' && (
-                <button
-                  onClick={handleSaveMetadata}
-                  disabled={isProcessing}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  Save Metadata
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200 px-4 flex-shrink-0">
+        <div className="relative w-full max-w-6xl bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
+          {/* Header with Close Button (Right-aligned) */}
+          <div className="flex items-center justify-end border-b border-gray-200 px-4 py-2 flex-shrink-0">
             <button
-              onClick={() => setActiveTab('edit')}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'edit'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="Close"
             >
-              Edit
-            </button>
-            <button
-              onClick={() => setActiveTab('meta')}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'meta'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Metadata
-            </button>
-            <button
-              onClick={() => setActiveTab('variants')}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'variants'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Variants ({variants.length})
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {activeTab === 'edit' && (
-              <div className="flex flex-col items-center">
-                {asset.kind === 'image' ? (
-                  <>
+          {/* Two Column Layout */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+              {/* LEFT COLUMN - Image and Variants */}
+              <div className="space-y-4">
+                {/* Editing Toolbar */}
+                {asset.kind === 'image' && (
+                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                    {/* Rotate */}
+                    <button
+                      onClick={() => handleRotate('left')}
+                      className="p-2 text-gray-600 hover:bg-gray-200 rounded"
+                      title="Rotate left"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleRotate('right')}
+                      className="p-2 text-gray-600 hover:bg-gray-200 rounded"
+                      title="Rotate right"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
+                      </svg>
+                    </button>
+
+                    <div className="w-px h-8 bg-gray-300 mx-1"></div>
+
+                    {/* Resize Select */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600">Size:</span>
+                      <select
+                        value={editState.resizePercent}
+                        onChange={(e) => setEditState(prev => ({ ...prev, resizePercent: parseInt(e.target.value) }))}
+                        className="px-2 py-1 text-sm border border-gray-300 rounded bg-white"
+                      >
+                        <option value="25">25%</option>
+                        <option value="50">50%</option>
+                        <option value="75">75%</option>
+                        <option value="100">100%</option>
+                        <option value="125">125%</option>
+                        <option value="150">150%</option>
+                        <option value="200">200%</option>
+                      </select>
+                    </div>
+
+                    <div className="w-px h-8 bg-gray-300 mx-1"></div>
+
+                    {/* Crop controls */}
+                    {editState.crop && (
+                      <button
+                        onClick={handleClearCrop}
+                        className="text-xs px-2 py-1 text-red-600 hover:bg-red-100 rounded"
+                        title="Clear crop"
+                      >
+                        Clear Crop
+                      </button>
+                    )}
+
+                    {hasEdits() && (
+                      <button
+                        onClick={handleResetEdits}
+                        className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-200 rounded ml-auto"
+                        title="Reset all edits"
+                      >
+                        Reset
+                      </button>
+                    )}
+
+                    <div className="w-px h-8 bg-gray-300 mx-1"></div>
+
+                    {/* Action Buttons with Icons */}
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(assetId)}
+                        disabled={isProcessing}
+                        className="p-2 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+                        title="Delete asset"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleSave(false)}
+                      disabled={!hasEdits() || isProcessing}
+                      className="p-2 text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Update asset"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleSave(true)}
+                      disabled={!hasEdits() || isProcessing}
+                      className="p-2 text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Save as new asset"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
+                {/* Canvas */}
+                <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+                  {asset.kind === 'image' ? (
                     <canvas
                       ref={canvasRef}
                       onClick={handleCanvasClick}
@@ -646,27 +616,79 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                       onMouseMove={handleCanvasMouseMove}
                       onMouseUp={handleCanvasMouseUp}
                       onMouseLeave={handleCanvasMouseUp}
-                      className={`max-w-full h-auto border border-gray-300 ${
-                        isSelectingFocalPoint ? 'cursor-crosshair' : 'cursor-crosshair'
-                      }`}
-                      style={{ maxHeight: 'calc(90vh - 200px)' }}
+                      className="max-w-full h-auto border border-gray-300 cursor-crosshair"
+                      style={{ maxHeight: 'calc(90vh - 400px)' }}
                     />
-                    <div className="mt-2 text-xs text-gray-500 text-center">
-                      {isSelectingFocalPoint
-                        ? 'Click on the image to set focal point'
-                        : 'Draw on image to crop • Use toolbar to rotate/resize'}
+                  ) : (
+                    <div className="text-gray-400 text-6xl p-12">
+                      {asset.kind === 'video' ? '🎥' : '📄'}
                     </div>
-                  </>
-                ) : (
-                  <div className="text-gray-400 text-6xl p-12">
-                    {asset.kind === 'video' ? '🎥' : '📄'}
+                  )}
+                </div>
+                <div className="text-xs text-gray-500 text-center">
+                  {isSelectingFocalPoint
+                    ? 'Click on the image to set focal point'
+                    : 'Draw on image to crop • Use toolbar to rotate/resize'}
+                </div>
+
+                {/* Variants Section */}
+                {asset.kind === 'image' && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-gray-900">Variants ({variants.length})</h3>
+                      <button
+                        onClick={handleGenerateVariants}
+                        disabled={isGenerating}
+                        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {isGenerating ? 'Generating...' : 'Generate'}
+                      </button>
+                    </div>
+
+                    {variantsLoading && (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                      </div>
+                    )}
+
+                    {!variantsLoading && variants.length === 0 && (
+                      <div className="text-center py-4 text-gray-500 text-xs">
+                        No variants yet
+                      </div>
+                    )}
+
+                    {!variantsLoading && variants.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs text-gray-600 mb-2">
+                          Total: {formatBytes(variants.reduce((sum, v) => sum + (v.file_size || 0), 0))}
+                        </div>
+                        {variants.map((variant) => (
+                          <div key={variant.id} className="flex items-center justify-between p-2 border border-gray-200 rounded bg-white text-xs">
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900 capitalize">{variant.variant_name}</div>
+                              <div className="text-gray-600">
+                                {variant.width}×{variant.height}px • {formatBytes(variant.file_size)}
+                              </div>
+                            </div>
+                            <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden ml-2">
+                              <img
+                                src={getAssetUrl(variant.storage_key, siteId)}
+                                alt={variant.variant_name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
 
-            {activeTab === 'meta' && (
-              <div className="max-w-2xl mx-auto space-y-4">
+              {/* RIGHT COLUMN - Metadata */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Metadata</h3>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">File Name</label>
                   <input
@@ -739,80 +761,39 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                       )}
                     </div>
                     <p className="mt-1 text-xs text-gray-500">
-                      Focal point helps with smart cropping and responsive images
+                      Click on image to set smart crop point
                     </p>
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-gray-200 text-sm text-gray-600">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <span className="font-medium">ID:</span> {asset.id.substring(0, 8)}...
-                    </div>
-                    <div>
-                      <span className="font-medium">Type:</span> {asset.kind}
-                    </div>
-                    {asset.width && asset.height && (
-                      <div>
-                        <span className="font-medium">Size:</span> {asset.width} × {asset.height}px
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'variants' && (
-              <div className="max-w-2xl mx-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-medium text-gray-900">Image Variants</h3>
+                <div className="pt-4 border-t border-gray-200">
                   <button
-                    onClick={handleGenerateVariants}
-                    disabled={isGenerating}
-                    className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                    onClick={handleSaveMetadata}
+                    disabled={isProcessing}
+                    className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {isGenerating ? 'Generating...' : 'Generate Variants'}
+                    {isProcessing ? 'Saving...' : 'Save Metadata'}
                   </button>
                 </div>
 
-                {variantsLoading && (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <div className="pt-4 border-t border-gray-200 text-sm text-gray-600 space-y-1">
+                  <div>
+                    <span className="font-medium">ID:</span> {asset.id.substring(0, 8)}...
                   </div>
-                )}
-
-                {!variantsLoading && variants.length === 0 && (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    No variants generated yet
+                  <div>
+                    <span className="font-medium">Type:</span> {asset.kind}
                   </div>
-                )}
-
-                {!variantsLoading && variants.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="text-sm text-gray-600 mb-2">
-                      {variants.length} variants • Total size: {formatBytes(variants.reduce((sum, v) => sum + (v.file_size || 0), 0))}
+                  {asset.width && asset.height && (
+                    <div>
+                      <span className="font-medium">Dimensions:</span> {asset.width} × {asset.height}px
                     </div>
-                    {variants.map((variant) => (
-                      <div key={variant.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-md bg-white">
-                        <div>
-                          <div className="font-medium text-sm text-gray-900 capitalize">{variant.variant_name}</div>
-                          <div className="text-xs text-gray-600">
-                            {variant.width} × {variant.height}px • {formatBytes(variant.file_size)}
-                          </div>
-                        </div>
-                        <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
-                          <img
-                            src={getAssetUrl(variant.storage_key, siteId)}
-                            alt={variant.variant_name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                  )}
+                  <div>
+                    <span className="font-medium">Created:</span> {new Date(asset.created_at).toLocaleDateString()}
                   </div>
-                )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
