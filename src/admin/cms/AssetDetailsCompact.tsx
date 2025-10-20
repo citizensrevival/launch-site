@@ -3,7 +3,8 @@
 
 import { useAsset, useAssetVariants, useAssetManagement } from '../../lib/cms/hooks';
 import { getAssetUrl } from '../../lib/cms/utils';
-import { generateAssetVariants, updateAsset } from '../../lib/cms/client';
+import { generateAssetVariants, updateAssetMetadata } from '../../lib/cms/client';
+import { supabase } from '../../shell/lib/supabase';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Toast } from './components/Toast';
 import type { Asset, AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../lib/cms/types';
@@ -69,17 +70,32 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   const [isDrawingCrop, setIsDrawingCrop] = useState(false);
   const [isSelectingFocalPoint, setIsSelectingFocalPoint] = useState(false);
 
-  // Initialize metadata from asset
+  // Initialize metadata from asset and latest version
   useEffect(() => {
-    if (asset) {
+    const loadMetadata = async () => {
+      if (!asset) return;
+
+      // Get the latest asset version to load existing metadata
+      const { data: latestVersion } = await supabase
+        .from('asset_version')
+        .select('meta')
+        .eq('asset_id', asset.id)
+        .order('version', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const meta = latestVersion?.meta?.['en-US'] || {};
+      
       setMetadata({
         fileName: asset.storage_key.split('/').pop() || '',
-        altText: '',
-        description: '',
-        tags: '',
-        focalPoint: null,
+        altText: meta.alt || '',
+        description: meta.caption || '',
+        tags: Array.isArray(meta.tags) ? meta.tags.join(', ') : '',
+        focalPoint: (meta as any).focalPoint || null,
       });
-    }
+    };
+
+    loadMetadata();
   }, [asset]);
 
   // Load and draw image
@@ -398,9 +414,18 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   const handleSaveMetadata = async () => {
     setIsProcessing(true);
     try {
-      const result = await updateAsset(assetId, {
-        // Note: storage_key contains filename, but we can't update it without moving the file
-        // In a real implementation, you'd need backend support for this
+      // Parse tags from comma-separated string
+      const tagsArray = metadata.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+
+      const result = await updateAssetMetadata(assetId, {
+        fileName: metadata.fileName,
+        altText: metadata.altText,
+        description: metadata.description,
+        tags: tagsArray,
+        focalPoint: metadata.focalPoint || undefined,
       });
       
       if (!result.error) {

@@ -1193,6 +1193,44 @@ export async function createAssetVersion(
 }
 
 /**
+ * Update asset metadata by creating a new asset version
+ */
+export async function updateAssetMetadata(
+  assetId: string,
+  metadata: {
+    fileName?: string;
+    altText?: string;
+    description?: string;
+    tags?: string[];
+    focalPoint?: { x: number; y: number };
+  }
+): Promise<ApiResponse<AssetVersion>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Build the meta object for the asset version
+    const meta: LocalizedContent<AssetMeta> = {
+      'en-US': {
+        alt: metadata.altText || '',
+        caption: metadata.description || '',
+        tags: metadata.tags || []
+      }
+    };
+
+    // If focal point is provided, add it to meta
+    if (metadata.focalPoint) {
+      (meta['en-US'] as any).focalPoint = metadata.focalPoint;
+    }
+
+    // Create a new asset version with the metadata
+    return await createAssetVersion(assetId, meta);
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+/**
  * Update an existing asset with edited version (replaces original)
  */
 export async function updateExistingAsset(
