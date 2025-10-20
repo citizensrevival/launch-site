@@ -1072,21 +1072,42 @@ export async function updateAsset(
 
 export async function deleteAsset(assetId: string): Promise<ApiResponse<void>> {
   try {
-    // Get asset to find storage key
+    // Get asset to find storage key and site_id
     const { data: asset } = await supabase
       .from('asset')
-      .select('storage_key')
+      .select('storage_key, site_id')
       .eq('id', assetId)
       .single();
 
     if (asset) {
-      // Delete from storage
-      await supabase.storage
-        .from('cms-assets')
-        .remove([asset.storage_key]);
+      const bucketName = `site-${asset.site_id.replace(/-/g, '')}`;
+      const filesToDelete: string[] = [asset.storage_key];
+
+      // Get all variants for this asset
+      const { data: variants } = await supabase
+        .from('asset_variant')
+        .select('storage_key')
+        .eq('asset_id', assetId);
+
+      // Add all variant storage keys to the delete list
+      if (variants && variants.length > 0) {
+        filesToDelete.push(...variants.map(v => v.storage_key));
+      }
+
+      console.log(`Deleting asset and ${variants?.length || 0} variants from storage:`, filesToDelete);
+
+      // Delete all files from storage (original + variants)
+      const { error: storageError } = await supabase.storage
+        .from(bucketName)
+        .remove(filesToDelete);
+
+      if (storageError) {
+        console.error('Error deleting files from storage:', storageError);
+        // Continue with database deletion even if storage deletion fails
+      }
     }
 
-    // Delete from database (cascade will handle related records)
+    // Delete from database (cascade will handle related records including variant records)
     const { error } = await supabase
       .from('asset')
       .delete()

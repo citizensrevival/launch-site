@@ -22,10 +22,16 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
   }));
 
   const handleDelete = async (assetId: string) => {
-    if (confirm('Are you sure you want to delete this asset?')) {
-      await deleteAsset(assetId);
-      // Refresh assets list
-      window.location.reload();
+    if (confirm('Are you sure you want to delete this asset? This will also delete all variants.')) {
+      const success = await deleteAsset(assetId);
+      if (success) {
+        // Close modal if we're viewing this asset
+        if (selectedAssetId === assetId) {
+          setSelectedAssetId(null);
+        }
+        // Refresh the gallery to show updated list
+        refresh();
+      }
     }
   };
 
