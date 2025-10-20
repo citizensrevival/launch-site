@@ -141,37 +141,68 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
           )}
 
           {!variantsLoading && variants.length > 0 && (
-            <div className="space-y-3">
-              {variants.map((variant) => (
-                <div key={variant.id} className="border border-gray-200 rounded-md p-3 bg-white">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="font-medium text-gray-900 capitalize">
-                          {variant.variant_name}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {variant.width} × {variant.height}px
-                        </span>
-                      </div>
-                      <div className="space-y-1 text-xs text-gray-600">
-                        <div>Size: {formatBytes(variant.file_size)}</div>
-                        <div className="font-mono text-gray-500 break-all">
-                          {variant.storage_key}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="ml-4 w-20 h-20 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                      <img
-                        src={getAssetUrl(variant.storage_key, siteId)}
-                        alt={`${variant.variant_name} variant`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+            <>
+              {/* Optimization Stats */}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <h5 className="font-medium text-blue-900 mb-2">Optimization Statistics</h5>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-blue-700">Total Variants:</span>
+                    <span className="ml-2 font-medium text-blue-900">{variants.length}</span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Total Size:</span>
+                    <span className="ml-2 font-medium text-blue-900">
+                      {formatBytes(variants.reduce((sum, v) => sum + (v.file_size || 0), 0))}
+                    </span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-blue-700">Formats:</span>
+                    <span className="ml-2 font-medium text-blue-900">
+                      {variants.some(v => v.variant_name.includes('webp')) ? 'JPEG + WebP' : 'JPEG only'}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+              
+              {/* Variant List */}
+              <div className="space-y-3">
+                {variants.map((variant) => (
+                  <div key={variant.id} className="border border-gray-200 rounded-md p-3 bg-white">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="font-medium text-gray-900 capitalize">
+                            {variant.variant_name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {variant.width} × {variant.height}px
+                          </span>
+                          {variant.variant_name.includes('webp') && (
+                            <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded">
+                              WebP
+                            </span>
+                          )}
+                        </div>
+                        <div className="space-y-1 text-xs text-gray-600">
+                          <div>Size: {formatBytes(variant.file_size)}</div>
+                          <div className="font-mono text-gray-500 break-all">
+                            {variant.storage_key}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="ml-4 w-20 h-20 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                        <img
+                          src={getAssetUrl(variant.storage_key, siteId)}
+                          alt={`${variant.variant_name} variant`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}

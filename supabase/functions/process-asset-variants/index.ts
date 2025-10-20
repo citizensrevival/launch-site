@@ -173,80 +173,122 @@ serve(async (req) => {
         // Resize image
         const resized = image.resize(width, height)
 
-        // Encode as JPEG (good balance of quality and size)
-        const encoded = await resized.encodeJPEG(85) // 85% quality
+        // Generate both JPEG and WebP versions
+        const encodedJPEG = await resized.encodeJPEG(85) // 85% quality
+        const encodedWebP = await resized.encodeWebP(85) // 85% quality
 
-        // Generate storage path for variant
+        // Generate storage paths for variants
         const fileExt = asset.storage_key.split('.').pop()
         const basePath = asset.storage_key.replace(`.${fileExt}`, '')
-        const variantPath = `${basePath}-${variantName}.jpg`
-
-        console.log(`Uploading ${variantName} to: ${variantPath}`)
-
-        // Upload variant to storage
-        const { error: uploadError } = await supabase.storage
+        
+        // Upload JPEG variant
+        const variantPathJPEG = `${basePath}-${variantName}.jpg`
+        console.log(`Uploading ${variantName} JPEG to: ${variantPathJPEG}`)
+        
+        const { error: uploadErrorJPEG } = await supabase.storage
           .from(bucketName)
-          .upload(variantPath, encoded, {
+          .upload(variantPathJPEG, encodedJPEG, {
             contentType: 'image/jpeg',
             upsert: true
           })
 
-        if (uploadError) {
-          console.error(`Error uploading ${variantName}:`, uploadError)
+        if (uploadErrorJPEG) {
+          console.error(`Error uploading ${variantName} JPEG:`, uploadErrorJPEG)
           continue
         }
+        
+        // Upload WebP variant
+        const variantPathWebP = `${basePath}-${variantName}.webp`
+        console.log(`Uploading ${variantName} WebP to: ${variantPathWebP}`)
+        
+        const { error: uploadErrorWebP } = await supabase.storage
+          .from(bucketName)
+          .upload(variantPathWebP, encodedWebP, {
+            contentType: 'image/webp',
+            upsert: true
+          })
 
-        // Check if variant already exists
-        const { data: existingVariant } = await supabase
+        if (uploadErrorWebP) {
+          console.error(`Error uploading ${variantName} WebP:`, uploadErrorWebP)
+          // Don't fail if WebP upload fails, we have JPEG
+        }
+
+        // Create/update JPEG variant record
+        const { data: existingJPEG } = await supabase
           .from('asset_variant')
           .select('id')
           .eq('asset_id', assetId)
           .eq('variant_name', variantName)
           .single()
 
-        if (existingVariant) {
-          // Update existing variant
-          const { error: updateError } = await supabase
+        if (existingJPEG) {
+          await supabase
             .from('asset_variant')
             .update({
-              storage_key: variantPath,
+              storage_key: variantPathJPEG,
               width,
               height,
-              file_size: encoded.length
+              file_size: encodedJPEG.length
             })
-            .eq('id', existingVariant.id)
-
-          if (updateError) {
-            console.error(`Error updating variant ${variantName}:`, updateError)
-          } else {
-            console.log(`Updated ${variantName} variant record`)
-          }
+            .eq('id', existingJPEG.id)
         } else {
-          // Create new variant record
-          const { error: variantError } = await supabase
+          await supabase
             .from('asset_variant')
             .insert({
               asset_id: assetId,
               variant_name: variantName,
-              storage_key: variantPath,
+              storage_key: variantPathJPEG,
               width,
               height,
-              file_size: encoded.length
+              file_size: encodedJPEG.length
             })
-
-          if (variantError) {
-            console.error(`Error creating variant ${variantName}:`, variantError)
-          } else {
-            console.log(`Created ${variantName} variant record`)
-          }
         }
+        
+        // Create/update WebP variant record
+        const { data: existingWebP } = await supabase
+          .from('asset_variant')
+          .select('id')
+          .eq('asset_id', assetId)
+          .eq('variant_name', `${variantName}-webp`)
+          .single()
+
+        if (existingWebP) {
+          await supabase
+            .from('asset_variant')
+            .update({
+              storage_key: variantPathWebP,
+              width,
+              height,
+              file_size: encodedWebP.length
+            })
+            .eq('id', existingWebP.id)
+        } else {
+          await supabase
+            .from('asset_variant')
+            .insert({
+              asset_id: assetId,
+              variant_name: `${variantName}-webp`,
+              storage_key: variantPathWebP,
+              width,
+              height,
+              file_size: encodedWebP.length
+            })
+        }
+
+        console.log(`Created ${variantName} variants (JPEG: ${encodedJPEG.length} bytes, WebP: ${encodedWebP.length} bytes)`)
 
         variants.push({
           name: variantName,
           width,
           height,
-          size: encoded.length,
-          path: variantPath
+          size: encodedJPEG.length,
+          path: variantPathJPEG
+        }, {
+          name: `${variantName}-webp`,
+          width,
+          height,
+          size: encodedWebP.length,
+          path: variantPathWebP
         })
 
       } catch (variantError) {

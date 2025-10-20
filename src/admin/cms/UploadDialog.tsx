@@ -2,6 +2,7 @@
 // Handles file upload with drag-and-drop functionality
 
 import React, { useState, useCallback, useRef } from 'react';
+import imageCompression from 'browser-image-compression';
 import { useAssetManagement } from '../../lib/cms/hooks';
 import { useAppSelector } from '../../shell/store/hooks';
 
@@ -20,7 +21,25 @@ export function UploadDialog({ onUploadComplete }: UploadDialogProps) {
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (files) {
-      setSelectedFiles(Array.from(files));
+      const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+      const validFiles: File[] = [];
+      const invalidFiles: string[] = [];
+
+      Array.from(files).forEach((file) => {
+        if (file.size > MAX_FILE_SIZE) {
+          invalidFiles.push(`${file.name} (${formatFileSize(file.size)} - exceeds 50MB limit)`);
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      if (invalidFiles.length > 0) {
+        setUploadError(`Some files are too large:\n${invalidFiles.join('\n')}`);
+      } else {
+        setUploadError(null);
+      }
+
+      setSelectedFiles(validFiles);
     }
   }, []);
 
@@ -31,8 +50,37 @@ export function UploadDialog({ onUploadComplete }: UploadDialogProps) {
 
     try {
       for (const file of selectedFiles) {
-        console.log('Uploading file:', file.name);
-        const result = await uploadAsset(selectedSite.id, file);
+        console.log('Processing file:', file.name, 'Original size:', formatFileSize(file.size));
+        
+        let fileToUpload = file;
+        
+        // Compress images before upload
+        if (file.type.startsWith('image/')) {
+          try {
+            const compressionOptions = {
+              maxSizeMB: 5, // Max size after compression
+              maxWidthOrHeight: 4096, // Max dimension
+              useWebWorker: true,
+              fileType: file.type, // Preserve original format
+              initialQuality: 0.85 // Good balance of quality vs size
+            };
+            
+            const compressedFile = await imageCompression(file, compressionOptions);
+            const savingsPercent = ((file.size - compressedFile.size) / file.size * 100).toFixed(1);
+            console.log('Compressed:', file.name, 
+              'Original:', formatFileSize(file.size), 
+              'Compressed:', formatFileSize(compressedFile.size),
+              `Savings: ${savingsPercent}%`
+            );
+            
+            fileToUpload = compressedFile;
+          } catch (compressionError) {
+            console.warn('Compression failed, uploading original:', compressionError);
+            // Continue with original file if compression fails
+          }
+        }
+        
+        const result = await uploadAsset(selectedSite.id, fileToUpload);
         
         if (!result) {
           console.error('Upload failed for file:', file.name, 'No result returned');
@@ -128,12 +176,20 @@ export function UploadDialog({ onUploadComplete }: UploadDialogProps) {
 
       {selectedFiles.length > 0 && (
         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-medium text-gray-900 mb-2">Selected Files ({selectedFiles.length})</h4>
-          <div className="space-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-medium text-gray-900">Selected Files ({selectedFiles.length})</h4>
+            <span className="text-sm text-gray-600">
+              Total: {formatFileSize(selectedFiles.reduce((sum, f) => sum + f.size, 0))}
+            </span>
+          </div>
+          <div className="space-y-2 max-h-40 overflow-y-auto">
             {selectedFiles.map((file, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700">{file.name}</span>
-                <span className="text-gray-500">{formatFileSize(file.size)}</span>
+              <div key={index} className="flex items-center justify-between text-sm p-2 bg-white rounded border border-gray-200">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 truncate">{file.name}</div>
+                  <div className="text-xs text-gray-500">{file.type || 'Unknown type'}</div>
+                </div>
+                <span className="ml-2 text-gray-600 whitespace-nowrap">{formatFileSize(file.size)}</span>
               </div>
             ))}
           </div>
