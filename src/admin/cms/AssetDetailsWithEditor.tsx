@@ -1,12 +1,12 @@
 // Integrated Asset Details with Editor
-// Modern editing experience with all tools available simultaneously
+// Compact toolbar-based editing with metadata
 
-import { useAsset, useAssetVariants, useAssetManagement } from '../../lib/cms/hooks';
-import { getAssetUrl } from '../../lib/cms/utils';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { generateAssetVariants } from '../../lib/cms/client';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useAsset, useAssetManagement, useAssetVariants } from '../../lib/cms/hooks';
+import type { AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../lib/cms/types';
+import { getAssetUrl } from '../../lib/cms/utils';
 import { Toast } from './components/Toast';
-import type { Asset, AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../lib/cms/types';
 
 interface AssetDetailsWithEditorProps {
   assetId: string;

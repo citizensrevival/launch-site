@@ -797,12 +797,59 @@ export async function getAssets(
       .select('*', { count: 'exact' })
       .eq('site_id', siteId);
 
-    if (filters?.kind) {
+    // Support multiple kinds filter
+    if (filters?.kinds && Array.isArray(filters.kinds) && filters.kinds.length > 0) {
+      query = query.in('kind', filters.kinds);
+    } else if (filters?.kind) {
+      // Backward compatibility with single kind filter
       query = query.eq('kind', filters.kind);
     }
 
+    // Enhanced search: search in storage_key and metadata
     if (filters?.search) {
-      query = query.ilike('storage_key', `%${filters.search}%`);
+      const searchTerm = filters.search.toLowerCase();
+      
+      // First, get all assets for this site
+      const { data: allAssets } = await supabase
+        .from('asset')
+        .select('id')
+        .eq('site_id', siteId);
+      
+      if (allAssets && allAssets.length > 0) {
+        const assetIds = allAssets.map(a => a.id);
+        
+        // Search in asset_version metadata
+        const { data: matchingVersions } = await supabase
+          .from('asset_version')
+          .select('asset_id, meta')
+          .in('asset_id', assetIds);
+        
+        const assetIdsWithMetadataMatch = new Set<string>();
+        
+        // Check metadata for matches
+        if (matchingVersions) {
+          for (const version of matchingVersions) {
+            const meta = version.meta?.['en-US'];
+            if (meta) {
+              const metaStr = JSON.stringify(meta).toLowerCase();
+              if (metaStr.includes(searchTerm)) {
+                assetIdsWithMetadataMatch.add(version.asset_id);
+              }
+            }
+          }
+        }
+        
+        // Combine storage_key search with metadata matches
+        if (assetIdsWithMetadataMatch.size > 0) {
+          query = query.or(
+            `storage_key.ilike.%${filters.search}%,id.in.(${Array.from(assetIdsWithMetadataMatch).join(',')})`
+          );
+        } else {
+          query = query.ilike('storage_key', `%${filters.search}%`);
+        }
+      } else {
+        query = query.ilike('storage_key', `%${filters.search}%`);
+      }
     }
 
     if (sort) {
@@ -1043,8 +1090,8 @@ export async function uploadAsset(
         version: 1,
         meta: {
           'en-US': {
-            alt: meta?.alt?.['en-US'] || '',
-            caption: meta?.caption?.['en-US'] || '',
+            alt: meta?.alt || '',
+            caption: meta?.caption || '',
             license: meta?.license || '',
             tags: meta?.tags || [],
             focal_point: meta?.focal_point

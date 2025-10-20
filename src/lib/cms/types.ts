@@ -35,8 +35,8 @@ export type Visibility = {
 
 // Asset interfaces
 export interface AssetMeta {
-  alt?: LocalizedContent<string>;
-  caption?: LocalizedContent<string>;
+  alt?: string;
+  caption?: string;
   license?: string;
   tags?: string[];
   focal_point?: { x: number; y: number };
@@ -354,6 +354,7 @@ export interface ContentFilters {
   status?: PublishStatus;
   type?: string;
   kind?: AssetKind;
+  kinds?: AssetKind[]; // Multi-select kind filter
   is_system?: boolean;
   created_by?: string;
   search?: string;

@@ -102,17 +102,6 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                   <p className="text-sm text-gray-500">
                     {asset.kind} • {asset.width && asset.height ? `${asset.width}×${asset.height}` : 'Unknown size'}
                   </p>
-                  <div className="mt-2 flex space-x-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(asset.id);
-                      }}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
                 </div>
               </>
             ) : (
@@ -141,17 +130,6 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                   <p className="text-sm text-gray-500">
                     {asset.kind} • {asset.width && asset.height ? `${asset.width}×${asset.height}` : 'Unknown size'}
                   </p>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(asset.id);
-                    }}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Delete
-                  </button>
                 </div>
               </>
             )}

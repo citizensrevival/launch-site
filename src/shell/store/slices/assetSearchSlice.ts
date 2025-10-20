@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { ContentFilters, ContentSort } from '../../../lib/cms/types';
+import type { AssetKind, ContentFilters, ContentSort } from '../../../lib/cms/types';
 
 export type ViewMode = 'grid' | 'list';
 
@@ -43,8 +43,26 @@ const assetSearchSlice = createSlice({
       }
       state.page = 1; // Reset to first page when filters change
     },
+    toggleKindFilter: (state, action: PayloadAction<AssetKind>) => {
+      const kind = action.payload;
+      const currentKinds = (state.filters.kinds as AssetKind[]) || [];
+      
+      if (currentKinds.includes(kind)) {
+        // Remove the kind
+        const newKinds = currentKinds.filter(k => k !== kind);
+        if (newKinds.length === 0) {
+          delete state.filters.kinds;
+        } else {
+          state.filters.kinds = newKinds;
+        }
+      } else {
+        // Add the kind
+        state.filters.kinds = [...currentKinds, kind];
+      }
+      state.page = 1; // Reset to first page when filters change
+    },
   },
 });
 
-export const { setFilters, setSort, setPage, setViewMode, updateFilter } = assetSearchSlice.actions;
+export const { setFilters, setSort, setPage, setViewMode, updateFilter, toggleKindFilter } = assetSearchSlice.actions;
 export default assetSearchSlice.reducer;
