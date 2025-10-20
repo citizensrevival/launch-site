@@ -57,95 +57,90 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Form state - single locale fields
-  const [title, setTitle] = useState<string>('');
+  // Form state - language-specific fields
+  const [title, setTitle] = useState<LocalizedField>({});
   const [layoutVariant, setLayoutVariant] = useState<string>('');
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
   
-  // SEO fields
-  const [seoTitle, setSeoTitle] = useState<string>('');
-  const [seoDescription, setSeoDescription] = useState<string>('');
-  const [seoKeywords, setSeoKeywords] = useState<string>('');
-  const [seoImage, setSeoImage] = useState<string>('');
+  // SEO fields - language-specific
+  const [seoTitle, setSeoTitle] = useState<LocalizedField>({});
+  const [seoDescription, setSeoDescription] = useState<LocalizedField>({});
+  const [seoKeywords, setSeoKeywords] = useState<LocalizedField>({});
+  const [seoImage, setSeoImage] = useState<LocalizedField>({});
   
-  // Navigation hints
-  const [navLabel, setNavLabel] = useState<string>('');
+  // Navigation hints - language-specific
+  const [navLabel, setNavLabel] = useState<LocalizedField>({});
   const [navOrder, setNavOrder] = useState<number>(0);
   const [navHidden, setNavHidden] = useState<boolean>(false);
-  const [navBadge, setNavBadge] = useState<string>('');
+  const [navBadge, setNavBadge] = useState<LocalizedField>({});
   
   const { createPageVersion, updatePageVersion } = usePageVersionManagement();
   const { versions, loading: versionsLoading } = usePageVersions(page.id);
 
-  // Load latest version on mount and when locale changes
+  // Load latest version on mount
   useEffect(() => {
     if (versions && versions.length > 0) {
       const latestVersion = versions[0];
       setCurrentVersion(latestVersion);
       
-      // Initialize form with latest version data for selected locale
-      setTitle(latestVersion.title?.[selectedLocale] || '');
+      // Initialize form with latest version data for all locales
+      setTitle(latestVersion.title || {});
       setLayoutVariant(latestVersion.layout_variant || '');
       setStatus(latestVersion.status);
       
-      // Parse SEO data for selected locale
+      // Parse SEO data for all locales
       if (latestVersion.seo) {
-        setSeoTitle(latestVersion.seo[selectedLocale]?.title || '');
-        setSeoDescription(latestVersion.seo[selectedLocale]?.description || '');
-        setSeoKeywords(latestVersion.seo[selectedLocale]?.keywords || '');
-        setSeoImage(latestVersion.seo[selectedLocale]?.image || '');
+        setSeoTitle(latestVersion.seo.title || {});
+        setSeoDescription(latestVersion.seo.description || {});
+        setSeoKeywords(latestVersion.seo.keywords || {});
+        setSeoImage(latestVersion.seo.image || {});
       }
       
-      // Parse navigation hints for selected locale
+      // Parse navigation hints for all locales
       if (latestVersion.nav_hints) {
-        setNavLabel(latestVersion.nav_hints[selectedLocale]?.label || '');
-        setNavOrder(latestVersion.nav_hints[selectedLocale]?.order || 0);
-        setNavHidden(latestVersion.nav_hints[selectedLocale]?.hidden || false);
-        setNavBadge(latestVersion.nav_hints[selectedLocale]?.badge || '');
+        setNavLabel(latestVersion.nav_hints.label || {});
+        setNavOrder(latestVersion.nav_hints.order || 0);
+        setNavHidden(latestVersion.nav_hints.hidden || false);
+        setNavBadge(latestVersion.nav_hints.badge || {});
       }
     }
-  }, [versions, selectedLocale]);
+  }, [versions]);
+
+  // Helper functions to update localized fields
+  const updateLocalizedField = (
+    field: LocalizedField,
+    setter: (value: LocalizedField) => void,
+    value: string
+  ) => {
+    setter({ ...field, [selectedLocale]: value });
+  };
+
+  const getCurrentValue = (field: LocalizedField) => {
+    return field[selectedLocale] || '';
+  };
 
   const handleSave = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Get existing data for all locales
-      const existingTitle = currentVersion?.title || {};
-      const existingSeo = currentVersion?.seo || {};
-      const existingNavHints = currentVersion?.nav_hints || {};
-
-      // Update data for selected locale
-      const updatedTitle = { ...existingTitle, [selectedLocale]: title };
-      
-      const updatedSeo = { 
-        ...existingSeo, 
-        [selectedLocale]: {
+      const versionData = {
+        page_id: page.id,
+        version: currentVersion ? currentVersion.version + 1 : 1,
+        title,
+        layout_variant: layoutVariant || null,
+        seo: {
           title: seoTitle,
           description: seoDescription,
           keywords: seoKeywords,
           image: seoImage
-        }
-      };
-
-      const updatedNavHints = { 
-        ...existingNavHints, 
-        [selectedLocale]: {
+        },
+        nav_hints: {
           label: navLabel,
           badge: navBadge,
           order: navOrder,
           hidden: navHidden
-        }
-      };
-
-      const versionData = {
-        page_id: page.id,
-        version: currentVersion ? currentVersion.version + 1 : 1,
-        title: updatedTitle,
-        layout_variant: layoutVariant || null,
-        seo: updatedSeo,
-        nav_hints: updatedNavHints,
+        },
         slots: currentVersion?.slots || [],
         status
       };
@@ -258,8 +253,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                     </label>
                     <input
                       type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      value={getCurrentValue(title)}
+                      onChange={(e) => updateLocalizedField(title, setTitle, e.target.value)}
                       placeholder="Page title"
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -292,8 +287,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                     </label>
                     <input
                       type="text"
-                      value={seoTitle}
-                      onChange={(e) => setSeoTitle(e.target.value)}
+                      value={getCurrentValue(seoTitle)}
+                      onChange={(e) => updateLocalizedField(seoTitle, setSeoTitle, e.target.value)}
                       placeholder="SEO title"
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -304,8 +299,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                       Meta Description
                     </label>
                     <textarea
-                      value={seoDescription}
-                      onChange={(e) => setSeoDescription(e.target.value)}
+                      value={getCurrentValue(seoDescription)}
+                      onChange={(e) => updateLocalizedField(seoDescription, setSeoDescription, e.target.value)}
                       placeholder="Meta description"
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       rows={3}
@@ -318,8 +313,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                     </label>
                     <input
                       type="text"
-                      value={seoKeywords}
-                      onChange={(e) => setSeoKeywords(e.target.value)}
+                      value={getCurrentValue(seoKeywords)}
+                      onChange={(e) => updateLocalizedField(seoKeywords, setSeoKeywords, e.target.value)}
                       placeholder="Keywords (comma-separated)"
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -331,8 +326,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                     </label>
                     <input
                       type="text"
-                      value={seoImage}
-                      onChange={(e) => setSeoImage(e.target.value)}
+                      value={getCurrentValue(seoImage)}
+                      onChange={(e) => updateLocalizedField(seoImage, setSeoImage, e.target.value)}
                       placeholder="Image URL"
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -351,8 +346,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                 </label>
                 <input
                   type="text"
-                  value={navLabel}
-                  onChange={(e) => setNavLabel(e.target.value)}
+                  value={getCurrentValue(navLabel)}
+                  onChange={(e) => updateLocalizedField(navLabel, setNavLabel, e.target.value)}
                   placeholder="Navigation label"
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
@@ -364,8 +359,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                 </label>
                 <input
                   type="text"
-                  value={navBadge}
-                  onChange={(e) => setNavBadge(e.target.value)}
+                  value={getCurrentValue(navBadge)}
+                  onChange={(e) => updateLocalizedField(navBadge, setNavBadge, e.target.value)}
                   placeholder="Badge text"
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
