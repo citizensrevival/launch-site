@@ -23,7 +23,7 @@ Build the asset management system incrementally:
 - [x] Use Supabase Edge Function (preferred) or client-side processing
 - [x] Update asset display to use variants
 - [x] Files: `supabase/functions/process-asset-variants/*`, `src/lib/cms/client.ts`, `src/admin/cms/AssetDetails.tsx`
-- [x] **COMMITTED**: [Pending] - feat(cms): Phase 1.2: Asset Variants Generation
+- [x] **COMMITTED**: a8a2e53 - feat(cms): Phase 1.2: Asset Variants Generation
 
 #### 1.3 Asset Optimization
 - [ ] Add image compression during upload
