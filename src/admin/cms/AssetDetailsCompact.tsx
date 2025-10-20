@@ -1,28 +1,29 @@
 // Compact Asset Editor with Toolbar
 // In-place editing with metadata support
 
-import { useAsset, useAssetVariants, useAssetManagement } from '../../lib/cms/hooks';
-import { getAssetUrl } from '../../lib/cms/utils';
-import { generateAssetVariants, updateAssetMetadata } from '../../lib/cms/client';
-import { supabase } from '../../shell/lib/supabase';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Toast } from './components/Toast';
-import type { Asset, AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../lib/cms/types';
-import Icon from '@mdi/react';
 import {
-  mdiRotateLeft,
-  mdiRotateRight,
+  mdiClose,
+  mdiContentCopy,
   mdiContentSaveOutline,
   mdiContentSavePlusOutline,
-  mdiClose,
   mdiDelete,
-  mdiTarget,
+  mdiDownloadCircleOutline,
   mdiImageSizeSelectActual,
   mdiImageSizeSelectLarge,
-  mdiContentCopy,
   mdiOpenInNew,
-  mdiDownloadCircleOutline,
+  mdiPlus,
+  mdiRotateLeft,
+  mdiRotateRight,
+  mdiTarget,
 } from '@mdi/js';
+import Icon from '@mdi/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { generateAssetVariants, updateAssetMetadata } from '../../lib/cms/client';
+import { useAsset, useAssetManagement, useAssetVariants } from '../../lib/cms/hooks';
+import type { AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../lib/cms/types';
+import { getAssetUrl } from '../../lib/cms/utils';
+import { supabase } from '../../shell/lib/supabase';
+import { Toast } from './components/Toast';
 
 interface AssetDetailsCompactProps {
   assetId: string;
@@ -301,11 +302,22 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   };
 
   const handleAddTag = () => {
-    if (newTag.trim()) {
-      setMetadata(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }));
+    const trimmedTag = newTag.trim();
+    if (trimmedTag) {
+      setMetadata(prev => {
+        // Prevent duplicates
+        if (prev.tags.includes(trimmedTag)) {
+          return prev;
+        }
+        // Add and sort alphabetically
+        const updatedTags = [...prev.tags, trimmedTag].sort((a, b) => 
+          a.toLowerCase().localeCompare(b.toLowerCase())
+        );
+        return {
+          ...prev,
+          tags: updatedTags
+        };
+      });
       setNewTag('');
     }
   };
@@ -646,34 +658,34 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                 <button
                   onClick={() => onDelete(assetId)}
                   disabled={isProcessing}
-                  className="p-2 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+                  className="p-2 text-red-600 hover:text-red-700 disabled:opacity-50 transition-colors"
                   title="Delete asset"
                 >
-                  <Icon path={mdiDelete} size={0.8} />
+                  <Icon path={mdiDelete} size={0.9} />
                 </button>
               )}
               <button
                 onClick={() => handleSave(false)}
                 disabled={!hasChanges || isProcessing}
-                className="p-2 text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-indigo-600 hover:text-indigo-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title="Update asset"
               >
-                <Icon path={mdiContentSaveOutline} size={0.8} />
+                <Icon path={mdiContentSaveOutline} size={0.9} />
               </button>
               <button
                 onClick={() => handleSave(true)}
                 disabled={!hasChanges || isProcessing}
-                className="p-2 text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 text-blue-600 hover:text-blue-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title="Save as new asset"
               >
-                <Icon path={mdiContentSavePlusOutline} size={0.8} />
+                <Icon path={mdiContentSavePlusOutline} size={0.9} />
               </button>
               <button
                 onClick={onClose}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                 title="Close"
               >
-                <Icon path={mdiClose} size={0.8} />
+                <Icon path={mdiClose} size={0.9} />
               </button>
             </div>
           </div>
@@ -863,9 +875,10 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                       />
                       <button
                         onClick={handleAddTag}
-                        className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        className="p-2 text-blue-600 hover:text-blue-700 transition-colors"
+                        title="Add tag"
                       >
-                        Add
+                        <Icon path={mdiPlus} size={0.9} />
                       </button>
                     </div>
                     {metadata.tags.length > 0 && (
