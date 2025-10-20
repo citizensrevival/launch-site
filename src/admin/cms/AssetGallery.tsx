@@ -6,7 +6,7 @@ import { useAssets, useAssetManagement } from '../../lib/cms/hooks';
 import { useAppSelector, useAppDispatch } from '../../shell/store/hooks';
 import { setPage } from '../../shell/store/slices/assetSearchSlice';
 import { getAssetUrl, getAssetVariantUrl } from '../../lib/cms/utils';
-import { AssetDetails } from './AssetDetails';
+import { AssetDetailsWithEditor } from './AssetDetailsWithEditor';
 
 export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
   const dispatch = useAppDispatch();
@@ -182,28 +182,15 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
         </div>
       )}
 
-      {/* Asset Details Modal */}
+      {/* Asset Details with Integrated Editor */}
       {selectedAssetId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Asset Details</h2>
-              <button
-                onClick={() => setSelectedAssetId(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <AssetDetails 
-              assetId={selectedAssetId} 
-              siteId={selectedSite?.id || ''} 
-              onAssetUpdated={refresh}
-            />
-          </div>
-        </div>
+        <AssetDetailsWithEditor
+          assetId={selectedAssetId}
+          siteId={selectedSite?.id || ''}
+          onAssetUpdated={refresh}
+          onClose={() => setSelectedAssetId(null)}
+          onDelete={handleDelete}
+        />
       )}
     </>
   );
