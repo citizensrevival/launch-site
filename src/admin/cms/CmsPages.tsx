@@ -371,7 +371,7 @@ function NewPageDialog({
   onClose: () => void; 
   onSuccess: () => void; 
 }) {
-  const { createPageHandler } = usePageManagement();
+  const { createPage } = usePageManagement();
   const [slug, setSlug] = useState('');
   const [systemKey, setSystemKey] = useState('');
   const [isSystem, setIsSystem] = useState(false);
@@ -386,7 +386,7 @@ function NewPageDialog({
     setError(null);
 
     try {
-      const result = await createPageHandler({
+      const result = await createPage({
         site_id: siteId,
         slug: slug.trim(),
         is_system: isSystem,
@@ -394,12 +394,17 @@ function NewPageDialog({
       });
 
       if (result) {
+        console.log('Page created successfully:', result);
         onSuccess();
       } else {
-        setError('Failed to create page. Please try again.');
+        const errorMsg = 'Failed to create page. Please try again.';
+        console.error('Page creation failed:', errorMsg);
+        setError(errorMsg);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
+      console.error('Error creating page:', err);
+      setError(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -501,7 +506,7 @@ function EditPageDialog({
   onSuccess: () => void;
   onDelete: () => void;
 }) {
-  const { updatePageHandler, deletePageHandler } = usePageManagement();
+  const { updatePage, deletePage } = usePageManagement();
   const [slug, setSlug] = useState(page.slug);
   const [systemKey, setSystemKey] = useState(page.system_key || '');
   const [isSystem, setIsSystem] = useState(page.is_system);
@@ -517,19 +522,24 @@ function EditPageDialog({
     setError(null);
 
     try {
-      const result = await updatePageHandler(page.id, {
+      const result = await updatePage(page.id, {
         slug: slug.trim(),
         is_system: isSystem,
         system_key: systemKey.trim() || null,
       });
 
       if (result) {
+        console.log('Page updated successfully:', result);
         onSuccess();
       } else {
-        setError('Failed to update page. Please try again.');
+        const errorMsg = 'Failed to update page. Please try again.';
+        console.error('Page update failed:', errorMsg);
+        setError(errorMsg);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
+      console.error('Error updating page:', err);
+      setError(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -542,14 +552,19 @@ function EditPageDialog({
     setError(null);
 
     try {
-      const result = await deletePageHandler(page.id);
+      const result = await deletePage(page.id);
       if (result) {
+        console.log('Page deleted successfully:', page.id);
         onDelete();
       } else {
-        setError('Failed to delete page. Please try again.');
+        const errorMsg = 'Failed to delete page. Please try again.';
+        console.error('Page deletion failed:', errorMsg);
+        setError(errorMsg);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
+      console.error('Error deleting page:', err);
+      setError(errorMsg);
     } finally {
       setDeleting(false);
     }
