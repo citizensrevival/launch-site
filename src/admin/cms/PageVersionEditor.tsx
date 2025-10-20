@@ -28,7 +28,7 @@ interface PageVersionEditorProps {
   onSave: (version: PageVersion) => void;
 }
 
-type EditorTab = 'content' | 'seo' | 'navigation' | 'layout';
+type EditorTab = 'content' | 'navigation' | 'layout';
 
 interface LocalizedField {
   [locale: string]: string;
@@ -52,101 +52,100 @@ const LAYOUT_VARIANTS = [
 
 export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorProps) {
   const [activeTab, setActiveTab] = useState<EditorTab>('content');
+  const [selectedLocale, setSelectedLocale] = useState<string>('en-US');
   const [currentVersion, setCurrentVersion] = useState<PageVersion | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Form state
-  const [title, setTitle] = useState<LocalizedField>({});
+  // Form state - single locale fields
+  const [title, setTitle] = useState<string>('');
   const [layoutVariant, setLayoutVariant] = useState<string>('');
-  const [seo, setSeo] = useState<LocalizedField>({});
-  const [navHints, setNavHints] = useState<LocalizedField>({});
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
   
   // SEO fields
-  const [seoTitle, setSeoTitle] = useState<LocalizedField>({});
-  const [seoDescription, setSeoDescription] = useState<LocalizedField>({});
-  const [seoKeywords, setSeoKeywords] = useState<LocalizedField>({});
-  const [seoImage, setSeoImage] = useState<LocalizedField>({});
+  const [seoTitle, setSeoTitle] = useState<string>('');
+  const [seoDescription, setSeoDescription] = useState<string>('');
+  const [seoKeywords, setSeoKeywords] = useState<string>('');
+  const [seoImage, setSeoImage] = useState<string>('');
   
   // Navigation hints
-  const [navLabel, setNavLabel] = useState<LocalizedField>({});
+  const [navLabel, setNavLabel] = useState<string>('');
   const [navOrder, setNavOrder] = useState<number>(0);
   const [navHidden, setNavHidden] = useState<boolean>(false);
-  const [navBadge, setNavBadge] = useState<LocalizedField>({});
+  const [navBadge, setNavBadge] = useState<string>('');
   
   const { createPageVersion, updatePageVersion } = usePageVersionManagement();
   const { versions, loading: versionsLoading } = usePageVersions(page.id);
 
-  // Load latest version on mount
+  // Load latest version on mount and when locale changes
   useEffect(() => {
     if (versions && versions.length > 0) {
       const latestVersion = versions[0];
       setCurrentVersion(latestVersion);
       
-      // Initialize form with latest version data
-      setTitle(latestVersion.title || {});
+      // Initialize form with latest version data for selected locale
+      setTitle(latestVersion.title?.[selectedLocale] || '');
       setLayoutVariant(latestVersion.layout_variant || '');
-      setSeo(latestVersion.seo || {});
-      setNavHints(latestVersion.nav_hints || {});
       setStatus(latestVersion.status);
       
-      // Parse SEO data
+      // Parse SEO data for selected locale
       if (latestVersion.seo) {
-        setSeoTitle(latestVersion.seo.title || {});
-        setSeoDescription(latestVersion.seo.description || {});
-        setSeoKeywords(latestVersion.seo.keywords || {});
-        setSeoImage(latestVersion.seo.image || {});
+        setSeoTitle(latestVersion.seo[selectedLocale]?.title || '');
+        setSeoDescription(latestVersion.seo[selectedLocale]?.description || '');
+        setSeoKeywords(latestVersion.seo[selectedLocale]?.keywords || '');
+        setSeoImage(latestVersion.seo[selectedLocale]?.image || '');
       }
       
-      // Parse navigation hints
+      // Parse navigation hints for selected locale
       if (latestVersion.nav_hints) {
-        setNavLabel(latestVersion.nav_hints.label || {});
-        setNavOrder(latestVersion.nav_hints.order || 0);
-        setNavHidden(latestVersion.nav_hints.hidden || false);
-        setNavBadge(latestVersion.nav_hints.badge || {});
+        setNavLabel(latestVersion.nav_hints[selectedLocale]?.label || '');
+        setNavOrder(latestVersion.nav_hints[selectedLocale]?.order || 0);
+        setNavHidden(latestVersion.nav_hints[selectedLocale]?.hidden || false);
+        setNavBadge(latestVersion.nav_hints[selectedLocale]?.badge || '');
       }
     }
-  }, [versions]);
+  }, [versions, selectedLocale]);
 
   const handleSave = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Prepare SEO data
-      const seoData: LocalizedContent = {};
-      SUPPORTED_LOCALES.forEach(locale => {
-        if (seoTitle[locale.code] || seoDescription[locale.code] || seoKeywords[locale.code] || seoImage[locale.code]) {
-          seoData[locale.code] = {
-            title: seoTitle[locale.code] || '',
-            description: seoDescription[locale.code] || '',
-            keywords: seoKeywords[locale.code] || '',
-            image: seoImage[locale.code] || ''
-          };
-        }
-      });
+      // Get existing data for all locales
+      const existingTitle = currentVersion?.title || {};
+      const existingSeo = currentVersion?.seo || {};
+      const existingNavHints = currentVersion?.nav_hints || {};
 
-      // Prepare navigation hints
-      const navHintsData: LocalizedContent = {};
-      SUPPORTED_LOCALES.forEach(locale => {
-        if (navLabel[locale.code] || navBadge[locale.code]) {
-          navHintsData[locale.code] = {
-            label: navLabel[locale.code] || '',
-            badge: navBadge[locale.code] || '',
-            order: navOrder,
-            hidden: navHidden
-          };
+      // Update data for selected locale
+      const updatedTitle = { ...existingTitle, [selectedLocale]: title };
+      
+      const updatedSeo = { 
+        ...existingSeo, 
+        [selectedLocale]: {
+          title: seoTitle,
+          description: seoDescription,
+          keywords: seoKeywords,
+          image: seoImage
         }
-      });
+      };
+
+      const updatedNavHints = { 
+        ...existingNavHints, 
+        [selectedLocale]: {
+          label: navLabel,
+          badge: navBadge,
+          order: navOrder,
+          hidden: navHidden
+        }
+      };
 
       const versionData = {
         page_id: page.id,
         version: currentVersion ? currentVersion.version + 1 : 1,
-        title,
+        title: updatedTitle,
         layout_variant: layoutVariant || null,
-        seo: seoData,
-        nav_hints: navHintsData,
+        seo: updatedSeo,
+        nav_hints: updatedNavHints,
         slots: currentVersion?.slots || [],
         status
       };
@@ -169,52 +168,9 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
     }
   };
 
-  const updateLocalizedField = (
-    field: LocalizedField,
-    setter: (value: LocalizedField) => void,
-    locale: string,
-    value: string
-  ) => {
-    setter({ ...field, [locale]: value });
-  };
-
-  const renderLocalizedInput = (
-    field: LocalizedField,
-    setter: (value: LocalizedField) => void,
-    placeholder: string,
-    multiline = false
-  ) => (
-    <div className="space-y-2">
-      {SUPPORTED_LOCALES.map(locale => (
-        <div key={locale.code} className="flex items-center space-x-2">
-          <div className="w-16 text-xs text-gray-400 font-medium">
-            {locale.code}
-          </div>
-          {multiline ? (
-            <textarea
-              value={field[locale.code] || ''}
-              onChange={(e) => updateLocalizedField(field, setter, locale.code, e.target.value)}
-              placeholder={`${placeholder} (${locale.name})`}
-              className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={3}
-            />
-          ) : (
-            <input
-              type="text"
-              value={field[locale.code] || ''}
-              onChange={(e) => updateLocalizedField(field, setter, locale.code, e.target.value)}
-              placeholder={`${placeholder} (${locale.name})`}
-              className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
 
   const tabs = [
-    { id: 'content' as const, label: 'Content', icon: mdiTranslate },
-    { id: 'seo' as const, label: 'SEO', icon: mdiMagnify },
+    { id: 'content' as const, label: 'Content & SEO', icon: mdiTranslate },
     { id: 'navigation' as const, label: 'Navigation', icon: mdiNavigation },
     { id: 'layout' as const, label: 'Layout', icon: mdiPalette }
   ];
@@ -235,9 +191,25 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
       <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <div>
-            <h2 className="text-xl font-semibold text-white">Edit Page Version</h2>
-            <p className="text-sm text-gray-400">/{page.slug}</p>
+          <div className="flex items-center space-x-4">
+            <div>
+              <h2 className="text-xl font-semibold text-white">Edit Page Version</h2>
+              <p className="text-sm text-gray-400">/{page.slug}</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Icon path={mdiTranslate} size={1} className="text-gray-400" />
+              <select
+                value={selectedLocale}
+                onChange={(e) => setSelectedLocale(e.target.value)}
+                className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                {SUPPORTED_LOCALES.map(locale => (
+                  <option key={locale.code} value={locale.code}>
+                    {locale.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -273,62 +245,99 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
             </div>
           )}
 
-          {/* Content Tab */}
+          {/* Content & SEO Tab */}
           {activeTab === 'content' && (
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Page Title (Multi-language)
-                </label>
-                {renderLocalizedInput(title, setTitle, 'Page title')}
+              {/* Page Content */}
+              <div className="bg-gray-750 rounded-lg p-4">
+                <h3 className="text-lg font-medium text-white mb-4">Page Content</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Page Title
+                    </label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Page title"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value as 'draft' | 'published' | 'archived')}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Status
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as 'draft' | 'published' | 'archived')}
-                  className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-            </div>
-          )}
+              {/* SEO Section */}
+              <div className="bg-gray-750 rounded-lg p-4">
+                <h3 className="text-lg font-medium text-white mb-4">SEO Metadata</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      SEO Title
+                    </label>
+                    <input
+                      type="text"
+                      value={seoTitle}
+                      onChange={(e) => setSeoTitle(e.target.value)}
+                      placeholder="SEO title"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
 
-          {/* SEO Tab */}
-          {activeTab === 'seo' && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  SEO Title
-                </label>
-                {renderLocalizedInput(seoTitle, setSeoTitle, 'SEO title')}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Meta Description
+                    </label>
+                    <textarea
+                      value={seoDescription}
+                      onChange={(e) => setSeoDescription(e.target.value)}
+                      placeholder="Meta description"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      rows={3}
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Meta Description
-                </label>
-                {renderLocalizedInput(seoDescription, setSeoDescription, 'Meta description', true)}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Keywords
+                    </label>
+                    <input
+                      type="text"
+                      value={seoKeywords}
+                      onChange={(e) => setSeoKeywords(e.target.value)}
+                      placeholder="Keywords (comma-separated)"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Keywords
-                </label>
-                {renderLocalizedInput(seoKeywords, setSeoKeywords, 'Keywords (comma-separated)')}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
-                  Social Media Image
-                </label>
-                {renderLocalizedInput(seoImage, setSeoImage, 'Image URL')}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Social Media Image
+                    </label>
+                    <input
+                      type="text"
+                      value={seoImage}
+                      onChange={(e) => setSeoImage(e.target.value)}
+                      placeholder="Image URL"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -337,17 +346,29 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
           {activeTab === 'navigation' && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Navigation Label
                 </label>
-                {renderLocalizedInput(navLabel, setNavLabel, 'Navigation label')}
+                <input
+                  type="text"
+                  value={navLabel}
+                  onChange={(e) => setNavLabel(e.target.value)}
+                  placeholder="Navigation label"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Navigation Badge
                 </label>
-                {renderLocalizedInput(navBadge, setNavBadge, 'Badge text')}
+                <input
+                  type="text"
+                  value={navBadge}
+                  onChange={(e) => setNavBadge(e.target.value)}
+                  placeholder="Badge text"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
