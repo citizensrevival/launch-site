@@ -56,12 +56,13 @@ For now, JPEG compression provides excellent results (30-40% size reduction) and
 ### Phase 2: Pages Management
 Build the page management system:
 
-#### 2.1 Page List & CRUD
-- [ ] Display pages in a table with filters (status, system pages, slug search)
-- [ ] Create "New Page" form (slug, system_key, is_system flag)
-- [ ] Implement edit/delete operations
-- [ ] Show page versions count
-- [ ] Files: `src/admin/cms/CmsPages.tsx`, `src/admin/cms/components/PageList.tsx`
+#### 2.1 Page List & CRUD ✅ COMPLETED
+- [x] Display pages in a table with filters (status, system pages, slug search)
+- [x] Create "New Page" form (slug, system_key, is_system flag)
+- [x] Implement edit/delete operations
+- [x] Show page versions count (placeholder for now, will be implemented with version history)
+- [x] Files: `src/admin/cms/CmsPages.tsx` (integrated dialogs)
+- [x] **COMMITTED**: (pending deployment)
 
 #### 2.2 Page Version Editor
 - [ ] Create page version editor UI
@@ -254,4 +255,5 @@ After each implementation step:
 - ✅ **Phase 1.2**: Asset Variants Generation - COMPLETED
 - ✅ **Phase 1.3**: Asset Optimization - COMPLETED
 - ✅ **Phase 1.4**: Asset Editing - COMPLETED
-- ⏳ **Phase 2**: Pages Management - PENDING
+- ✅ **Phase 2.1**: Page List & CRUD - COMPLETED
+- ⏳ **Phase 2.2**: Page Version Editor - PENDING
