@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { supabase } from '../_lib/db.ts'
-import { decode, encode, Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts'
+import { Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts'
 
 // Variant configurations
 const VARIANTS = {
@@ -132,7 +132,7 @@ serve(async (req) => {
     // Decode image
     let image: Image
     try {
-      image = await decode(uint8Array)
+      image = await Image.decode(uint8Array)
     } catch (decodeError) {
       console.error('Error decoding image:', decodeError)
       return new Response(JSON.stringify({ 
@@ -174,7 +174,7 @@ serve(async (req) => {
         const resized = image.resize(width, height)
 
         // Encode as JPEG (good balance of quality and size)
-        const encoded = await encode(resized, 'jpeg', 85) // 85% quality
+        const encoded = await resized.encodeJPEG(85) // 85% quality
 
         // Generate storage path for variant
         const fileExt = asset.storage_key.split('.').pop()
