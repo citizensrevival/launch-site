@@ -131,8 +131,26 @@ function FixedSidebar({
   main: React.ReactNode
   footer: React.ReactNode
 }) {
+  let theme = useTheme()
+  let colorTheme = theme?.colorTheme || 'purple'
+
+  const getThemeBackgroundClass = (theme: string) => {
+    switch (theme) {
+      case 'green':
+        return 'bg-emerald-950'
+      case 'blue':
+        return 'bg-blue-950'
+      case 'amber':
+        return 'bg-amber-950'
+      case 'rose':
+        return 'bg-rose-950'
+      default: // purple
+        return 'bg-purple-950'
+    }
+  }
+
   return (
-    <div className="sidebar relative flex-none overflow-hidden px-6 lg:pointer-events-none lg:fixed lg:inset-0 lg:z-40 lg:flex lg:px-0">
+    <div className={`sidebar relative flex-none overflow-hidden px-6 ${getThemeBackgroundClass(colorTheme)} lg:bg-transparent lg:pointer-events-none lg:fixed lg:inset-0 lg:z-40 lg:flex lg:px-0`}>
       <Glow />
       <div className="relative flex w-full lg:pointer-events-auto lg:mr-[calc(max(2rem,50%-38rem)+40rem)] lg:min-w-lg lg:overflow-x-hidden lg:overflow-y-auto lg:pl-[max(4rem,calc(50%-38rem))]">
         <div className="mx-auto max-w-lg lg:mx-0 lg:flex lg:w-96 lg:max-w-none lg:flex-col lg:before:flex-1 lg:before:pt-6">
@@ -144,9 +162,12 @@ function FixedSidebar({
           <div className="flex flex-1 items-end justify-center pb-4 lg:justify-start lg:pb-6">
             <div className="flex flex-col items-center lg:items-start space-y-4">
               <div className="flex items-center space-x-4">
-                {footer}
                 <Menu />
                 <ColorThemeToggle />
+              </div>
+              {/* Desktop footer - only visible on desktop */}
+              <div className="hidden lg:block">
+                {footer}
               </div>
             </div>
           </div>
@@ -157,19 +178,42 @@ function FixedSidebar({
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  let theme = useTheme()
+  let colorTheme = theme?.colorTheme || 'purple'
+
+  const getThemeBackgroundClass = (theme: string) => {
+    switch (theme) {
+      case 'green':
+        return 'bg-emerald-950'
+      case 'blue':
+        return 'bg-blue-950'
+      case 'amber':
+        return 'bg-amber-950'
+      case 'rose':
+        return 'bg-rose-950'
+      default: // purple
+        return 'bg-purple-950'
+    }
+  }
+
   return (
-    <>
+    <div className="flex flex-col lg:flex-row">
       <FixedSidebar 
         main={<Intro />} 
         footer={<IntroFooter />} 
       />
       
-      <div className="main-content relative flex-auto">
+      <div className="main-content relative flex-auto bg-white flex flex-col">
         <Timeline />
-        <main className="space-y-20 py-20 sm:space-y-32 sm:py-32">
+        <main className="space-y-20 py-20 sm:space-y-32 sm:py-32 flex-1">
           {children}
         </main>
+        
+        {/* Mobile footer - only visible on mobile */}
+        <footer className={`lg:hidden ${getThemeBackgroundClass(colorTheme)} px-6 py-8`}>
+          <IntroFooter />
+        </footer>
       </div>
-    </>
+    </div>
   )
 }
