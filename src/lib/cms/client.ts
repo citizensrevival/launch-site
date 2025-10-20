@@ -1193,6 +1193,126 @@ export async function createAssetVersion(
 }
 
 /**
+ * Update an existing asset with edited version (replaces original)
+ */
+export async function updateExistingAsset(
+  assetId: string,
+  editedImageBlob: Blob,
+  editOperation: AssetEditOperation
+): Promise<ApiResponse<Asset>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Get original asset info
+    const { data: originalAsset, error: fetchError } = await supabase
+      .from('asset')
+      .select('*')
+      .eq('id', assetId)
+      .single();
+
+    if (fetchError || !originalAsset) {
+      throw new Error('Original asset not found');
+    }
+
+    // Get dimensions of edited image
+    const img = await createImageBitmap(editedImageBlob);
+    const width = img.width;
+    const height = img.height;
+
+    const bucketName = `site-${originalAsset.site_id.replace(/-/g, '')}`;
+    
+    // Delete old variants from storage and database
+    const { data: oldVariants } = await supabase
+      .from('asset_variant')
+      .select('storage_key')
+      .eq('asset_id', assetId);
+
+    if (oldVariants && oldVariants.length > 0) {
+      console.log(`Deleting ${oldVariants.length} old variants`);
+      const variantKeys = oldVariants.map(v => v.storage_key);
+      await supabase.storage.from(bucketName).remove(variantKeys);
+      await supabase.from('asset_variant').delete().eq('asset_id', assetId);
+    }
+
+    // Upload edited image to replace original
+    console.log(`Updating asset at: ${bucketName}/${originalAsset.storage_key}`);
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(originalAsset.storage_key, editedImageBlob, {
+        contentType: 'image/jpeg',
+        upsert: true // Replace existing file
+      });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
+
+    // Update asset record with new dimensions
+    const { data: updatedAsset, error: updateError } = await supabase
+      .from('asset')
+      .update({
+        width,
+        height,
+      })
+      .eq('id', assetId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Asset update error:', updateError);
+      throw updateError;
+    }
+
+    // Get current max version for this asset
+    const { data: maxVersionData } = await supabase
+      .from('asset_version')
+      .select('version')
+      .eq('asset_id', assetId)
+      .order('version', { ascending: false })
+      .limit(1)
+      .single();
+
+    const newVersion = (maxVersionData?.version || 0) + 1;
+
+    // Create new asset version with edit operation
+    const { error: versionError } = await supabase
+      .from('asset_version')
+      .insert({
+        asset_id: assetId,
+        version: newVersion,
+        meta: {
+          'en-US': {
+            alt: `Edited version ${newVersion}`,
+            caption: `Edit: ${editOperation.operation}`,
+            tags: ['edited']
+          }
+        },
+        edit_operation: editOperation,
+        created_by: user.id
+      });
+
+    if (versionError) {
+      console.error('Version creation error:', versionError);
+      throw versionError;
+    }
+
+    // Trigger variant generation for the updated asset
+    console.log('Triggering variant generation for updated asset:', assetId);
+    generateAssetVariants(assetId).catch((err) => {
+      console.error('Failed to generate variants for updated asset:', err);
+    });
+
+    const parsedAsset = zAsset.parse(updatedAsset);
+    return { data: parsedAsset, error: null };
+  } catch (error) {
+    console.error('Error updating asset:', error);
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+/**
  * Save an edited asset by creating a new asset record and version
  */
 export async function saveEditedAsset(

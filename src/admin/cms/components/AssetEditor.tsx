@@ -7,7 +7,7 @@ type EditMode = 'none' | 'crop' | 'resize' | 'rotate';
 interface AssetEditorProps {
   asset: Asset;
   imageUrl: string;
-  onSave: (editOperation: AssetEditOperation, editedImageBlob: Blob) => Promise<void>;
+  onSave: (editOperation: AssetEditOperation, editedImageBlob: Blob, createNew: boolean) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -273,13 +273,13 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
     throw new Error('No valid edit operation selected');
   };
 
-  const handleSave = async () => {
+  const handleSave = async (createNew: boolean) => {
     if (mode === 'none') return;
 
     setIsProcessing(true);
     try {
       const { blob, operation } = await generateEditedImage();
-      await onSave(operation, blob);
+      await onSave(operation, blob, createNew);
     } catch (error) {
       console.error('Error saving edited asset:', error);
       setToast({
@@ -507,28 +507,41 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4 bg-gray-50">
-            <button
-              onClick={onCancel}
-              disabled={isProcessing}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handlePreview}
-              disabled={!isValidEdit || isProcessing}
-              className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 disabled:opacity-50"
-            >
-              Preview
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!isValidEdit || isProcessing}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isProcessing ? 'Saving...' : 'Save Edited Version'}
-            </button>
+          <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 bg-gray-50">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={onCancel}
+                disabled={isProcessing}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePreview}
+                disabled={!isValidEdit || isProcessing}
+                className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 disabled:opacity-50"
+              >
+                Preview
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleSave(false)}
+                disabled={!isValidEdit || isProcessing}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                title="Replace the original asset with this edited version"
+              >
+                {isProcessing ? 'Updating...' : 'Update Asset'}
+              </button>
+              <button
+                onClick={() => handleSave(true)}
+                disabled={!isValidEdit || isProcessing}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                title="Create a new asset with this edited version"
+              >
+                {isProcessing ? 'Saving...' : 'Save as New Asset'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -60,19 +60,29 @@ export function AssetDetails({ assetId, siteId, onAssetUpdated }: AssetDetailsPr
     }
   };
 
-  const handleSaveEdit = async (editOperation: AssetEditOperation, editedImageBlob: Blob) => {
+  const handleSaveEdit = async (editOperation: AssetEditOperation, editedImageBlob: Blob, createNew: boolean) => {
     try {
-      const result = await saveEditedAsset(assetId, editedImageBlob, editOperation);
+      const result = await saveEditedAsset(assetId, editedImageBlob, editOperation, createNew);
       if (result.success && result.data) {
         setToast({
-          message: 'Asset edited successfully!',
+          message: createNew ? 'New asset created successfully!' : 'Asset updated successfully!',
           type: 'success',
-          details: 'The new version has been created with variants.',
+          details: createNew 
+            ? 'A new asset has been created with variants.' 
+            : 'The asset has been updated and variants regenerated.',
         });
         setIsEditing(false);
-        // Refresh the parent asset list
-        if (onAssetUpdated) {
-          onAssetUpdated();
+        // Refresh the current asset if updated, or refresh the parent list if new
+        if (createNew) {
+          if (onAssetUpdated) {
+            onAssetUpdated();
+          }
+        } else {
+          // Refresh current asset view
+          refreshAsset();
+          setTimeout(() => {
+            refreshVariants();
+          }, 2000);
         }
       } else {
         setToast({

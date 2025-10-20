@@ -18,7 +18,7 @@ import {
   getAuditLog, hasPermission as checkPermission, getAssets, getAsset, uploadAsset,
   updateAsset, deleteAsset, getAssetVersions,
   publishAsset, unpublishAsset, generateAssetVariants, getAssetVariants,
-  saveEditedAsset,
+  saveEditedAsset, updateExistingAsset,
   type AssetVariant
 } from './client';
 
@@ -540,29 +540,29 @@ export function useAsset(assetId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchAsset() {
-      try {
-        setLoading(true);
-        const response = await getAsset(assetId);
-        if (response.error) {
-          setError(response.error);
-        } else {
-          setAsset(response.data || null);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
+  const fetchAsset = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getAsset(assetId);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setAsset(response.data || null);
       }
-    }
-
-    if (assetId) {
-      fetchAsset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
     }
   }, [assetId]);
 
-  return { asset, loading, error };
+  useEffect(() => {
+    if (assetId) {
+      fetchAsset();
+    }
+  }, [assetId, fetchAsset]);
+
+  return { asset, loading, error, refresh: fetchAsset };
 }
 
 export function useAssetVersions(assetId: string) {
@@ -742,12 +742,18 @@ export function useAssetManagement() {
   const saveEditedAssetHandler = useCallback(async (
     originalAssetId: string,
     editedImageBlob: Blob,
-    editOperation: import('../cms/types').AssetEditOperation
+    editOperation: import('../cms/types').AssetEditOperation,
+    createNew: boolean
   ) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await saveEditedAsset(originalAssetId, editedImageBlob, editOperation);
+      
+      // Choose function based on whether to create new or update existing
+      const response = createNew 
+        ? await saveEditedAsset(originalAssetId, editedImageBlob, editOperation)
+        : await updateExistingAsset(originalAssetId, editedImageBlob, editOperation);
+      
       if (response.error) {
         setError(response.error);
         return { success: false, error: response.error, data: null };
