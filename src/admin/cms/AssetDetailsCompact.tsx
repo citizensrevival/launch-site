@@ -8,6 +8,21 @@ import { supabase } from '../../shell/lib/supabase';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Toast } from './components/Toast';
 import type { Asset, AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../lib/cms/types';
+import Icon from '@mdi/react';
+import {
+  mdiRotateLeft,
+  mdiRotateRight,
+  mdiContentSaveOutline,
+  mdiContentSavePlusOutline,
+  mdiClose,
+  mdiDelete,
+  mdiTarget,
+  mdiImageSizeSelectActual,
+  mdiImageSizeSelectLarge,
+  mdiContentCopy,
+  mdiOpenInNew,
+  mdiDownloadCircleOutline,
+} from '@mdi/js';
 
 interface AssetDetailsCompactProps {
   assetId: string;
@@ -30,10 +45,10 @@ interface EditState {
 }
 
 interface MetadataState {
-  fileName: string;
+  name: string;
   altText: string;
   description: string;
-  tags: string;
+  tags: string[];
   focalPoint: { x: number; y: number } | null;
 }
 
@@ -45,7 +60,7 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  // No tabs - single unified view
+  const [newTag, setNewTag] = useState('');
   
   // Edit state
   const [editState, setEditState] = useState<EditState>({
@@ -56,10 +71,10 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   
   // Metadata state
   const [metadata, setMetadata] = useState<MetadataState>({
-    fileName: '',
+    name: '',
     altText: '',
     description: '',
-    tags: '',
+    tags: [],
     focalPoint: null,
   });
   
@@ -87,10 +102,10 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
       const meta = latestVersion?.meta?.['en-US'] || {};
       
       setMetadata({
-        fileName: asset.storage_key.split('/').pop() || '',
+        name: (meta as any).name || asset.storage_key.split('/').pop() || '',
         altText: meta.alt || '',
         description: meta.caption || '',
-        tags: Array.isArray(meta.tags) ? meta.tags.join(', ') : '',
+        tags: Array.isArray(meta.tags) ? meta.tags : [],
         focalPoint: (meta as any).focalPoint || null,
       });
     };
@@ -125,6 +140,11 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
       editState.resizePercent !== 100
     );
   }, [editState]);
+
+  const hasMetadataChanges = useCallback(() => {
+    // This is a simple check - in production you'd compare with original values
+    return metadata.name.length > 0 || metadata.altText.length > 0 || metadata.tags.length > 0;
+  }, [metadata]);
 
   const redrawCanvas = () => {
     if (!imageRef.current || !canvasRef.current) return;
@@ -280,155 +300,167 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
     });
   };
 
-  const handleSave = async (createNew: boolean) => {
-    if (!hasEdits() || !imageRef.current) return;
-
-    setIsProcessing(true);
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Could not get canvas context');
-
-      let img = imageRef.current;
-      let width = img.width;
-      let height = img.height;
-
-      // Rotation
-      if (editState.rotation !== 0) {
-        if (editState.rotation === 90 || editState.rotation === 270) {
-          canvas.width = height;
-          canvas.height = width;
-        } else {
-          canvas.width = width;
-          canvas.height = height;
-        }
-        ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((editState.rotation * Math.PI) / 180);
-        ctx.drawImage(img, -width / 2, -height / 2);
-        ctx.restore();
-
-        const rotatedImg = new Image();
-        rotatedImg.src = canvas.toDataURL();
-        await new Promise(resolve => rotatedImg.onload = resolve);
-        img = rotatedImg;
-        width = canvas.width;
-        height = canvas.height;
-      }
-
-      // Crop
-      if (editState.crop && editState.crop.width > 0) {
-        canvas.width = editState.crop.width;
-        canvas.height = editState.crop.height;
-        ctx.drawImage(
-          img,
-          editState.crop.x,
-          editState.crop.y,
-          editState.crop.width,
-          editState.crop.height,
-          0,
-          0,
-          editState.crop.width,
-          editState.crop.height
-        );
-        width = editState.crop.width;
-        height = editState.crop.height;
-      } else {
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0);
-      }
-
-      // Resize
-      if (editState.resizePercent !== 100) {
-        const finalWidth = Math.round(width * (editState.resizePercent / 100));
-        const finalHeight = Math.round(height * (editState.resizePercent / 100));
-        const resizedCanvas = document.createElement('canvas');
-        resizedCanvas.width = finalWidth;
-        resizedCanvas.height = finalHeight;
-        const resizedCtx = resizedCanvas.getContext('2d');
-        if (resizedCtx) {
-          resizedCtx.drawImage(canvas, 0, 0, finalWidth, finalHeight);
-          canvas.width = finalWidth;
-          canvas.height = finalHeight;
-          ctx.drawImage(resizedCanvas, 0, 0);
-        }
-      }
-
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(
-          (b) => (b ? resolve(b) : reject(new Error('Failed to create blob'))),
-          'image/jpeg',
-          0.92
-        );
-      });
-
-      // Determine primary operation
-      let operation: AssetEditOperation;
-      if (editState.crop && editState.crop.width > 0) {
-        operation = { operation: 'crop', params: editState.crop };
-      } else if (editState.rotation !== 0) {
-        operation = { operation: 'rotate', params: { degrees: editState.rotation as 90 | 180 | 270 } as RotateParams };
-      } else {
-        operation = {
-          operation: 'resize',
-          params: {
-            width: Math.round(width * (editState.resizePercent / 100)),
-            height: Math.round(height * (editState.resizePercent / 100)),
-            maintainAspectRatio: true,
-          } as ResizeParams,
-        };
-      }
-
-      const result = await saveEditedAsset(assetId, blob, operation, createNew);
-      
-      if (result.success) {
-        setToast({
-          message: createNew ? 'New asset created!' : 'Asset updated!',
-          type: 'success',
-        });
-        handleResetEdits();
-        if (onAssetUpdated) onAssetUpdated();
-        if (!createNew) {
-          refreshAsset();
-          setTimeout(() => refreshVariants(), 2000);
-        }
-      } else {
-        setToast({
-          message: 'Failed to save',
-          type: 'error',
-          details: result.error || 'Unknown error',
-        });
-      }
-    } catch (err) {
-      setToast({
-        message: 'Error saving',
-        type: 'error',
-        details: err instanceof Error ? err.message : 'Unknown error',
-      });
-    } finally {
-      setIsProcessing(false);
+  const handleAddTag = () => {
+    if (newTag.trim()) {
+      setMetadata(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()]
+      }));
+      setNewTag('');
     }
   };
 
-  const handleSaveMetadata = async () => {
+  const handleRemoveTag = (index: number) => {
+    setMetadata(prev => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index)
+    }));
+  };
+
+  const saveMetadata = async () => {
+    const result = await updateAssetMetadata(assetId, {
+      fileName: metadata.name,
+      altText: metadata.altText,
+      description: metadata.description,
+      tags: metadata.tags,
+      focalPoint: metadata.focalPoint || undefined,
+    });
+    
+    if (result.error) {
+      throw new Error(result.error);
+    }
+  };
+
+  const handleSave = async (createNew: boolean) => {
     setIsProcessing(true);
     try {
-      // Parse tags from comma-separated string
-      const tagsArray = metadata.tags
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0);
+      // If there are image edits, process them
+      if (hasEdits() && imageRef.current) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Could not get canvas context');
 
-      const result = await updateAssetMetadata(assetId, {
-        fileName: metadata.fileName,
-        altText: metadata.altText,
-        description: metadata.description,
-        tags: tagsArray,
-        focalPoint: metadata.focalPoint || undefined,
-      });
-      
-      if (!result.error) {
+        let img = imageRef.current;
+        let width = img.width;
+        let height = img.height;
+
+        // Rotation
+        if (editState.rotation !== 0) {
+          if (editState.rotation === 90 || editState.rotation === 270) {
+            canvas.width = height;
+            canvas.height = width;
+          } else {
+            canvas.width = width;
+            canvas.height = height;
+          }
+          ctx.save();
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate((editState.rotation * Math.PI) / 180);
+          ctx.drawImage(img, -width / 2, -height / 2);
+          ctx.restore();
+
+          const rotatedImg = new Image();
+          rotatedImg.src = canvas.toDataURL();
+          await new Promise(resolve => rotatedImg.onload = resolve);
+          img = rotatedImg;
+          width = canvas.width;
+          height = canvas.height;
+        }
+
+        // Crop
+        if (editState.crop && editState.crop.width > 0) {
+          canvas.width = editState.crop.width;
+          canvas.height = editState.crop.height;
+          ctx.drawImage(
+            img,
+            editState.crop.x,
+            editState.crop.y,
+            editState.crop.width,
+            editState.crop.height,
+            0,
+            0,
+            editState.crop.width,
+            editState.crop.height
+          );
+          width = editState.crop.width;
+          height = editState.crop.height;
+        } else {
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0);
+        }
+
+        // Resize
+        if (editState.resizePercent !== 100) {
+          const finalWidth = Math.round(width * (editState.resizePercent / 100));
+          const finalHeight = Math.round(height * (editState.resizePercent / 100));
+          const resizedCanvas = document.createElement('canvas');
+          resizedCanvas.width = finalWidth;
+          resizedCanvas.height = finalHeight;
+          const resizedCtx = resizedCanvas.getContext('2d');
+          if (resizedCtx) {
+            resizedCtx.drawImage(canvas, 0, 0, finalWidth, finalHeight);
+            canvas.width = finalWidth;
+            canvas.height = finalHeight;
+            ctx.drawImage(resizedCanvas, 0, 0);
+          }
+        }
+
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error('Failed to create blob'))),
+            'image/jpeg',
+            0.92
+          );
+        });
+
+        // Determine primary operation
+        let operation: AssetEditOperation;
+        if (editState.crop && editState.crop.width > 0) {
+          operation = { operation: 'crop', params: editState.crop };
+        } else if (editState.rotation !== 0) {
+          operation = { operation: 'rotate', params: { degrees: editState.rotation as 90 | 180 | 270 } as RotateParams };
+        } else {
+          operation = {
+            operation: 'resize',
+            params: {
+              width: Math.round(width * (editState.resizePercent / 100)),
+              height: Math.round(height * (editState.resizePercent / 100)),
+              maintainAspectRatio: true,
+            } as ResizeParams,
+          };
+        }
+
+        const result = await saveEditedAsset(assetId, blob, operation, createNew);
+        
+        if (result.success) {
+          // Save metadata after image edits
+          await saveMetadata();
+          
+          setToast({
+            message: createNew ? 'New asset created!' : 'Asset updated!',
+            type: 'success',
+          });
+          handleResetEdits();
+          if (onAssetUpdated) onAssetUpdated();
+          if (!createNew) {
+            refreshAsset();
+            // Regenerate variants after update
+            setTimeout(() => {
+              generateAssetVariants(assetId);
+              setTimeout(() => refreshVariants(), 2000);
+            }, 1000);
+          }
+        } else {
+          setToast({
+            message: 'Failed to save',
+            type: 'error',
+            details: result.error || 'Unknown error',
+          });
+        }
+      } else if (hasMetadataChanges()) {
+        // Only metadata changes, no image edits
+        await saveMetadata();
         setToast({
           message: 'Metadata saved!',
           type: 'success',
@@ -436,14 +468,13 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
         refreshAsset();
       } else {
         setToast({
-          message: 'Failed to save metadata',
-          type: 'error',
-          details: result.error,
+          message: 'No changes to save',
+          type: 'info',
         });
       }
     } catch (err) {
       setToast({
-        message: 'Error saving metadata',
+        message: 'Error saving',
         type: 'error',
         details: err instanceof Error ? err.message : 'Unknown error',
       });
@@ -476,6 +507,27 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
     }
   };
 
+  const handleCopyUrl = (storageKey: string) => {
+    const url = getAssetUrl(storageKey, siteId);
+    navigator.clipboard.writeText(url);
+    setToast({ message: 'URL copied!', type: 'success' });
+  };
+
+  const handleOpenInNew = (storageKey: string) => {
+    const url = getAssetUrl(storageKey, siteId);
+    window.open(url, '_blank');
+  };
+
+  const handleDownload = (storageKey: string, name: string) => {
+    const url = getAssetUrl(storageKey, siteId);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const formatBytes = (bytes: number | null) => {
     if (!bytes) return 'Unknown';
     const k = 1024;
@@ -505,21 +557,125 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
     );
   }
 
+  const hasChanges = hasEdits() || hasMetadataChanges();
+
   return (
     <>
       <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
         <div className="relative w-full max-w-6xl bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
-          {/* Header with Close Button (Right-aligned) */}
-          <div className="flex items-center justify-end border-b border-gray-200 px-4 py-2 flex-shrink-0">
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              title="Close"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          {/* Combined Header and Toolbar */}
+          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 flex-shrink-0">
+            {/* Left: Editing Controls */}
+            <div className="flex items-center gap-2">
+              {asset.kind === 'image' && (
+                <>
+                  <button
+                    onClick={() => handleRotate('left')}
+                    className="p-2 text-gray-600 hover:bg-gray-200 rounded"
+                    title="Rotate left"
+                  >
+                    <Icon path={mdiRotateLeft} size={0.8} />
+                  </button>
+                  <button
+                    onClick={() => handleRotate('right')}
+                    className="p-2 text-gray-600 hover:bg-gray-200 rounded"
+                    title="Rotate right"
+                  >
+                    <Icon path={mdiRotateRight} size={0.8} />
+                  </button>
+
+                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-600">Size:</span>
+                    <select
+                      value={editState.resizePercent}
+                      onChange={(e) => setEditState(prev => ({ ...prev, resizePercent: parseInt(e.target.value) }))}
+                      className="px-2 py-1 text-xs border border-gray-300 rounded bg-white"
+                    >
+                      <option value="25">25%</option>
+                      <option value="50">50%</option>
+                      <option value="75">75%</option>
+                      <option value="100">100%</option>
+                      <option value="125">125%</option>
+                      <option value="150">150%</option>
+                      <option value="200">200%</option>
+                    </select>
+                  </div>
+
+                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+
+                  <button
+                    onClick={() => setIsSelectingFocalPoint(!isSelectingFocalPoint)}
+                    className={`p-2 rounded ${
+                      isSelectingFocalPoint
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title="Set focal point"
+                  >
+                    <Icon path={mdiTarget} size={0.8} />
+                  </button>
+
+                  {editState.crop && (
+                    <button
+                      onClick={handleClearCrop}
+                      className="text-xs px-2 py-1 text-red-600 hover:bg-red-100 rounded"
+                      title="Clear crop"
+                    >
+                      Clear Crop
+                    </button>
+                  )}
+
+                  {hasEdits() && (
+                    <button
+                      onClick={handleResetEdits}
+                      className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+                      title="Reset all edits"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Right: Action Buttons */}
+            <div className="flex items-center gap-2">
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(assetId)}
+                  disabled={isProcessing}
+                  className="p-2 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+                  title="Delete asset"
+                >
+                  <Icon path={mdiDelete} size={0.8} />
+                </button>
+              )}
+              <button
+                onClick={() => handleSave(false)}
+                disabled={!hasChanges || isProcessing}
+                className="p-2 text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Update asset"
+              >
+                <Icon path={mdiContentSaveOutline} size={0.8} />
+              </button>
+              <button
+                onClick={() => handleSave(true)}
+                disabled={!hasChanges || isProcessing}
+                className="p-2 text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Save as new asset"
+              >
+                <Icon path={mdiContentSavePlusOutline} size={0.8} />
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Close"
+              >
+                <Icon path={mdiClose} size={0.8} />
+              </button>
+            </div>
           </div>
 
           {/* Two Column Layout */}
@@ -527,110 +683,6 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
               {/* LEFT COLUMN - Image and Variants */}
               <div className="space-y-4">
-                {/* Editing Toolbar */}
-                {asset.kind === 'image' && (
-                  <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
-                    {/* Rotate */}
-                    <button
-                      onClick={() => handleRotate('left')}
-                      className="p-2 text-gray-600 hover:bg-gray-200 rounded"
-                      title="Rotate left"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleRotate('right')}
-                      className="p-2 text-gray-600 hover:bg-gray-200 rounded"
-                      title="Rotate right"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
-                      </svg>
-                    </button>
-
-                    <div className="w-px h-8 bg-gray-300 mx-1"></div>
-
-                    {/* Resize Select */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-600">Size:</span>
-                      <select
-                        value={editState.resizePercent}
-                        onChange={(e) => setEditState(prev => ({ ...prev, resizePercent: parseInt(e.target.value) }))}
-                        className="px-2 py-1 text-sm border border-gray-300 rounded bg-white"
-                      >
-                        <option value="25">25%</option>
-                        <option value="50">50%</option>
-                        <option value="75">75%</option>
-                        <option value="100">100%</option>
-                        <option value="125">125%</option>
-                        <option value="150">150%</option>
-                        <option value="200">200%</option>
-                      </select>
-                    </div>
-
-                    <div className="w-px h-8 bg-gray-300 mx-1"></div>
-
-                    {/* Crop controls */}
-                    {editState.crop && (
-                      <button
-                        onClick={handleClearCrop}
-                        className="text-xs px-2 py-1 text-red-600 hover:bg-red-100 rounded"
-                        title="Clear crop"
-                      >
-                        Clear Crop
-                      </button>
-                    )}
-
-                    {hasEdits() && (
-                      <button
-                        onClick={handleResetEdits}
-                        className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-200 rounded ml-auto"
-                        title="Reset all edits"
-                      >
-                        Reset
-                      </button>
-                    )}
-
-                    <div className="w-px h-8 bg-gray-300 mx-1"></div>
-
-                    {/* Action Buttons with Icons */}
-                    {onDelete && (
-                      <button
-                        onClick={() => onDelete(assetId)}
-                        disabled={isProcessing}
-                        className="p-2 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
-                        title="Delete asset"
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleSave(false)}
-                      disabled={!hasEdits() || isProcessing}
-                      className="p-2 text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Update asset"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleSave(true)}
-                      disabled={!hasEdits() || isProcessing}
-                      className="p-2 text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Save as new asset"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-
                 {/* Canvas */}
                 <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
                   {asset.kind === 'image' ? (
@@ -656,20 +708,46 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                     : 'Draw on image to crop • Use toolbar to rotate/resize'}
                 </div>
 
-                {/* Variants Section */}
+                {/* Image & Variants List */}
                 {asset.kind === 'image' && (
-                  <div className="border-t border-gray-200 pt-4 mt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-gray-900">Variants ({variants.length})</h3>
-                      <button
-                        onClick={handleGenerateVariants}
-                        disabled={isGenerating}
-                        className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        {isGenerating ? 'Generating...' : 'Generate'}
-                      </button>
+                  <div className="space-y-2">
+                    {/* Original Image */}
+                    <div className="flex items-center justify-between p-2 border border-gray-300 rounded bg-white text-xs">
+                      <div className="flex items-center gap-2 flex-1">
+                        <Icon path={mdiImageSizeSelectActual} size={0.7} className="text-blue-600" />
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">Original</div>
+                          <div className="text-gray-600">
+                            {asset.width}×{asset.height}px
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleCopyUrl(asset.storage_key)}
+                          className="p-1 text-gray-500 hover:text-gray-700"
+                          title="Copy URL"
+                        >
+                          <Icon path={mdiContentCopy} size={0.6} />
+                        </button>
+                        <button
+                          onClick={() => handleOpenInNew(asset.storage_key)}
+                          className="p-1 text-gray-500 hover:text-gray-700"
+                          title="Open in new tab"
+                        >
+                          <Icon path={mdiOpenInNew} size={0.6} />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(asset.storage_key, metadata.name)}
+                          className="p-1 text-gray-500 hover:text-gray-700"
+                          title="Download"
+                        >
+                          <Icon path={mdiDownloadCircleOutline} size={0.6} />
+                        </button>
+                      </div>
                     </div>
 
+                    {/* Variants */}
                     {variantsLoading && (
                       <div className="flex items-center justify-center py-4">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
@@ -677,34 +755,56 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                     )}
 
                     {!variantsLoading && variants.length === 0 && (
-                      <div className="text-center py-4 text-gray-500 text-xs">
-                        No variants yet
+                      <div className="text-center py-4">
+                        <button
+                          onClick={handleGenerateVariants}
+                          disabled={isGenerating}
+                          className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {isGenerating ? 'Generating...' : 'Generate Variants'}
+                        </button>
                       </div>
                     )}
 
                     {!variantsLoading && variants.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="text-xs text-gray-600 mb-2">
-                          Total: {formatBytes(variants.reduce((sum, v) => sum + (v.file_size || 0), 0))}
-                        </div>
+                      <>
                         {variants.map((variant) => (
                           <div key={variant.id} className="flex items-center justify-between p-2 border border-gray-200 rounded bg-white text-xs">
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-900 capitalize">{variant.variant_name}</div>
-                              <div className="text-gray-600">
-                                {variant.width}×{variant.height}px • {formatBytes(variant.file_size)}
+                            <div className="flex items-center gap-2 flex-1">
+                              <Icon path={mdiImageSizeSelectLarge} size={0.7} className="text-gray-500" />
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900 capitalize">{variant.variant_name}</div>
+                                <div className="text-gray-600">
+                                  {variant.width}×{variant.height}px • {formatBytes(variant.file_size)}
+                                </div>
                               </div>
                             </div>
-                            <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden ml-2">
-                              <img
-                                src={getAssetUrl(variant.storage_key, siteId)}
-                                alt={variant.variant_name}
-                                className="w-full h-full object-cover"
-                              />
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleCopyUrl(variant.storage_key)}
+                                className="p-1 text-gray-500 hover:text-gray-700"
+                                title="Copy URL"
+                              >
+                                <Icon path={mdiContentCopy} size={0.6} />
+                              </button>
+                              <button
+                                onClick={() => handleOpenInNew(variant.storage_key)}
+                                className="p-1 text-gray-500 hover:text-gray-700"
+                                title="Open in new tab"
+                              >
+                                <Icon path={mdiOpenInNew} size={0.6} />
+                              </button>
+                              <button
+                                onClick={() => handleDownload(variant.storage_key, `${metadata.name}-${variant.variant_name}`)}
+                                className="p-1 text-gray-500 hover:text-gray-700"
+                                title="Download"
+                              >
+                                <Icon path={mdiDownloadCircleOutline} size={0.6} />
+                              </button>
                             </div>
                           </div>
                         ))}
-                      </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -712,16 +812,19 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
 
               {/* RIGHT COLUMN - Metadata */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Metadata</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Metadata</h3>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">File Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input
                     type="text"
-                    value={metadata.fileName}
-                    onChange={(e) => setMetadata(prev => ({ ...prev, fileName: e.target.value }))}
+                    value={metadata.name}
+                    onChange={(e) => setMetadata(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Display name (does not change storage key)
+                  </p>
                 </div>
 
                 <div>
@@ -748,58 +851,55 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-                  <input
-                    type="text"
-                    value={metadata.tags}
-                    onChange={(e) => setMetadata(prev => ({ ...prev, tags: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    placeholder="Comma-separated tags"
-                  />
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder="Add a tag..."
+                      />
+                      <button
+                        onClick={handleAddTag}
+                        className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {metadata.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {metadata.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                          >
+                            {tag}
+                            <button
+                              onClick={() => handleRemoveTag(index)}
+                              className="text-gray-500 hover:text-red-600"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {asset.kind === 'image' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Focal Point</label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setIsSelectingFocalPoint(!isSelectingFocalPoint)}
-                        className={`px-3 py-2 text-sm rounded-md ${
-                          isSelectingFocalPoint
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {isSelectingFocalPoint ? 'Click on image...' : 'Set Focal Point'}
-                      </button>
-                      {metadata.focalPoint && (
-                        <>
-                          <span className="text-sm text-gray-600">
-                            ({Math.round(metadata.focalPoint.x)}, {Math.round(metadata.focalPoint.y)})
-                          </span>
-                          <button
-                            onClick={() => setMetadata(prev => ({ ...prev, focalPoint: null }))}
-                            className="text-sm text-red-600 hover:text-red-700"
-                          >
-                            Clear
-                          </button>
-                        </>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-gray-500">
-                      Click on image to set smart crop point
-                    </p>
+                {metadata.focalPoint && (
+                  <div className="pt-2 text-xs text-gray-600">
+                    <span className="font-medium">Focal Point:</span> ({Math.round(metadata.focalPoint.x)}, {Math.round(metadata.focalPoint.y)})
+                    <button
+                      onClick={() => setMetadata(prev => ({ ...prev, focalPoint: null }))}
+                      className="ml-2 text-red-600 hover:text-red-700"
+                    >
+                      Clear
+                    </button>
                   </div>
                 )}
-
-                <div className="pt-4 border-t border-gray-200">
-                  <button
-                    onClick={handleSaveMetadata}
-                    disabled={isProcessing}
-                    className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {isProcessing ? 'Saving...' : 'Save Metadata'}
-                  </button>
-                </div>
 
                 <div className="pt-4 border-t border-gray-200 text-sm text-gray-600 space-y-1">
                   <div>
@@ -836,4 +936,3 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
     </>
   );
 }
-

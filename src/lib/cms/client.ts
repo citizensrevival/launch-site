@@ -1218,6 +1218,11 @@ export async function updateAssetMetadata(
       }
     };
 
+    // Add name to meta if provided
+    if (metadata.fileName) {
+      (meta['en-US'] as any).name = metadata.fileName;
+    }
+
     // If focal point is provided, add it to meta
     if (metadata.focalPoint) {
       (meta['en-US'] as any).focalPoint = metadata.focalPoint;
