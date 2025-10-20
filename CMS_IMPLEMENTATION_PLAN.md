@@ -31,6 +31,7 @@ Build the asset management system incrementally:
 - [ ] Add file size limits and validation
 - [ ] Display file sizes and optimization stats
 - [ ] Files: `src/lib/cms/imageProcessing.ts`, `src/admin/cms/CmsAssets.tsx`
+- [ ] Reset the Database locally, Deploy all edge functions locally, clear assets from storage locally
 
 #### 1.4 Asset Editing
 - [ ] Add basic image editing UI (crop, resize, rotate)
@@ -38,6 +39,7 @@ Build the asset management system incrementally:
 - [ ] Create new asset versions for edits
 - [ ] Preview edited assets before saving
 - [ ] Files: `src/admin/cms/components/AssetEditor.tsx`
+- [ ] Reset the Database locally, Deploy all edge functions locally, clear assets from storage locally
 
 ### Phase 2: Pages Management
 Build the page management system:
