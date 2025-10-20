@@ -790,8 +790,9 @@ export async function getAssets(
   sort?: ContentSort,
   page = 1,
   pageSize = 20
-): Promise<ApiResponse<PaginatedResponse<Asset>>> {
+): Promise<ApiResponse<PaginatedResponse<Asset & { metadata?: any }>>> {
   try {
+    // First get assets with basic filtering
     let query = supabase
       .from('asset')
       .select('*', { count: 'exact' })
@@ -890,11 +891,30 @@ export async function getAssets(
 
     try {
       const assets = zAsset.array().parse(transformedData);
+      
+      // Fetch metadata for each asset from latest asset_version
+      const assetsWithMetadata = await Promise.all(
+        assets.map(async (asset) => {
+          const { data: latestVersion } = await supabase
+            .from('asset_version')
+            .select('meta')
+            .eq('asset_id', asset.id)
+            .order('version', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          return {
+            ...asset,
+            metadata: latestVersion?.meta?.['en-US'] || null
+          };
+        })
+      );
+      
       const totalPages = Math.ceil((count || 0) / pageSize);
 
       return {
         data: {
-          data: assets,
+          data: assetsWithMetadata,
           total_pages: totalPages,
           count: count || 0,
           page,

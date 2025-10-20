@@ -82,7 +82,7 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                   {asset.kind === 'image' ? (
                         <img
                           src={getAssetVariantUrl(asset.storage_key, selectedSite?.id || '', 'thumbnail')}
-                          alt=""
+                          alt={(asset as any).metadata?.alt || ''}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             // Fallback to original if thumbnail doesn't exist
@@ -95,13 +95,30 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                     </div>
                   )}
                 </div>
-                <div className="p-4">
+                <div 
+                  className="p-4"
+                  title={(asset as any).metadata?.caption || (asset as any).metadata?.alt || ''}
+                >
                   <h3 className="font-medium text-gray-900 truncate">
-                    {asset.storage_key.split('/').pop()}
+                    {(asset as any).metadata?.name || asset.storage_key.split('/').pop()}
                   </h3>
                   <p className="text-sm text-gray-500">
                     {asset.kind} • {asset.width && asset.height ? `${asset.width}×${asset.height}` : 'Unknown size'}
                   </p>
+                  {(asset as any).metadata?.tags && (asset as any).metadata.tags.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {(asset as any).metadata.tags.slice(0, 3).map((tag: string, idx: number) => (
+                        <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                      {(asset as any).metadata.tags.length > 3 && (
+                        <span className="text-xs text-gray-400">
+                          +{(asset as any).metadata.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -110,7 +127,7 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                   {asset.kind === 'image' ? (
                         <img
                           src={getAssetVariantUrl(asset.storage_key, selectedSite?.id || '', 'thumbnail')}
-                          alt=""
+                          alt={(asset as any).metadata?.alt || ''}
                           className="w-full h-full object-cover rounded-md"
                           onError={(e) => {
                             // Fallback to original if thumbnail doesn't exist
@@ -123,13 +140,30 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div 
+                  className="flex-1"
+                  title={(asset as any).metadata?.caption || (asset as any).metadata?.alt || ''}
+                >
                   <h3 className="font-medium text-gray-900">
-                    {asset.storage_key.split('/').pop()}
+                    {(asset as any).metadata?.name || asset.storage_key.split('/').pop()}
                   </h3>
                   <p className="text-sm text-gray-500">
                     {asset.kind} • {asset.width && asset.height ? `${asset.width}×${asset.height}` : 'Unknown size'}
                   </p>
+                  {(asset as any).metadata?.tags && (asset as any).metadata.tags.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {(asset as any).metadata.tags.slice(0, 5).map((tag: string, idx: number) => (
+                        <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                      {(asset as any).metadata.tags.length > 5 && (
+                        <span className="text-xs text-gray-400">
+                          +{(asset as any).metadata.tags.length - 5}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </>
             )}
