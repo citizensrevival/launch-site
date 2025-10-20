@@ -207,24 +207,35 @@ export async function getPageBySystemKey(systemKey: string): Promise<ApiResponse
   }
 }
 
-export async function createPage(pageData: Omit<Page, 'id' | 'created_at' | 'created_by'>): Promise<ApiResponse<Page>> {
+export async function createPage(pageData: Omit<Page, 'id'>): Promise<ApiResponse<Page>> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Clean up undefined values - PostgreSQL doesn't like undefined
+    const cleanedData: any = { ...pageData };
+    if (cleanedData.system_key === undefined) {
+      cleanedData.system_key = null;
+    }
+
+    console.log('Creating page with data:', cleanedData);
+
     const { data, error } = await supabase
       .from('page')
-      .insert({
-        ...pageData,
-        created_by: user.id
-      })
+      .insert(cleanedData)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error creating page:', error);
+      throw error;
+    }
+    
     const page = zPage.parse(data);
+    console.log('Page created successfully:', page);
     return { data: page, error: null };
   } catch (error) {
+    console.error('Error in createPage:', error);
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -234,34 +245,53 @@ export async function updatePage(pageId: string, updates: Partial<Page>): Promis
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Clean up undefined values
+    const cleanedUpdates: any = { ...updates };
+    if (cleanedUpdates.system_key === undefined) {
+      cleanedUpdates.system_key = null;
+    }
+
+    console.log('Updating page', pageId, 'with data:', cleanedUpdates);
+
     const { data, error } = await supabase
       .from('page')
-      .update({
-        ...updates,
-        updated_by: user.id
-      })
+      .update(cleanedUpdates)
       .eq('id', pageId)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error updating page:', error);
+      throw error;
+    }
+    
     const page = zPage.parse(data);
+    console.log('Page updated successfully:', page);
     return { data: page, error: null };
   } catch (error) {
+    console.error('Error in updatePage:', error);
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 
 export async function deletePage(pageId: string): Promise<ApiResponse<void>> {
   try {
+    console.log('Deleting page:', pageId);
+    
     const { error } = await supabase
       .from('page')
       .delete()
       .eq('id', pageId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error deleting page:', error);
+      throw error;
+    }
+    
+    console.log('Page deleted successfully:', pageId);
     return { data: undefined, error: null };
   } catch (error) {
+    console.error('Error in deletePage:', error);
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

@@ -397,7 +397,7 @@ export function usePageManagement() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createPageHandler = useCallback(async (pageData: Omit<Page, 'id' | 'created_at' | 'created_by'>) => {
+  const createPageHandler = useCallback(async (pageData: Omit<Page, 'id'>) => {
     try {
       setLoading(true);
       setError(null);
