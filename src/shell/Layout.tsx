@@ -161,8 +161,12 @@ function FixedSidebar({
           </div>
           <div className="flex flex-1 items-end justify-center pb-4 lg:justify-start lg:pb-6">
             <div className="flex flex-col items-center lg:items-start space-y-4">
+              {/* Desktop: Menu, Theme toggle, and Footer stacked */}
+              {/* Mobile: Only Theme toggle here, Menu moves to bottom of page */}
               <div className="flex items-center space-x-4">
-                <Menu />
+                <div className="hidden lg:block absolute top-3 left-4 z-50">
+                  <Menu />
+                </div>
                 <ColorThemeToggle />
               </div>
               {/* Desktop footer - only visible on desktop */}
