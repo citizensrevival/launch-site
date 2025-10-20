@@ -159,7 +159,7 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
                   <Icon path={mdiHome} className="h-5 w-5" />
                 </button>
               </Tooltip>
-              <h1 className="text-lg font-semibold text-white">Admin</h1>
+
             </div>
             <Tooltip content="Close sidebar">
               <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md">
@@ -311,7 +311,6 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
               <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2 border border-gray-600">
                 <Icon path={mdiWebBox} className="h-5 w-5 text-indigo-400" />
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-400">Site</span>
                   {sites.length > 0 ? (
                     <select
                       value={selectedSite?.id || ''}
@@ -333,9 +332,6 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
                 </div>
               </div>
               
-              <div className="hidden lg:block">
-                <a href="/" className="text-gray-300 hover:text-white text-sm">Home</a>
-              </div>
             </div>
             <div className="flex-1 max-w-xl mx-4 hidden sm:block">
               <label htmlFor="global-search" className="sr-only">Search leads</label>
