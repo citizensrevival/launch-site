@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AdminLayout } from '../AdminLayout';
 import { usePages, usePageManagement } from '../../lib/cms/hooks';
-import { useSiteContext } from '../../shell/contexts/SiteContext';
+import { useAppSelector } from '../../shell/store/hooks';
 import type { Page, PublishStatus } from '../../lib/cms/types';
 import { Icon } from '@mdi/react';
 import { 
@@ -28,7 +28,8 @@ type SortKey = 'slug' | 'created_at';
 type SortDirection = 'asc' | 'desc';
 
 export function CmsPages() {
-  const { siteId } = useSiteContext();
+  const selectedSite = useAppSelector((state) => state.site.selectedSite);
+  const siteId = selectedSite?.id || '';
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<PublishStatus | ''>('');
   const [isSystemFilter, setIsSystemFilter] = useState<boolean | null>(null);
