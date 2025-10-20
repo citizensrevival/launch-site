@@ -12,7 +12,7 @@ import {
   mdiEyeOff,
   mdiTranslate,
   mdiPalette,
-  mdiSearch,
+  mdiMagnify,
   mdiNavigation,
   mdiCodeJson,
   mdiChevronDown,
@@ -214,7 +214,7 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
 
   const tabs = [
     { id: 'content' as const, label: 'Content', icon: mdiTranslate },
-    { id: 'seo' as const, label: 'SEO', icon: mdiSearch },
+    { id: 'seo' as const, label: 'SEO', icon: mdiMagnify },
     { id: 'navigation' as const, label: 'Navigation', icon: mdiNavigation },
     { id: 'layout' as const, label: 'Layout', icon: mdiPalette }
   ];
