@@ -64,13 +64,14 @@ Build the page management system:
 - [x] Files: `src/admin/cms/CmsPages.tsx` (integrated dialogs)
 - [x] **COMMITTED**: (pending deployment)
 
-#### 2.2 Page Version Editor
-- [ ] Create page version editor UI
-- [ ] Support i18n title editing (JSON structure)
-- [ ] Layout variant selector
-- [ ] SEO metadata editor (title, description, keywords)
-- [ ] Nav hints editor
-- [ ] Files: `src/admin/cms/components/PageEditor.tsx`, `src/admin/cms/components/PageMetadataEditor.tsx`
+#### 2.2 Page Version Editor ✅ COMPLETED
+- [x] Create page version editor UI
+- [x] Support i18n title editing (JSON structure)
+- [x] Layout variant selector
+- [x] SEO metadata editor (title, description, keywords)
+- [x] Nav hints editor
+- [x] Files: `src/admin/cms/PageVersionEditor.tsx`, `src/admin/cms/CmsPages.tsx`, `src/lib/cms/hooks.ts`
+- [x] **COMMITTED**: 5ef5c94 - feat(cms): Phase 2.2: Page Version Editor - Complete implementation
 
 #### 2.3 Page Slots System
 - [ ] Implement slot management UI
@@ -256,4 +257,5 @@ After each implementation step:
 - ✅ **Phase 1.3**: Asset Optimization - COMPLETED
 - ✅ **Phase 1.4**: Asset Editing - COMPLETED
 - ✅ **Phase 2.1**: Page List & CRUD - COMPLETED
-- ⏳ **Phase 2.2**: Page Version Editor - PENDING
+- ✅ **Phase 2.2**: Page Version Editor - COMPLETED
+- ⏳ **Phase 2.3**: Page Slots System - PENDING
