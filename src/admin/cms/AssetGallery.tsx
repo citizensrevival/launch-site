@@ -49,8 +49,8 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-        <div className="text-red-800">{error}</div>
+      <div className="p-4 bg-red-900/20 border border-red-800 rounded-md">
+        <div className="text-red-400">{error}</div>
       </div>
     );
   }
@@ -58,9 +58,9 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
   if (assets?.data.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-gray-400 text-4xl mb-4">📁</div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No assets found</h3>
-        <p className="text-gray-500">Upload your first asset to get started.</p>
+        <div className="text-gray-500 text-4xl mb-4">📁</div>
+        <h3 className="text-lg font-medium text-white mb-2">No assets found</h3>
+        <p className="text-gray-400">Upload your first asset to get started.</p>
       </div>
     );
   }
@@ -71,9 +71,9 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
         {assets?.data.map((asset) => (
           <div
             key={asset.id}
-            className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ${
+            className={`bg-gray-800 rounded-lg shadow-sm border border-gray-700 overflow-hidden ${
               viewMode === 'list' ? 'flex items-center p-4' : ''
-            } cursor-pointer hover:shadow-md transition-shadow`}
+            } cursor-pointer hover:bg-gray-750 hover:border-gray-600 transition-colors`}
             onClick={() => setSelectedAssetId(asset.id)}
           >
             {viewMode === 'grid' ? (
@@ -99,21 +99,21 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                   className="p-4"
                   title={(asset as any).metadata?.caption || (asset as any).metadata?.alt || ''}
                 >
-                  <h3 className="font-medium text-gray-900 truncate">
+                  <h3 className="font-medium text-white truncate">
                     {(asset as any).metadata?.name || asset.storage_key.split('/').pop()}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     {asset.kind} • {asset.width && asset.height ? `${asset.width}×${asset.height}` : 'Unknown size'}
                   </p>
                   {(asset as any).metadata?.tags && (asset as any).metadata.tags.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {(asset as any).metadata.tags.slice(0, 3).map((tag: string, idx: number) => (
-                        <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                        <span key={idx} className="text-xs bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded">
                           {tag}
                         </span>
                       ))}
                       {(asset as any).metadata.tags.length > 3 && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-500">
                           +{(asset as any).metadata.tags.length - 3}
                         </span>
                       )}
@@ -144,21 +144,21 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                   className="flex-1"
                   title={(asset as any).metadata?.caption || (asset as any).metadata?.alt || ''}
                 >
-                  <h3 className="font-medium text-gray-900">
+                  <h3 className="font-medium text-white">
                     {(asset as any).metadata?.name || asset.storage_key.split('/').pop()}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     {asset.kind} • {asset.width && asset.height ? `${asset.width}×${asset.height}` : 'Unknown size'}
                   </p>
                   {(asset as any).metadata?.tags && (asset as any).metadata.tags.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {(asset as any).metadata.tags.slice(0, 5).map((tag: string, idx: number) => (
-                        <span key={idx} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                        <span key={idx} className="text-xs bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded">
                           {tag}
                         </span>
                       ))}
                       {(asset as any).metadata.tags.length > 5 && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-500">
                           +{(asset as any).metadata.tags.length - 5}
                         </span>
                       )}
@@ -177,17 +177,17 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
-            className="px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Previous
           </button>
-          <span className="px-3 py-2 text-sm text-gray-700">
+          <span className="px-3 py-2 text-sm text-gray-300">
             Page {page} of {assets.total_pages}
           </span>
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page === assets.total_pages}
-            className="px-3 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>

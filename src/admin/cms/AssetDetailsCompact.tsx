@@ -578,36 +578,36 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
   return (
     <>
       <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
-        <div className="relative w-full max-w-6xl bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col">
+        <div className="relative w-full max-w-6xl bg-gray-800 rounded-lg shadow-xl max-h-[90vh] flex flex-col border border-gray-700">
           {/* Combined Header and Toolbar */}
-          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 flex-shrink-0">
+          <div className="flex items-center justify-between border-b border-gray-700 px-4 py-2 flex-shrink-0">
             {/* Left: Editing Controls */}
             <div className="flex items-center gap-2">
               {asset.kind === 'image' && (
                 <>
                   <button
                     onClick={() => handleRotate('left')}
-                    className="p-2 text-gray-600 hover:bg-gray-200 rounded"
+                    className="p-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded transition-colors"
                     title="Rotate left"
                   >
                     <Icon path={mdiRotateLeft} size={0.8} />
                   </button>
                   <button
                     onClick={() => handleRotate('right')}
-                    className="p-2 text-gray-600 hover:bg-gray-200 rounded"
+                    className="p-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded transition-colors"
                     title="Rotate right"
                   >
                     <Icon path={mdiRotateRight} size={0.8} />
                   </button>
 
-                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                  <div className="w-px h-6 bg-gray-600 mx-1"></div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-600">Size:</span>
+                    <span className="text-xs text-gray-400">Size:</span>
                     <select
                       value={editState.resizePercent}
                       onChange={(e) => setEditState(prev => ({ ...prev, resizePercent: parseInt(e.target.value) }))}
-                      className="px-2 py-1 text-xs border border-gray-300 rounded bg-white"
+                      className="px-2 py-1 text-xs border border-gray-600 rounded bg-gray-700 text-gray-300"
                     >
                       <option value="25">25%</option>
                       <option value="50">50%</option>
@@ -619,14 +619,14 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                     </select>
                   </div>
 
-                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                  <div className="w-px h-6 bg-gray-600 mx-1"></div>
 
                   <button
                     onClick={() => setIsSelectingFocalPoint(!isSelectingFocalPoint)}
-                    className={`p-2 rounded ${
+                    className={`p-2 rounded transition-colors ${
                       isSelectingFocalPoint
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-200'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                     }`}
                     title="Set focal point"
                   >
@@ -636,7 +636,7 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                   {editState.crop && (
                     <button
                       onClick={handleClearCrop}
-                      className="text-xs px-2 py-1 text-red-600 hover:bg-red-100 rounded"
+                      className="text-xs px-2 py-1 text-red-400 hover:bg-red-900/30 rounded transition-colors"
                       title="Clear crop"
                     >
                       Clear Crop
@@ -646,7 +646,7 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                   {hasEdits() && (
                     <button
                       onClick={handleResetEdits}
-                      className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-200 rounded"
+                      className="text-xs px-2 py-1 text-gray-300 hover:bg-gray-700 hover:text-white rounded transition-colors"
                       title="Reset all edits"
                     >
                       Reset
@@ -731,12 +731,12 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                 {asset.kind === 'image' && (
                   <div className="space-y-2">
                     {/* Original Image */}
-                    <div className="flex items-center justify-between p-2 border border-gray-300 rounded bg-white text-xs">
+                    <div className="flex items-center justify-between p-2 border border-gray-600 rounded bg-gray-700 text-xs">
                       <div className="flex items-center gap-2 flex-1">
-                        <Icon path={mdiImageSizeSelectActual} size={0.7} className="text-blue-600" />
+                        <Icon path={mdiImageSizeSelectActual} size={0.7} className="text-purple-400" />
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">Original</div>
-                          <div className="text-gray-600">
+                          <div className="font-medium text-white">Original</div>
+                          <div className="text-gray-400">
                             {asset.width}×{asset.height}px
                           </div>
                         </div>
@@ -744,21 +744,21 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleCopyUrl(asset.storage_key)}
-                          className="p-1 text-gray-500 hover:text-gray-700"
+                          className="p-1 text-gray-400 hover:text-white"
                           title="Copy URL"
                         >
                           <Icon path={mdiContentCopy} size={0.6} />
                         </button>
                         <button
                           onClick={() => handleOpenInNew(asset.storage_key)}
-                          className="p-1 text-gray-500 hover:text-gray-700"
+                          className="p-1 text-gray-400 hover:text-white"
                           title="Open in new tab"
                         >
                           <Icon path={mdiOpenInNew} size={0.6} />
                         </button>
                         <button
                           onClick={() => handleDownload(asset.storage_key, metadata.name)}
-                          className="p-1 text-gray-500 hover:text-gray-700"
+                          className="p-1 text-gray-400 hover:text-white"
                           title="Download"
                         >
                           <Icon path={mdiDownloadCircleOutline} size={0.6} />
@@ -769,7 +769,7 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                     {/* Variants */}
                     {variantsLoading && (
                       <div className="flex items-center justify-center py-4">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-500"></div>
                       </div>
                     )}
 
@@ -778,7 +778,7 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                         <button
                           onClick={handleGenerateVariants}
                           disabled={isGenerating}
-                          className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                          className="text-xs px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 transition-colors"
                         >
                           {isGenerating ? 'Generating...' : 'Generate Variants'}
                         </button>
@@ -788,12 +788,12 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                     {!variantsLoading && variants.length > 0 && (
                       <>
                         {variants.map((variant) => (
-                          <div key={variant.id} className="flex items-center justify-between p-2 border border-gray-200 rounded bg-white text-xs">
+                          <div key={variant.id} className="flex items-center justify-between p-2 border border-gray-600 rounded bg-gray-700 text-xs">
                             <div className="flex items-center gap-2 flex-1">
-                              <Icon path={mdiImageSizeSelectLarge} size={0.7} className="text-gray-500" />
+                              <Icon path={mdiImageSizeSelectLarge} size={0.7} className="text-gray-400" />
                               <div className="flex-1">
-                                <div className="font-medium text-gray-900 capitalize">{variant.variant_name}</div>
-                                <div className="text-gray-600">
+                                <div className="font-medium text-white capitalize">{variant.variant_name}</div>
+                                <div className="text-gray-400">
                                   {variant.width}×{variant.height}px • {formatBytes(variant.file_size)}
                                 </div>
                               </div>
@@ -801,21 +801,21 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleCopyUrl(variant.storage_key)}
-                                className="p-1 text-gray-500 hover:text-gray-700"
+                                className="p-1 text-gray-400 hover:text-white"
                                 title="Copy URL"
                               >
                                 <Icon path={mdiContentCopy} size={0.6} />
                               </button>
                               <button
                                 onClick={() => handleOpenInNew(variant.storage_key)}
-                                className="p-1 text-gray-500 hover:text-gray-700"
+                                className="p-1 text-gray-400 hover:text-white"
                                 title="Open in new tab"
                               >
                                 <Icon path={mdiOpenInNew} size={0.6} />
                               </button>
                               <button
                                 onClick={() => handleDownload(variant.storage_key, `${metadata.name}-${variant.variant_name}`)}
-                                className="p-1 text-gray-500 hover:text-gray-700"
+                                className="p-1 text-gray-400 hover:text-white"
                                 title="Download"
                               >
                                 <Icon path={mdiDownloadCircleOutline} size={0.6} />
@@ -831,15 +831,15 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
 
               {/* RIGHT COLUMN - Metadata */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900">Metadata</h3>
+                <h3 className="text-sm font-semibold text-white">Metadata</h3>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
                   <input
                     type="text"
                     value={metadata.name}
                     onChange={(e) => setMetadata(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    className="w-full px-3 py-2 border border-gray-600 rounded-md text-sm bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Display name (does not change storage key)
@@ -847,29 +847,29 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Alt Text</label>
                   <input
                     type="text"
                     value={metadata.altText}
                     onChange={(e) => setMetadata(prev => ({ ...prev, altText: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    className="w-full px-3 py-2 border border-gray-600 rounded-md text-sm bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                     placeholder="Describe the image for accessibility"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
                   <textarea
                     value={metadata.description}
                     onChange={(e) => setMetadata(prev => ({ ...prev, description: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    className="w-full px-3 py-2 border border-gray-600 rounded-md text-sm bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                     rows={3}
                     placeholder="Optional description"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Tags</label>
                   <div className="space-y-2">
                     <div className="flex gap-2">
                       <input
@@ -877,12 +877,12 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                         value={newTag}
                         onChange={(e) => setNewTag(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        className="flex-1 px-3 py-2 border border-gray-600 rounded-md text-sm bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         placeholder="Add a tag..."
                       />
                       <button
                         onClick={handleAddTag}
-                        className="p-2 text-blue-600 hover:text-blue-700 transition-colors"
+                        className="p-2 text-purple-400 hover:text-purple-300 transition-colors"
                         title="Add tag"
                       >
                         <Icon path={mdiPlus} size={0.9} />
@@ -893,12 +893,12 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                         {metadata.tags.map((tag, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs"
                           >
                             {tag}
                             <button
                               onClick={() => handleRemoveTag(index)}
-                              className="text-gray-500 hover:text-red-600"
+                              className="text-gray-400 hover:text-red-400"
                             >
                               ×
                             </button>
@@ -910,11 +910,11 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                 </div>
 
                 {metadata.focalPoint && (
-                  <div className="pt-2 text-xs text-gray-600">
+                  <div className="pt-2 text-xs text-gray-400">
                     <span className="font-medium">Focal Point:</span> ({Math.round(metadata.focalPoint.x)}, {Math.round(metadata.focalPoint.y)})
                     <button
                       onClick={() => setMetadata(prev => ({ ...prev, focalPoint: null }))}
-                      className="ml-2 text-red-600 hover:text-red-700"
+                      className="ml-2 text-red-400 hover:text-red-300"
                     >
                       Clear
                     </button>
