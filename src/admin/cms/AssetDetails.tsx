@@ -6,6 +6,7 @@ import { getAssetUrl } from '../../lib/cms/utils';
 import { generateAssetVariants } from '../../lib/cms/client';
 import { useState } from 'react';
 import { AssetEditor } from './components/AssetEditor';
+import { Toast } from './components/Toast';
 import type { AssetEditOperation } from '../../lib/cms/types';
 
 interface AssetDetailsProps {
@@ -14,27 +15,46 @@ interface AssetDetailsProps {
   onAssetUpdated?: () => void;
 }
 
+interface ToastMessage {
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  details?: string;
+}
+
 export function AssetDetails({ assetId, siteId, onAssetUpdated }: AssetDetailsProps) {
   const { asset, loading: assetLoading, error: assetError, refresh: refreshAsset } = useAsset(assetId);
   const { variants, loading: variantsLoading, error: variantsError, refresh: refreshVariants } = useAssetVariants(assetId);
   const { saveEditedAsset } = useAssetManagement();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
 
   const handleGenerateVariants = async () => {
     setIsGenerating(true);
     try {
       const { error } = await generateAssetVariants(assetId);
       if (error) {
-        alert(`Failed to generate variants: ${error}`);
+        setToast({
+          message: 'Failed to generate variants',
+          type: 'error',
+          details: error,
+        });
       } else {
+        setToast({
+          message: 'Variants generation started',
+          type: 'success',
+        });
         // Wait a bit for variants to be generated
         setTimeout(() => {
           refreshVariants();
         }, 2000);
       }
     } catch (err) {
-      alert(`Error generating variants: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setToast({
+        message: 'Error generating variants',
+        type: 'error',
+        details: err instanceof Error ? err.message : 'Unknown error',
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -43,18 +63,30 @@ export function AssetDetails({ assetId, siteId, onAssetUpdated }: AssetDetailsPr
   const handleSaveEdit = async (editOperation: AssetEditOperation, editedImageBlob: Blob) => {
     try {
       const result = await saveEditedAsset(assetId, editedImageBlob, editOperation);
-      if (result) {
-        alert('Asset edited successfully! The new version has been created.');
+      if (result.success && result.data) {
+        setToast({
+          message: 'Asset edited successfully!',
+          type: 'success',
+          details: 'The new version has been created with variants.',
+        });
         setIsEditing(false);
         // Refresh the parent asset list
         if (onAssetUpdated) {
           onAssetUpdated();
         }
       } else {
-        alert('Failed to save edited asset');
+        setToast({
+          message: 'Failed to save edited asset',
+          type: 'error',
+          details: result.error || 'Unknown error occurred',
+        });
       }
     } catch (err) {
-      alert(`Error saving edited asset: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setToast({
+        message: 'Error saving edited asset',
+        type: 'error',
+        details: err instanceof Error ? err.message : 'Unknown error',
+      });
     }
   };
 
@@ -238,6 +270,16 @@ export function AssetDetails({ assetId, siteId, onAssetUpdated }: AssetDetailsPr
           imageUrl={getAssetUrl(asset.storage_key, siteId)}
           onSave={handleSaveEdit}
           onCancel={() => setIsEditing(false)}
+        />
+      )}
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          details={toast.details}
+          onClose={() => setToast(null)}
         />
       )}
     </>

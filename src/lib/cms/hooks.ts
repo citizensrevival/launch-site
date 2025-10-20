@@ -18,6 +18,7 @@ import {
   getAuditLog, hasPermission as checkPermission, getAssets, getAsset, uploadAsset,
   updateAsset, deleteAsset, getAssetVersions,
   publishAsset, unpublishAsset, generateAssetVariants, getAssetVariants,
+  saveEditedAsset,
   type AssetVariant
 } from './client';
 
@@ -746,15 +747,16 @@ export function useAssetManagement() {
     try {
       setLoading(true);
       setError(null);
-      const response = await cmsClient.saveEditedAsset(originalAssetId, editedImageBlob, editOperation);
+      const response = await saveEditedAsset(originalAssetId, editedImageBlob, editOperation);
       if (response.error) {
         setError(response.error);
-        return null;
+        return { success: false, error: response.error, data: null };
       }
-      return response.data;
+      return { success: true, error: null, data: response.data };
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      return null;
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setError(errorMsg);
+      return { success: false, error: errorMsg, data: null };
     } finally {
       setLoading(false);
     }

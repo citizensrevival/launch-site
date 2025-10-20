@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Asset, AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../../lib/cms/types';
+import { Toast } from './Toast';
 
 type EditMode = 'none' | 'crop' | 'resize' | 'rotate';
 
@@ -8,6 +9,12 @@ interface AssetEditorProps {
   imageUrl: string;
   onSave: (editOperation: AssetEditOperation, editedImageBlob: Blob) => Promise<void>;
   onCancel: () => void;
+}
+
+interface ToastMessage {
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  details?: string;
 }
 
 export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorProps) {
@@ -19,6 +26,7 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
   const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -274,7 +282,11 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
       await onSave(operation, blob);
     } catch (error) {
       console.error('Error saving edited asset:', error);
-      alert('Failed to save edited asset');
+      setToast({
+        message: 'Failed to save edited asset',
+        type: 'error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -288,9 +300,17 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
         URL.revokeObjectURL(previewUrl);
       }
       setPreviewUrl(url);
+      setToast({
+        message: 'Preview generated successfully',
+        type: 'success',
+      });
     } catch (error) {
       console.error('Error generating preview:', error);
-      alert('Failed to generate preview');
+      setToast({
+        message: 'Failed to generate preview',
+        type: 'error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   };
 
@@ -512,6 +532,17 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
           </div>
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          details={toast.details}
+          onClose={() => setToast(null)}
+          duration={toast.type === 'success' ? 3000 : 7000}
+        />
+      )}
     </div>
   );
 }
