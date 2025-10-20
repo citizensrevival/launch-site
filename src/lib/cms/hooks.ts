@@ -17,7 +17,8 @@ import {
   getPublishedAssetByKey, getPublishedMenuByKey, getUserPermissions,
   getAuditLog, hasPermission as checkPermission, getAssets, getAsset, uploadAsset,
   updateAsset, deleteAsset, getAssetVersions,
-  publishAsset, unpublishAsset
+  publishAsset, unpublishAsset, generateAssetVariants, getAssetVariants,
+  type AssetVariant
 } from './client';
 
 // Site hooks
@@ -593,6 +594,36 @@ export function useAssetVersions(assetId: string) {
   return { versions, loading, error };
 }
 
+export function useAssetVariants(assetId: string) {
+  const [variants, setVariants] = useState<AssetVariant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchVariants = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getAssetVariants(assetId);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setVariants(response.data || []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, [assetId]);
+
+  useEffect(() => {
+    if (assetId) {
+      fetchVariants();
+    }
+  }, [assetId, fetchVariants]);
+
+  return { variants, loading, error, refresh: fetchVariants };
+}
+
 // Asset management hooks
 export function useAssetManagement() {
   const [loading, setLoading] = useState(false);
@@ -615,6 +646,17 @@ export function useAssetManagement() {
         setError(response.error);
         return null;
       }
+      
+      // If asset is an image, trigger variant generation
+      if (response.data && response.data.kind === 'image') {
+        console.log('Triggering variant generation for image asset:', response.data.id);
+        // Fire and forget - don't wait for variant generation to complete
+        generateAssetVariants(response.data.id).catch((err) => {
+          console.error('Failed to generate variants:', err);
+          // Don't fail the upload if variant generation fails
+        });
+      }
+      
       return response.data;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { AssetKind, ContentFilters, ContentSort } from '../../lib/cms/types';
+import type { ContentFilters, ContentSort } from '../../../lib/cms/types';
 
 export type ViewMode = 'grid' | 'list';
 

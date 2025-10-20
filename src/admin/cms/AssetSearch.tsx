@@ -1,7 +1,6 @@
 // AssetSearch Component
 // Handles asset filtering, searching, and view mode controls
 
-import React from 'react';
 import { useAppSelector, useAppDispatch } from '../../shell/store/hooks';
 import { updateFilter, setViewMode } from '../../shell/store/slices/assetSearchSlice';
 import type { AssetKind } from '../../lib/cms/types';

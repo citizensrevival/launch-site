@@ -1,16 +1,18 @@
 // AssetGallery Component
 // Displays assets in grid or list view with pagination
 
-import { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useAssets, useAssetManagement } from '../../lib/cms/hooks';
 import { useAppSelector, useAppDispatch } from '../../shell/store/hooks';
 import { setPage } from '../../shell/store/slices/assetSearchSlice';
 import { getAssetUrl } from '../../lib/cms/utils';
+import { AssetDetails } from './AssetDetails';
 
 export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
   const dispatch = useAppDispatch();
   const selectedSite = useAppSelector((state) => state.site.selectedSite);
   const { filters, sort, page, viewMode } = useAppSelector((state) => state.assetSearch);
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
 
   const { assets, loading, error, refresh } = useAssets(selectedSite?.id || '', filters, sort, page, 20);
   const { deleteAsset } = useAssetManagement();
@@ -65,7 +67,8 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
             key={asset.id}
             className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ${
               viewMode === 'list' ? 'flex items-center p-4' : ''
-            }`}
+            } cursor-pointer hover:shadow-md transition-shadow`}
+            onClick={() => setSelectedAssetId(asset.id)}
           >
             {viewMode === 'grid' ? (
               <>
@@ -91,7 +94,10 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                   </p>
                   <div className="mt-2 flex space-x-2">
                     <button
-                      onClick={() => handleDelete(asset.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(asset.id);
+                      }}
                       className="text-red-600 hover:text-red-800 text-sm"
                     >
                       Delete
@@ -124,7 +130,10 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                 </div>
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleDelete(asset.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(asset.id);
+                    }}
                     className="text-red-600 hover:text-red-800 text-sm"
                   >
                     Delete
@@ -156,6 +165,26 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
           >
             Next
           </button>
+        </div>
+      )}
+
+      {/* Asset Details Modal */}
+      {selectedAssetId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Asset Details</h2>
+              <button
+                onClick={() => setSelectedAssetId(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <AssetDetails assetId={selectedAssetId} siteId={selectedSite?.id || ''} />
+          </div>
         </div>
       )}
     </>

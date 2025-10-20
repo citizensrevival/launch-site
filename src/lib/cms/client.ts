@@ -1196,3 +1196,104 @@ export async function unpublishAsset(assetId: string): Promise<ApiResponse<void>
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
+
+// Asset variant management
+export interface AssetVariant {
+  id: string;
+  asset_id: string;
+  variant_name: string;
+  storage_key: string;
+  width: number | null;
+  height: number | null;
+  file_size: number | null;
+  created_at: string;
+}
+
+export async function generateAssetVariants(assetId: string): Promise<ApiResponse<void>> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    // Get the Supabase URL from environment
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL not configured');
+
+    // Call the Edge Function to generate variants
+    const response = await fetch(`${supabaseUrl}/functions/v1/process-asset-variants`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ assetId })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to generate variants');
+    }
+
+    const result = await response.json();
+    console.log('Variant generation result:', result);
+
+    return { data: undefined, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function getAssetVariants(assetId: string): Promise<ApiResponse<AssetVariant[]>> {
+  try {
+    const { data, error } = await supabase
+      .from('asset_variant')
+      .select('*')
+      .eq('asset_id', assetId)
+      .order('variant_name', { ascending: true });
+
+    if (error) throw error;
+
+    return { data: data as AssetVariant[], error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function deleteAssetVariant(variantId: string): Promise<ApiResponse<void>> {
+  try {
+    // Get variant to find storage key
+    const { data: variant } = await supabase
+      .from('asset_variant')
+      .select('storage_key, asset_id')
+      .eq('id', variantId)
+      .single();
+
+    if (variant) {
+      // Get asset to find bucket
+      const { data: asset } = await supabase
+        .from('asset')
+        .select('site_id')
+        .eq('id', variant.asset_id)
+        .single();
+
+      if (asset) {
+        const bucketName = `site-${asset.site_id.replace(/-/g, '')}`;
+        // Delete from storage
+        await supabase.storage
+          .from(bucketName)
+          .remove([variant.storage_key]);
+      }
+    }
+
+    // Delete from database
+    const { error } = await supabase
+      .from('asset_variant')
+      .delete()
+      .eq('id', variantId);
+
+    if (error) throw error;
+
+    return { data: undefined, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
