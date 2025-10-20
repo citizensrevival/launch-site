@@ -44,13 +44,14 @@ Build the asset management system incrementally:
 
 For now, JPEG compression provides excellent results (30-40% size reduction) and maintains full compatibility with variant generation.
 
-#### 1.4 Asset Editing
-- [ ] Add basic image editing UI (crop, resize, rotate)
-- [ ] Store edit operations in `asset_version.edit_operation`
-- [ ] Create new asset versions for edits
-- [ ] Preview edited assets before saving
-- [ ] Files: `src/admin/cms/components/AssetEditor.tsx`
-- [ ] Reset the Database locally, Deploy all edge functions locally, clear assets from storage locally
+#### 1.4 Asset Editing ✅ COMPLETED
+- [x] Add basic image editing UI (crop, resize, rotate)
+- [x] Store edit operations in `asset_version.edit_operation`
+- [x] Create new asset versions for edits (as new assets with edit_operation metadata)
+- [x] Preview edited assets before saving
+- [x] Reset the Database locally, Deploy all edge functions locally
+- [x] Files: `src/admin/cms/components/AssetEditor.tsx`, `src/lib/cms/client.ts`, `src/lib/cms/hooks.ts`
+- [x] **COMMITTED**: 4a1530f - feat(cms): Phase 1.4: Asset Editing - Complete implementation
 
 ### Phase 2: Pages Management
 Build the page management system:
@@ -252,4 +253,5 @@ After each implementation step:
 - ✅ **Phase 1.1**: Asset Upload (Basic) - COMPLETED
 - ✅ **Phase 1.2**: Asset Variants Generation - COMPLETED
 - ✅ **Phase 1.3**: Asset Optimization - COMPLETED
-- ⏳ **Phase 1.4**: Asset Editing - PENDING
+- ✅ **Phase 1.4**: Asset Editing - COMPLETED
+- ⏳ **Phase 2**: Pages Management - PENDING
