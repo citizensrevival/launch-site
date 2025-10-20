@@ -146,7 +146,7 @@ export async function getPages(
     if (sort) {
       query = query.order(sort.field, { ascending: sort.direction === 'asc' });
     } else {
-      query = query.order('created_at', { ascending: false });
+      query = query.order('slug', { ascending: true });
     }
 
     const from = (page - 1) * pageSize;

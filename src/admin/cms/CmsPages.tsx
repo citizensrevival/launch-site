@@ -22,9 +22,8 @@ import {
   mdiKey
 } from '@mdi/js';
 import { Tooltip } from '../../shell/Tooltip';
-import { formatDistanceToNow } from 'date-fns';
 
-type SortKey = 'slug' | 'created_at';
+type SortKey = 'slug';
 type SortDirection = 'asc' | 'desc';
 
 export function CmsPages() {
@@ -43,21 +42,23 @@ export function CmsPages() {
     search: searchTerm || undefined,
     status: statusFilter || undefined,
     is_system: isSystemFilter ?? undefined,
-  }), [searchTerm, statusFilter, isSystemFilter]);
+  }), [searchTerm, statusFilter, isSystemFilter, refreshTrigger]);
 
-  const { data: pagesData, loading, error, refetch } = usePages(
+  const sort = useMemo(() => ({
+    field: sortKey,
+    direction: sortDirection
+  }), [sortKey, sortDirection]);
+
+  // usePages takes: (siteId, filters, sort, page, pageSize)
+  const { pages: pagesData, loading, error } = usePages(
     siteId,
-    { page: 1, page_size: 100 },
     filters,
-    { field: sortKey, direction: sortDirection }
+    sort,
+    1,
+    100
   );
 
   const pages = pagesData?.data || [];
-
-  // Refetch when filters change
-  useEffect(() => {
-    refetch();
-  }, [filters, sortKey, sortDirection, refreshTrigger, refetch]);
 
   const handleRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
