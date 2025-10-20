@@ -1,6 +1,7 @@
 // CMS Dashboard Component
 // Overview and analytics for CMS
 
+import { useMemo } from 'react';
 import { AdminLayout } from '../AdminLayout';
 import { usePages } from '../../lib/cms/hooks';
 import { useAppSelector } from '../../shell/store/hooks';
@@ -8,8 +9,12 @@ import { useAppSelector } from '../../shell/store/hooks';
 export function CmsDashboard() {
   const selectedSite = useAppSelector((state) => state.site.selectedSite);
   
+  // Memoize filters and sort to prevent infinite loop
+  const filters = useMemo(() => ({}), []);
+  const sort = useMemo(() => ({ field: 'slug' as const, direction: 'asc' as const }), []);
+  
   // Note: page table doesn't have created_at field, so we sort by slug
-  const { pages, loading, error } = usePages(selectedSite?.id || '', {}, { field: 'slug', direction: 'asc' }, 1, 10);
+  const { pages, loading, error } = usePages(selectedSite?.id || '', filters, sort, 1, 10);
 
   if (loading) {
     return (
