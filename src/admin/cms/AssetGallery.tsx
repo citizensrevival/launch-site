@@ -6,7 +6,7 @@ import { useAssets, useAssetManagement } from '../../lib/cms/hooks';
 import { useAppSelector, useAppDispatch } from '../../shell/store/hooks';
 import { setPage } from '../../shell/store/slices/assetSearchSlice';
 import { getAssetUrl, getAssetVariantUrl } from '../../lib/cms/utils';
-import { AssetDetailsWithEditor } from './AssetDetailsWithEditor';
+import { AssetDetailsCompact } from './AssetDetailsCompact';
 
 export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
   const dispatch = useAppDispatch();
@@ -182,9 +182,9 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
         </div>
       )}
 
-      {/* Asset Details with Integrated Editor */}
+      {/* Asset Details - Compact Editor */}
       {selectedAssetId && (
-        <AssetDetailsWithEditor
+        <AssetDetailsCompact
           assetId={selectedAssetId}
           siteId={selectedSite?.id || ''}
           onAssetUpdated={refresh}
