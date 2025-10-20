@@ -463,6 +463,8 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
               setTimeout(() => refreshVariants(), 2000);
             }, 1000);
           }
+          // Close dialog after successful save
+          setTimeout(() => onClose(), 500);
         } else {
           setToast({
             message: 'Failed to save',
@@ -478,6 +480,8 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
           type: 'success',
         });
         refreshAsset();
+        // Close dialog after successful save
+        setTimeout(() => onClose(), 500);
       } else {
         setToast({
           message: 'No changes to save',
@@ -656,7 +660,10 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
             <div className="flex items-center gap-2">
               {onDelete && (
                 <button
-                  onClick={() => onDelete(assetId)}
+                  onClick={() => {
+                    onDelete(assetId);
+                    onClose();
+                  }}
                   disabled={isProcessing}
                   className="p-2 text-red-600 hover:text-red-700 disabled:opacity-50 transition-colors"
                   title="Delete asset"
@@ -914,22 +921,7 @@ export function AssetDetailsCompact({ assetId, siteId, onAssetUpdated, onClose, 
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-gray-200 text-sm text-gray-600 space-y-1">
-                  <div>
-                    <span className="font-medium">ID:</span> {asset.id.substring(0, 8)}...
-                  </div>
-                  <div>
-                    <span className="font-medium">Type:</span> {asset.kind}
-                  </div>
-                  {asset.width && asset.height && (
-                    <div>
-                      <span className="font-medium">Dimensions:</span> {asset.width} × {asset.height}px
-                    </div>
-                  )}
-                  <div>
-                    <span className="font-medium">Created:</span> {new Date(asset.created_at).toLocaleDateString()}
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
