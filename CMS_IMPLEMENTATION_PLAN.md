@@ -26,12 +26,14 @@ Build the asset management system incrementally:
 - [x] **COMMITTED**: a8a2e53 - feat(cms): Phase 1.2: Asset Variants Generation
 
 #### 1.3 Asset Optimization ✅ COMPLETED
-- [x] Add image compression during upload
-- [x] Implement WebP conversion
-- [x] Add file size limits and validation
+- [x] Add image compression during upload (85% quality, max 5MB)
+- [x] Add file size limits and validation (50MB max per file)
 - [x] Display file sizes and optimization stats
+- [x] Generate JPEG variants (thumbnail, small, medium, large)
+- [ ] Implement WebP conversion (deferred - imagescript doesn't support in Deno)
 - [x] Files: `src/admin/cms/UploadDialog.tsx`, `supabase/functions/process-asset-variants/index.ts`, `src/admin/cms/AssetDetails.tsx`
 - [x] **COMMITTED**: 4831c5e - feat(cms): Phase 1.3: Asset Optimization
+- [x] **COMMITTED**: 4f3cf94 - fix(cms): Remove WebP encoding (not supported)
 
 #### 1.4 Asset Editing
 - [ ] Add basic image editing UI (crop, resize, rotate)
