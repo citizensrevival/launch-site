@@ -156,12 +156,6 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
                       {formatBytes(variants.reduce((sum, v) => sum + (v.file_size || 0), 0))}
                     </span>
                   </div>
-                  <div className="col-span-2">
-                    <span className="text-blue-700">Formats:</span>
-                    <span className="ml-2 font-medium text-blue-900">
-                      {variants.some(v => v.variant_name.includes('webp')) ? 'JPEG + WebP' : 'JPEG only'}
-                    </span>
-                  </div>
                 </div>
               </div>
               
@@ -178,11 +172,6 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
                           <span className="text-xs text-gray-500">
                             {variant.width} × {variant.height}px
                           </span>
-                          {variant.variant_name.includes('webp') && (
-                            <span className="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded">
-                              WebP
-                            </span>
-                          )}
                         </div>
                         <div className="space-y-1 text-xs text-gray-600">
                           <div>Size: {formatBytes(variant.file_size)}</div>
