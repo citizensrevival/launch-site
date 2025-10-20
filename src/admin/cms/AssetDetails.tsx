@@ -1,20 +1,25 @@
 // AssetDetails Component
 // Displays detailed information about an asset including variants
 
-import { useAsset, useAssetVariants } from '../../lib/cms/hooks';
+import { useAsset, useAssetVariants, useAssetManagement } from '../../lib/cms/hooks';
 import { getAssetUrl } from '../../lib/cms/utils';
 import { generateAssetVariants } from '../../lib/cms/client';
 import { useState } from 'react';
+import { AssetEditor } from './components/AssetEditor';
+import type { AssetEditOperation } from '../../lib/cms/types';
 
 interface AssetDetailsProps {
   assetId: string;
   siteId: string;
+  onAssetUpdated?: () => void;
 }
 
-export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
-  const { asset, loading: assetLoading, error: assetError } = useAsset(assetId);
+export function AssetDetails({ assetId, siteId, onAssetUpdated }: AssetDetailsProps) {
+  const { asset, loading: assetLoading, error: assetError, refresh: refreshAsset } = useAsset(assetId);
   const { variants, loading: variantsLoading, error: variantsError, refresh: refreshVariants } = useAssetVariants(assetId);
+  const { saveEditedAsset } = useAssetManagement();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleGenerateVariants = async () => {
     setIsGenerating(true);
@@ -32,6 +37,24 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
       alert(`Error generating variants: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSaveEdit = async (editOperation: AssetEditOperation, editedImageBlob: Blob) => {
+    try {
+      const result = await saveEditedAsset(assetId, editedImageBlob, editOperation);
+      if (result) {
+        alert('Asset edited successfully! The new version has been created.');
+        setIsEditing(false);
+        // Refresh the parent asset list
+        if (onAssetUpdated) {
+          onAssetUpdated();
+        }
+      } else {
+        alert('Failed to save edited asset');
+      }
+    } catch (err) {
+      alert(`Error saving edited asset: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -61,25 +84,36 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Asset Preview */}
-      <div className="bg-gray-100 rounded-lg p-8 flex items-center justify-center">
-        {asset.kind === 'image' ? (
-          <img
-            src={getAssetUrl(asset.storage_key, siteId)}
-            alt=""
-            className="max-w-full max-h-96 object-contain"
-          />
-        ) : (
-          <div className="text-gray-400 text-6xl">
-            {asset.kind === 'video' ? '🎥' : '📄'}
-          </div>
-        )}
-      </div>
+    <>
+      <div className="space-y-6">
+        {/* Asset Preview */}
+        <div className="bg-gray-100 rounded-lg p-8 flex items-center justify-center">
+          {asset.kind === 'image' ? (
+            <img
+              src={getAssetUrl(asset.storage_key, siteId)}
+              alt=""
+              className="max-w-full max-h-96 object-contain"
+            />
+          ) : (
+            <div className="text-gray-400 text-6xl">
+              {asset.kind === 'video' ? '🎥' : '📄'}
+            </div>
+          )}
+        </div>
 
-      {/* Asset Information */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h3 className="font-semibold text-gray-900 mb-3">Asset Information</h3>
+        {/* Asset Information */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-900">Asset Information</h3>
+            {asset.kind === 'image' && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700 transition-colors"
+              >
+                Edit Image
+              </button>
+            )}
+          </div>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
             <dt className="text-gray-600">File Name:</dt>
@@ -195,7 +229,18 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
           )}
         </div>
       )}
-    </div>
+      </div>
+
+      {/* Asset Editor Modal */}
+      {isEditing && asset.kind === 'image' && (
+        <AssetEditor
+          asset={asset}
+          imageUrl={getAssetUrl(asset.storage_key, siteId)}
+          onSave={handleSaveEdit}
+          onCancel={() => setIsEditing(false)}
+        />
+      )}
+    </>
   );
 }
 

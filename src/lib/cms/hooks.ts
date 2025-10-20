@@ -738,12 +738,35 @@ export function useAssetManagement() {
     }
   }, []);
 
+  const saveEditedAssetHandler = useCallback(async (
+    originalAssetId: string,
+    editedImageBlob: Blob,
+    editOperation: import('../cms/types').AssetEditOperation
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await cmsClient.saveEditedAsset(originalAssetId, editedImageBlob, editOperation);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     uploadAsset: uploadAssetHandler,
     updateAsset: updateAssetHandler,
     deleteAsset: deleteAssetHandler,
     publishAsset: publishAssetHandler,
     unpublishAsset: unpublishAssetHandler,
+    saveEditedAsset: saveEditedAssetHandler,
     loading,
     error
   };

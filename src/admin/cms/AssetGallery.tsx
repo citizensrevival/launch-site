@@ -197,7 +197,11 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                 </svg>
               </button>
             </div>
-            <AssetDetails assetId={selectedAssetId} siteId={selectedSite?.id || ''} />
+            <AssetDetails 
+              assetId={selectedAssetId} 
+              siteId={selectedSite?.id || ''} 
+              onAssetUpdated={refresh}
+            />
           </div>
         </div>
       )}

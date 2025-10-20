@@ -1192,6 +1192,115 @@ export async function createAssetVersion(
   }
 }
 
+/**
+ * Save an edited asset by creating a new asset record and version
+ */
+export async function saveEditedAsset(
+  originalAssetId: string,
+  editedImageBlob: Blob,
+  editOperation: AssetEditOperation
+): Promise<ApiResponse<Asset>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Get original asset info
+    const { data: originalAsset, error: fetchError } = await supabase
+      .from('asset')
+      .select('*')
+      .eq('id', originalAssetId)
+      .single();
+
+    if (fetchError || !originalAsset) {
+      throw new Error('Original asset not found');
+    }
+
+    // Get dimensions of edited image
+    const img = await createImageBitmap(editedImageBlob);
+    const width = img.width;
+    const height = img.height;
+
+    // Generate storage key for edited asset
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const originalExt = originalAsset.storage_key.split('.').pop();
+    const baseName = originalAsset.storage_key.split('/').pop()?.replace(`.${originalExt}`, '') || 'asset';
+    const fileName = `${baseName}-edited-${timestamp}-${randomId}.jpg`;
+    const storageKey = `assets/${fileName}`;
+
+    // Upload edited image to storage
+    const bucketName = `site-${originalAsset.site_id.replace(/-/g, '')}`;
+    console.log(`Uploading edited asset to: ${bucketName}/${storageKey}`);
+
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(storageKey, editedImageBlob, {
+        contentType: 'image/jpeg',
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
+
+    // Create new asset record
+    const { data: newAsset, error: assetError } = await supabase
+      .from('asset')
+      .insert({
+        site_id: originalAsset.site_id,
+        kind: 'image',
+        storage_key: storageKey,
+        width,
+        height,
+        checksum: '',
+        is_system: false,
+        created_by: user.id
+      })
+      .select()
+      .single();
+
+    if (assetError) {
+      console.error('Asset creation error:', assetError);
+      throw assetError;
+    }
+
+    // Create asset version with edit operation
+    const { error: versionError } = await supabase
+      .from('asset_version')
+      .insert({
+        asset_id: newAsset.id,
+        version: 1,
+        meta: {
+          'en-US': {
+            alt: `Edited version of ${originalAsset.storage_key}`,
+            caption: `Edit: ${editOperation.operation}`,
+            tags: ['edited']
+          }
+        },
+        edit_operation: editOperation,
+        created_by: user.id
+      });
+
+    if (versionError) {
+      console.error('Version creation error:', versionError);
+      throw versionError;
+    }
+
+    // Trigger variant generation for the new edited asset
+    console.log('Triggering variant generation for edited asset:', newAsset.id);
+    generateAssetVariants(newAsset.id).catch((err) => {
+      console.error('Failed to generate variants for edited asset:', err);
+    });
+
+    const parsedAsset = zAsset.parse(newAsset);
+    return { data: parsedAsset, error: null };
+  } catch (error) {
+    console.error('Error saving edited asset:', error);
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
 export async function publishAsset(
   assetId: string,
   version: number
