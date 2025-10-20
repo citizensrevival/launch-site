@@ -164,9 +164,9 @@ serve(async (req) => {
           dimensions.height
         )
 
-        // Skip if original is already smaller than variant
-        if (image.width <= width && image.height <= height) {
-          console.log(`Original image is smaller than ${variantName}, skipping`)
+        // Skip if variant would be same size or larger (no upscaling)
+        if (width >= image.width && height >= image.height) {
+          console.log(`Original image (${image.width}x${image.height}) is smaller than ${variantName} target (${dimensions.width}x${dimensions.height}), skipping`)
           continue
         }
 

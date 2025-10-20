@@ -943,9 +943,12 @@ export async function uploadAsset(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    // Generate unique storage key
+    // Generate unique storage key while preserving original filename
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const baseFileName = file.name.replace(`.${fileExt}`, '').replace(/[^a-zA-Z0-9-_]/g, '-'); // Sanitize filename
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const fileName = `${baseFileName}-${timestamp}-${randomId}.${fileExt}`;
     const storageKey = `assets/${fileName}`;
 
     // Use the same bucket name format as the seed script
