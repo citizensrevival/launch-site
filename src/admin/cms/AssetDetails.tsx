@@ -87,14 +87,7 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
           </div>
           <div className="flex justify-between">
             <dt className="text-gray-600">Type:</dt>
-            <dd className="font-medium text-gray-900">
-              {asset.kind}
-              {asset.storage_key.endsWith('.webp') && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded">
-                  WebP
-                </span>
-              )}
-            </dd>
+            <dd className="font-medium text-gray-900">{asset.kind}</dd>
           </div>
           {asset.width && asset.height && (
             <div className="flex justify-between">
@@ -161,12 +154,6 @@ export function AssetDetails({ assetId, siteId }: AssetDetailsProps) {
                     <span className="text-blue-700">Total Size:</span>
                     <span className="ml-2 font-medium text-blue-900">
                       {formatBytes(variants.reduce((sum, v) => sum + (v.file_size || 0), 0))}
-                    </span>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-blue-700">Formats:</span>
-                    <span className="ml-2 font-medium text-blue-900">
-                      {asset.storage_key.endsWith('.webp') ? 'Original: WebP, Variants: JPEG' : 'JPEG'}
                     </span>
                   </div>
                 </div>

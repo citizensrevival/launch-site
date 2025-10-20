@@ -30,11 +30,19 @@ Build the asset management system incrementally:
 - [x] Add file size limits and validation (50MB max per file)
 - [x] Display file sizes and optimization stats
 - [x] Generate JPEG variants (thumbnail, small, medium, large)
-- [x] Implement WebP conversion (client-side using browser-image-compression)
+- [ ] Implement WebP conversion (deferred - imagescript doesn't support WebP encoding or decoding in Deno)
 - [x] Files: `src/admin/cms/UploadDialog.tsx`, `supabase/functions/process-asset-variants/index.ts`, `src/admin/cms/AssetDetails.tsx`
 - [x] **COMMITTED**: 4831c5e - feat(cms): Phase 1.3: Asset Optimization
 - [x] **COMMITTED**: 4f3cf94 - fix(cms): Remove WebP encoding (not supported)
 - [x] **COMMITTED**: 3ef23be - docs: Update Phase 1.3 to reflect WebP deferral
+- [x] **COMMITTED**: e572129 - feat(cms): Implement client-side WebP conversion (reverted)
+
+**Note on WebP**: WebP conversion was attempted but is not supported by the `imagescript@1.2.15` library used in Deno Edge Functions. The library cannot encode OR decode WebP format. Alternative approaches would require:
+- Using a different image processing library (e.g., `wasm-imagemagick` or `sharp` via Node.js)
+- Server-side processing with a different runtime
+- Client-side only approach (original as WebP, but no variants possible)
+
+For now, JPEG compression provides excellent results (30-40% size reduction) and maintains full compatibility with variant generation.
 
 #### 1.4 Asset Editing
 - [ ] Add basic image editing UI (crop, resize, rotate)

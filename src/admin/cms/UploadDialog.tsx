@@ -54,28 +54,28 @@ export function UploadDialog({ onUploadComplete }: UploadDialogProps) {
         
         let fileToUpload = file;
         
-        // Compress images before upload and convert to WebP
+        // Compress images before upload (keep as JPEG for compatibility with variant generation)
         if (file.type.startsWith('image/')) {
           try {
             const compressionOptions = {
               maxSizeMB: 5, // Max size after compression
               maxWidthOrHeight: 4096, // Max dimension
               useWebWorker: true,
-              fileType: 'image/webp', // Convert to WebP for better compression
+              fileType: file.type, // Keep original format (JPEG/PNG) for Edge Function compatibility
               initialQuality: 0.85 // Good balance of quality vs size
             };
             
             const compressedFile = await imageCompression(file, compressionOptions);
             const savingsPercent = ((file.size - compressedFile.size) / file.size * 100).toFixed(1);
-            console.log('Compressed to WebP:', file.name, 
-              'Original:', formatFileSize(file.size), `(${file.type})`,
-              'WebP:', formatFileSize(compressedFile.size),
+            console.log('Compressed:', file.name, 
+              'Original:', formatFileSize(file.size), 
+              'Compressed:', formatFileSize(compressedFile.size),
               `Savings: ${savingsPercent}%`
             );
             
             fileToUpload = compressedFile;
           } catch (compressionError) {
-            console.warn('WebP compression failed, uploading original:', compressionError);
+            console.warn('Compression failed, uploading original:', compressionError);
             // Continue with original file if compression fails
           }
         }

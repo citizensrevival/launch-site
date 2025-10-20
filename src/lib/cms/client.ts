@@ -944,8 +944,21 @@ export async function uploadAsset(
     if (!user) throw new Error('Not authenticated');
 
     // Generate unique storage key while preserving original filename
-    const fileExt = file.name.split('.').pop();
-    const baseFileName = file.name.replace(`.${fileExt}`, '').replace(/[^a-zA-Z0-9-_]/g, '-'); // Sanitize filename
+    const originalExt = file.name.split('.').pop();
+    const baseFileName = file.name.replace(`.${originalExt}`, '').replace(/[^a-zA-Z0-9-_]/g, '-'); // Sanitize filename
+    
+    // Determine correct file extension based on actual MIME type (handles WebP conversion)
+    let fileExt = originalExt;
+    if (file.type === 'image/webp') {
+      fileExt = 'webp';
+    } else if (file.type === 'image/jpeg') {
+      fileExt = 'jpg';
+    } else if (file.type === 'image/png') {
+      fileExt = 'png';
+    } else if (file.type === 'image/gif') {
+      fileExt = 'gif';
+    }
+    
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 8);
     const fileName = `${baseFileName}-${timestamp}-${randomId}.${fileExt}`;
