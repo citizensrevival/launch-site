@@ -5,7 +5,7 @@ import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useAssets, useAssetManagement } from '../../lib/cms/hooks';
 import { useAppSelector, useAppDispatch } from '../../shell/store/hooks';
 import { setPage } from '../../shell/store/slices/assetSearchSlice';
-import { getAssetUrl } from '../../lib/cms/utils';
+import { getAssetUrl, getAssetVariantUrl } from '../../lib/cms/utils';
 import { AssetDetails } from './AssetDetails';
 
 export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
@@ -75,9 +75,13 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                 <div className="aspect-square bg-gray-100 flex items-center justify-center">
                   {asset.kind === 'image' ? (
                         <img
-                          src={getAssetUrl(asset.storage_key, selectedSite?.id || '')}
+                          src={getAssetVariantUrl(asset.storage_key, selectedSite?.id || '', 'thumbnail')}
                           alt=""
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback to original if thumbnail doesn't exist
+                            e.currentTarget.src = getAssetUrl(asset.storage_key, selectedSite?.id || '');
+                          }}
                         />
                   ) : (
                     <div className="text-gray-400 text-4xl">
@@ -110,9 +114,13 @@ export const AssetGallery = forwardRef<{ refresh: () => void }>((_, ref) => {
                 <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center mr-4">
                   {asset.kind === 'image' ? (
                         <img
-                          src={getAssetUrl(asset.storage_key, selectedSite?.id || '')}
+                          src={getAssetVariantUrl(asset.storage_key, selectedSite?.id || '', 'thumbnail')}
                           alt=""
                           className="w-full h-full object-cover rounded-md"
+                          onError={(e) => {
+                            // Fallback to original if thumbnail doesn't exist
+                            e.currentTarget.src = getAssetUrl(asset.storage_key, selectedSite?.id || '');
+                          }}
                         />
                   ) : (
                     <div className="text-gray-400 text-2xl">
