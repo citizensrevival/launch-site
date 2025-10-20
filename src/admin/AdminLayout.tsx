@@ -59,6 +59,10 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
     if (href === '/manage/analytics') {
       return currentPath === '/manage/analytics';
     }
+    // For cms overview, only match exact path
+    if (href === '/manage/cms') {
+      return currentPath === '/manage/cms';
+    }
     return currentPath.startsWith(href);
   };
 
@@ -113,7 +117,7 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
   ];
 
   const contentItems = [
-    { name: 'CMS Dashboard', href: '/manage/cms', icon: (
+    { name: 'Overview', href: '/manage/cms', icon: (
       <Icon path={mdiWeb} className="h-5 w-5" />
     ) },
     { name: 'Pages', href: '/manage/cms/pages', icon: (
