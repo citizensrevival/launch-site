@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { usePageVersions, usePageVersionManagement } from '../../lib/cms/hooks';
 import type { Page, PageVersion, LocalizedContent } from '../../lib/cms/types';
+import { supabase } from '../../shell/lib/supabase';
 import { Icon } from '@mdi/react';
 import { 
   mdiClose,
@@ -79,8 +80,11 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
 
   // Load latest version on mount
   useEffect(() => {
+    console.log('PageVersionEditor: versions changed:', versions);
+    console.log('PageVersionEditor: versions length:', versions?.length);
     if (versions && versions.length > 0) {
       const latestVersion = versions[0];
+      console.log('PageVersionEditor: latest version:', latestVersion);
       setCurrentVersion(latestVersion);
       
       // Initialize form with latest version data for all locales
@@ -103,6 +107,8 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
         setNavHidden(latestVersion.nav_hints.hidden || false);
         setNavBadge(latestVersion.nav_hints.badge || {});
       }
+    } else {
+      console.log('PageVersionEditor: No versions found, initializing with empty data');
     }
   }, [versions]);
 
@@ -124,15 +130,40 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
       setIsLoading(true);
       setError(null);
 
+      // First, let's check what versions actually exist in the database
+      console.log('Checking database for existing versions for page:', page.id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data: dbVersions, error: dbError } = await supabase
+        .from('page_version')
+        .select('id, version')
+        .eq('page_id', page.id)
+        .order('version', { ascending: false });
+
+      if (dbError) {
+        console.error('Error querying database for versions:', dbError);
+      } else {
+        console.log('Database versions:', dbVersions);
+      }
+
       // Calculate next version number
       let nextVersion = 1;
       if (versions && versions.length > 0) {
-        console.log('Existing versions:', versions.map(v => ({ id: v.id, version: v.version })));
+        console.log('Hook versions:', versions.map(v => ({ id: v.id, version: v.version })));
         const maxVersion = Math.max(...versions.map(v => v.version));
         nextVersion = maxVersion + 1;
         console.log('Max existing version:', maxVersion, 'Next version:', nextVersion);
       } else {
-        console.log('No existing versions, starting with version 1');
+        console.log('No existing versions from hook, starting with version 1');
+      }
+
+      // If database has versions but hook doesn't, use database versions
+      if (dbVersions && dbVersions.length > 0 && (!versions || versions.length === 0)) {
+        console.log('Using database versions instead of hook versions');
+        const maxDbVersion = Math.max(...dbVersions.map(v => v.version));
+        nextVersion = maxDbVersion + 1;
+        console.log('Max database version:', maxDbVersion, 'Next version:', nextVersion);
       }
 
       const versionData = {
