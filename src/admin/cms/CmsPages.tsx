@@ -1,12 +1,13 @@
 // CMS Pages Component
 // Page management interface
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { AdminLayout } from '../AdminLayout';
 import { usePages, usePageManagement } from '../../lib/cms/hooks';
 import { useAppSelector } from '../../shell/store/hooks';
 import type { Page, PageVersion, PublishStatus } from '../../lib/cms/types';
 import { PageVersionEditor } from './PageVersionEditor';
+import { PageVersionHistory } from './components/PageVersionHistory';
 import { Icon } from '@mdi/react';
 import { 
   mdiPlus, 
@@ -20,7 +21,8 @@ import {
   mdiShieldCheckOutline,
   mdiClose,
   mdiContentSave,
-  mdiKey
+  mdiKey,
+  mdiHistory
 } from '@mdi/js';
 import { Tooltip } from '../../shell/Tooltip';
 
@@ -38,6 +40,7 @@ export function CmsPages() {
   const [showNewPageDialog, setShowNewPageDialog] = useState(false);
   const [selectedPage, setSelectedPage] = useState<Page | null>(null);
   const [showPageVersionEditor, setShowPageVersionEditor] = useState(false);
+  const [showPageVersionHistory, setShowPageVersionHistory] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const filters = useMemo(() => ({
@@ -81,6 +84,23 @@ export function CmsPages() {
   const handleClosePageVersionEditor = () => {
     setShowPageVersionEditor(false);
     setSelectedPage(null);
+  };
+
+  const handleShowPageVersionHistory = (page: Page) => {
+    setSelectedPage(page);
+    setShowPageVersionHistory(true);
+  };
+
+  const handleClosePageVersionHistory = () => {
+    setShowPageVersionHistory(false);
+    setSelectedPage(null);
+  };
+
+  const handleVersionRestored = (version: PageVersion) => {
+    console.log('Version restored:', version);
+    setShowPageVersionHistory(false);
+    setSelectedPage(null);
+    handleRefresh(); // Refresh the page list
   };
 
   const changeSort = (key: SortKey) => {
@@ -258,6 +278,15 @@ export function CmsPages() {
                             <Icon path={mdiPencil} className="h-5 w-5 text-white" />
                           </button>
                         </Tooltip>
+                        <Tooltip content="View version history">
+                          <button 
+                            className="p-2 rounded hover:bg-gray-800" 
+                            aria-label="View version history"
+                            onClick={() => handleShowPageVersionHistory(page)}
+                          >
+                            <Icon path={mdiHistory} className="h-5 w-5 text-white" />
+                          </button>
+                        </Tooltip>
                         <Tooltip content="Delete page">
                           <button 
                             className="p-2 rounded hover:bg-gray-800" 
@@ -323,6 +352,15 @@ export function CmsPages() {
                       <Icon path={mdiPencil} className="h-5 w-5 text-white" />
                     </button>
                   </Tooltip>
+                  <Tooltip content="View version history">
+                    <button
+                      onClick={() => handleShowPageVersionHistory(page)}
+                      className="p-2 rounded hover:bg-gray-700"
+                      aria-label="View version history"
+                    >
+                      <Icon path={mdiHistory} className="h-5 w-5 text-white" />
+                    </button>
+                  </Tooltip>
                   <Tooltip content="Delete page">
                     <button
                       onClick={() => {
@@ -383,6 +421,15 @@ export function CmsPages() {
           page={selectedPage}
           onClose={handleClosePageVersionEditor}
           onSave={handlePageVersionSaved}
+        />
+      )}
+
+      {/* Page Version History */}
+      {selectedPage && showPageVersionHistory && (
+        <PageVersionHistory
+          page={selectedPage}
+          onClose={handleClosePageVersionHistory}
+          onRestore={handleVersionRestored}
         />
       )}
     </AdminLayout>
@@ -553,7 +600,7 @@ function EditPageDialog({
       const result = await updatePage(page.id, {
         slug: slug.trim(),
         is_system: isSystem,
-        system_key: systemKey.trim() || null,
+        system_key: systemKey.trim() || undefined,
       });
 
       if (result) {

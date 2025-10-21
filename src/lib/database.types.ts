@@ -729,7 +729,6 @@ export type Database = {
           page_id: string
           seo: Json
           slots: Json
-          status: Database["public"]["Enums"]["publish_status"]
           title: Json
           updated_at: string | null
           updated_by: string | null
@@ -744,7 +743,6 @@ export type Database = {
           page_id: string
           seo?: Json
           slots?: Json
-          status?: Database["public"]["Enums"]["publish_status"]
           title: Json
           updated_at?: string | null
           updated_by?: string | null
@@ -759,7 +757,6 @@ export type Database = {
           page_id?: string
           seo?: Json
           slots?: Json
-          status?: Database["public"]["Enums"]["publish_status"]
           title?: Json
           updated_at?: string | null
           updated_by?: string | null

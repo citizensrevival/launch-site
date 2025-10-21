@@ -73,18 +73,20 @@ Build the page management system:
 - [x] Files: `src/admin/cms/PageVersionEditor.tsx`, `src/admin/cms/CmsPages.tsx`, `src/lib/cms/hooks.ts`
 - [x] **COMMITTED**: 5ef5c94 - feat(cms): Phase 2.2: Page Version Editor - Complete implementation
 
-#### 2.3 Page Slots System
-- [ ] Implement slot management UI
-- [ ] Add blocks to page slots with drag-and-drop ordering
-- [ ] Configure block instances (follow_latest vs pinned version)
-- [ ] Instance props override editor
-- [ ] Files: `src/admin/cms/components/PageSlotEditor.tsx`, `src/admin/cms/components/BlockInstanceConfig.tsx`
+#### 2.3 Page Slots System ✅ COMPLETED
+- [x] Implement slot management UI
+- [x] Add blocks to page slots with drag-and-drop ordering
+- [x] Configure block instances (follow_latest vs pinned version)
+- [x] Instance props override editor
+- [x] Files: `src/admin/cms/components/PageSlotEditor.tsx`, `src/admin/cms/components/BlockInstanceConfig.tsx`
+- [x] **COMMITTED**: feat(cms): Phase 2.3: Page Slots System - Complete implementation with drag-and-drop, UUID validation, and utility functions
 
-#### 2.4 Page Version History
-- [ ] Display all versions of a page
-- [ ] Show version diff/comparison
-- [ ] Restore previous versions (creates new version)
-- [ ] Files: `src/admin/cms/components/PageVersionHistory.tsx`
+#### 2.4 Page Version History ✅ COMPLETED
+- [x] Display all versions of a page
+- [x] Show version diff/comparison
+- [x] Restore previous versions (creates new version)
+- [x] Files: `src/admin/cms/components/PageVersionHistory.tsx`
+- [x] **COMMITTED**: feat(cms): Phase 2.4: Page Version History - Complete implementation with diff comparison and restore functionality
 
 ### Phase 3: Blocks Management
 Build reusable content blocks:
@@ -171,55 +173,116 @@ Implement versioning and publishing:
 - [ ] Manage user permissions in CmsUsers
 - [ ] Files: `src/admin/cms/CmsUsers.tsx`, update existing components
 
-### Phase 6: Supabase Edge Functions
+### Phase 6: Testing Infrastructure
+Set up comprehensive unit testing for all CMS logic:
+
+#### 6.1 Testing Setup
+- [ ] Install testing dependencies (Vitest, @testing-library/react, msw)
+- [ ] Configure test environment and mocking
+- [ ] Set up test database and fixtures
+- [ ] Create test utilities and helpers
+- [ ] Files: `vitest.config.ts`, `src/__tests__/setup.ts`, `src/__tests__/utils/`
+
+#### 6.2 Schema Testing
+- [ ] Test all Zod schemas with valid/invalid data
+- [ ] Test edge cases (null, undefined, empty strings, invalid types)
+- [ ] Test schema transformations and validations
+- [ ] Test type inference and compatibility
+- [ ] Files: `src/__tests__/schemas/`
+
+#### 6.3 Client Function Testing
+- [ ] Test all client functions with mocked Supabase
+- [ ] Test error handling and edge cases
+- [ ] Test data transformation and validation
+- [ ] Test authentication and permissions
+- [ ] Files: `src/__tests__/client/`
+
+#### 6.4 Hook Testing
+- [ ] Test all custom hooks with mocked dependencies
+- [ ] Test state management and side effects
+- [ ] Test error states and loading states
+- [ ] Test hook composition and reusability
+- [ ] Files: `src/__tests__/hooks/`
+
+#### 6.5 Context Testing
+- [ ] Test all context providers with mocked state
+- [ ] Test context value updates and propagation
+- [ ] Test context composition and nesting
+- [ ] Test context error handling
+- [ ] Files: `src/__tests__/contexts/`
+
+#### 6.6 Utility Function Testing
+- [ ] Test all utility functions with various inputs
+- [ ] Test data transformation and validation
+- [ ] Test edge cases and error conditions
+- [ ] Test function composition and reusability
+- [ ] Files: `src/__tests__/utils/`
+
+#### 6.7 Retrofit Existing Code Tests
+- [ ] Add tests for existing client functions (`src/lib/cms/client.ts`)
+- [ ] Add tests for existing hooks (`src/lib/cms/hooks.ts`)
+- [ ] Add tests for existing schemas (`src/lib/cms/schemas.ts`)
+- [ ] Add tests for existing utility functions (`src/lib/cms/utils.ts`)
+- [ ] Refactor existing code to be more testable (dependency injection)
+- [ ] Files: `src/__tests__/retrofit/`
+
+#### 6.8 Refactoring for Testability
+- [ ] Create `SupabaseClient` interface for dependency injection
+- [ ] Refactor client functions to accept client as parameter
+- [ ] Create factory functions for client creation
+- [ ] Add error handling interfaces and implementations
+- [ ] Create validation service interfaces
+- [ ] Files: `src/lib/cms/interfaces/`, `src/lib/cms/services/`
+
+### Phase 7: Supabase Edge Functions
 Create resolution functions for published content:
 
-#### 6.1 Resolve Page Function
+#### 7.1 Resolve Page Function
 - [ ] Implement `resolvePage` Edge Function per requirements spec
 - [ ] Fetch published page with all referenced blocks and assets
 - [ ] Return hydrated ResolvedPage JSON
 - [ ] Files: `supabase/functions/resolvePage/index.ts`
 
-#### 6.2 Resolve Menu Function
+#### 7.2 Resolve Menu Function
 - [ ] Implement `resolveMenu` Edge Function per requirements spec
 - [ ] Fetch published menu with item tree
 - [ ] Resolve page references
 - [ ] Files: `supabase/functions/resolveMenu/index.ts`
 
-#### 6.3 Client-side Resolution (Alternative)
+#### 7.3 Client-side Resolution (Alternative)
 - [ ] Implement client-side resolution functions for preview mode
 - [ ] Use same logic as Edge Functions but run in browser
 - [ ] Files: `src/lib/cms/resolver.ts`
 
-### Phase 7: Public Page Rendering System
+### Phase 8: Public Page Rendering System
 Replace hardcoded pages with CMS-driven rendering:
 
-#### 7.1 Dynamic Page Renderer
+#### 8.1 Dynamic Page Renderer
 - [ ] Create `CmsPage` component that fetches and renders resolved pages
 - [ ] Slot renderer that maps slots to component areas
 - [ ] Block renderer that maps block types to React components
 - [ ] Files: `src/public/CmsPage.tsx`, `src/public/renderers/SlotRenderer.tsx`, `src/public/renderers/BlockRenderer.tsx`
 
-#### 7.2 Block Component Library
+#### 8.2 Block Component Library
 - [ ] Build React components for each block type
 - [ ] Map block type strings to components
 - [ ] Handle block content and assets
 - [ ] Files: `src/public/blocks/HeroBlock.tsx`, `src/public/blocks/FeaturesBlock.tsx`, etc.
 
-#### 7.3 Menu Renderer
+#### 8.3 Menu Renderer
 - [ ] Create `CmsMenu` component for rendering resolved menus
 - [ ] Handle nested menu items
 - [ ] Implement visibility filtering client-side
 - [ ] Files: `src/shell/CmsMenu.tsx`
 
-#### 7.4 Migration of Existing Pages
+#### 8.4 Migration of Existing Pages
 - [ ] Migrate HomePage content to CMS
 - [ ] Create corresponding blocks for existing sections
 - [ ] Set up system pages with system_key
 - [ ] Update routes to use CMS rendering
 - [ ] Files: Update `src/App.tsx`, migrate content via admin UI or migration script
 
-#### 7.5 SEO & Metadata
+#### 8.5 SEO & Metadata
 - [ ] Render SEO tags from page metadata
 - [ ] OpenGraph tags
 - [ ] Structured data (JSON-LD)
@@ -235,21 +298,48 @@ Replace hardcoded pages with CMS-driven rendering:
 - ✅ Public site renders CMS content dynamically
 - ✅ Existing pages migrated to CMS without losing functionality
 
+## Architecture Principles
+
+### Composable Design
+- **Dependency Injection**: Use constructor injection and factory patterns
+- **Pure Functions**: Prefer pure functions over class methods
+- **Interface Segregation**: Create focused, single-purpose interfaces
+- **Composition over Inheritance**: Use composition and mixins
+- **Testable Dependencies**: All external dependencies should be mockable
+
+### Code Organization
+- **Separation of Concerns**: Business logic separate from UI logic
+- **Single Responsibility**: Each function/class has one clear purpose
+- **Open/Closed Principle**: Open for extension, closed for modification
+- **Interface Contracts**: Define clear contracts between layers
+- **Error Boundaries**: Isolate error handling and recovery
+
+### Testing Strategy
+- **Test-First Development**: Write tests before implementing features
+- **Mock External Dependencies**: Mock Supabase, APIs, and external services
+- **Test Edge Cases**: Test null, undefined, empty, and invalid inputs
+- **Schema Validation**: Test all Zod schemas with comprehensive test data
+- **Type Safety**: Test TypeScript interfaces and type guards
+
 ## Notes
 - Work incrementally, testing each feature before moving to the next
-- Focus on admin portal (Phases 1-5) before public rendering (Phase 7)
-- Supabase Edge Functions (Phase 6) can be developed in parallel with Phase 7
+- Focus on admin portal (Phases 1-5) before public rendering (Phase 8)
+- Testing infrastructure (Phase 6) should be implemented early
+- Supabase Edge Functions (Phase 7) can be developed in parallel with Phase 8
 - Keep simple menu editor, expand to rules only if needed
 - All changes should maintain existing analytics and lead capture functionality
 
-## Testing Workflow
+### Testing Workflow
 After each implementation step:
-1. Kill all Vite servers: `pkill -f "vite" && npm run db:stop`
-2. Redeploy Supabase: `npm run db:reset` (if needed) or `npm run db:generate`
-3. Start development server: `npm start`
-4. Test the implemented feature
-5. Commit changes to git
-6. Move to next step
+1. Write unit tests for new logic
+2. Run tests: `npm test`
+3. Implement feature with test-first approach
+4. Kill all Vite servers: `pkill -f "vite" && npm run db:stop`
+5. Redeploy Supabase: `npm run db:reset` (if needed) or `npm run db:generate`
+6. Start development server: `npm start`
+7. Test the implemented feature
+8. Commit changes to git
+9. Move to next step
 
 ## Current Status
 - ✅ **Phase 1.1**: Asset Upload (Basic) - COMPLETED
@@ -258,4 +348,6 @@ After each implementation step:
 - ✅ **Phase 1.4**: Asset Editing - COMPLETED
 - ✅ **Phase 2.1**: Page List & CRUD - COMPLETED
 - ✅ **Phase 2.2**: Page Version Editor - COMPLETED
-- ⏳ **Phase 2.3**: Page Slots System - PENDING
+- ✅ **Phase 2.3**: Page Slots System - COMPLETED
+- ✅ **Phase 2.4**: Page Version History - COMPLETED
+- ⏳ **Phase 6**: Testing Infrastructure - IN PROGRESS

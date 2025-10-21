@@ -20,8 +20,8 @@ export async function hasPermission(permission: string): Promise<boolean> {
   if (!user) return false;
 
   const { data, error } = await supabase.rpc('has_permission', {
-    p_user_id: user.id,
-    p_permission: permission
+    user_id: user.id,
+    permission: permission
   });
 
   if (error) {
@@ -335,12 +335,28 @@ export async function createPageVersion(versionData: Omit<PageVersion, 'id' | 'c
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Filter out null values for optional fields
+    const insertData: any = {
+      ...versionData,
+      created_by: user.id,
+      updated_by: null,
+      updated_at: null
+    };
+    
+    // Remove null values for optional fields that might cause issues
+    if (insertData.layout_variant === null) {
+      delete insertData.layout_variant;
+    }
+    if (insertData.updated_by === null) {
+      delete insertData.updated_by;
+    }
+    if (insertData.updated_at === null) {
+      delete insertData.updated_at;
+    }
+
     const { data, error } = await supabase
       .from('page_version')
-      .insert({
-        ...versionData,
-        created_by: user.id
-      })
+      .insert(insertData)
       .select()
       .single();
 
@@ -513,6 +529,29 @@ export async function getPublishedPageByKey(systemKey: string, locale = 'en-US')
     if (!site) throw new Error('Site not found');
 
     return await getPublishedPage(site.handle, page.slug, locale);
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Get published version info for a page
+export async function getPublishedPageVersion(pageId: string): Promise<ApiResponse<PagePublish>> {
+  try {
+    const { data, error } = await supabase
+      .from('page_publish')
+      .select('*')
+      .eq('page_id', pageId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No published version found
+        return { data: null, error: null };
+      }
+      throw error;
+    }
+
+    return { data, error: null };
   } catch (error) {
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }

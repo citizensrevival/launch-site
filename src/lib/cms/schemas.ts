@@ -123,8 +123,8 @@ export const zAssetVersion = z.object({
   status: z.enum(['draft', 'published', 'archived']),
   created_at: z.string(),
   created_by: z.string().uuid(),
-  updated_by: z.string().uuid().optional(),
-  updated_at: z.string().optional()
+  updated_by: z.string().uuid().nullable().optional(),
+  updated_at: z.string().nullable().optional()
 });
 
 export const zAssetPublish = z.object({
@@ -177,8 +177,8 @@ export const zBlockVersion = z.object({
   status: z.enum(['draft', 'published', 'archived']),
   created_at: z.string(),
   created_by: z.string().uuid(),
-  updated_by: z.string().uuid().optional(),
-  updated_at: z.string().optional()
+  updated_by: z.string().uuid().nullable().optional(),
+  updated_at: z.string().nullable().optional()
 });
 
 export const zBlockPublish = z.object({
@@ -194,7 +194,7 @@ export const zPage = z.object({
   site_id: z.string().uuid(),
   slug: z.string(),
   is_system: z.boolean(),
-  system_key: z.string().optional()
+  system_key: z.string().nullable().optional()
 });
 
 export const zPageVersion = z.object({
@@ -202,15 +202,49 @@ export const zPageVersion = z.object({
   page_id: z.string().uuid(),
   version: z.number().int(),
   title: zLocalizedContent(z.string()),
-  layout_variant: z.string().optional(),
+  layout_variant: z.string().nullable().optional(),
   seo: zLocalizedContent(z.record(z.string(), z.unknown())),
-  nav_hints: zLocalizedContent(z.record(z.string(), z.unknown())),
+  nav_hints: z.object({
+    label: zLocalizedContent(z.string()),
+    badge: zLocalizedContent(z.string()),
+    order: z.union([z.number(), z.record(z.string(), z.unknown())]).transform((val) => {
+      // If it's a number, return it
+      if (typeof val === 'number') return val;
+      // If it's an object, try to extract a number from the nested structure
+      const findNumericValue = (obj: any): number => {
+        if (typeof obj === 'number') return obj;
+        if (typeof obj === 'object' && obj !== null) {
+          for (const key in obj) {
+            const result = findNumericValue(obj[key]);
+            if (typeof result === 'number') return result;
+          }
+        }
+        return 0;
+      };
+      return findNumericValue(val);
+    }),
+    hidden: z.union([z.boolean(), z.record(z.string(), z.unknown())]).transform((val) => {
+      // If it's a boolean, return it
+      if (typeof val === 'boolean') return val;
+      // If it's an object, try to extract a boolean from the nested structure
+      const findBooleanValue = (obj: any): boolean => {
+        if (typeof obj === 'boolean') return obj;
+        if (typeof obj === 'object' && obj !== null) {
+          for (const key in obj) {
+            const result = findBooleanValue(obj[key]);
+            if (typeof result === 'boolean') return result;
+          }
+        }
+        return false;
+      };
+      return findBooleanValue(val);
+    })
+  }),
   slots: z.array(zBlockInstance),
-  status: z.enum(['draft', 'published', 'archived']),
   created_at: z.string(),
   created_by: z.string().uuid(),
-  updated_by: z.string().uuid().optional(),
-  updated_at: z.string().optional()
+  updated_by: z.string().uuid().nullable().optional(),
+  updated_at: z.string().nullable().optional()
 });
 
 export const zPagePublish = z.object({
@@ -297,8 +331,8 @@ export const zMenuVersion = z.object({
   status: z.enum(['draft', 'published', 'archived']),
   created_at: z.string(),
   created_by: z.string().uuid(),
-  updated_by: z.string().uuid().optional(),
-  updated_at: z.string().optional()
+  updated_by: z.string().uuid().nullable().optional(),
+  updated_at: z.string().nullable().optional()
 });
 
 export const zMenuPublish = z.object({

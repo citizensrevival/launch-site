@@ -1,27 +1,24 @@
 // Page Version Editor Component
 // Comprehensive page version editing with i18n support
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { usePageVersions, usePageVersionManagement } from '../../lib/cms/hooks';
-import type { Page, PageVersion, LocalizedContent } from '../../lib/cms/types';
+import { publishPage, unpublishPage, getPublishedPageVersion } from '../../lib/cms/client';
+import type { Page, PageVersion, BlockInstance } from '../../lib/cms/types';
 import { supabase } from '../../shell/lib/supabase';
 import { Icon } from '@mdi/react';
 import { 
   mdiClose,
-  mdiContentSave,
-  mdiEye,
-  mdiEyeOff,
   mdiTranslate,
   mdiPalette,
-  mdiMagnify,
   mdiNavigation,
-  mdiCodeJson,
-  mdiChevronDown,
-  mdiPlus,
-  mdiMinus,
-  mdiContentSaveOutline
+  mdiContentSaveOutline,
+  mdiViewGrid,
+  mdiCog,
+  mdiMinus
 } from '@mdi/js';
-import { Tooltip } from '../../shell/Tooltip';
+import { PageSlotEditor } from './components/PageSlotEditor';
+import { BlockInstanceConfig } from './components/BlockInstanceConfig';
 
 interface PageVersionEditorProps {
   page: Page;
@@ -29,7 +26,7 @@ interface PageVersionEditorProps {
   onSave: (version: PageVersion) => void;
 }
 
-type EditorTab = 'content' | 'navigation' | 'layout';
+type EditorTab = 'content' | 'navigation' | 'layout' | 'slots';
 
 interface LocalizedField {
   [locale: string]: string;
@@ -61,7 +58,6 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
   // Form state - language-specific fields
   const [title, setTitle] = useState<LocalizedField>({});
   const [layoutVariant, setLayoutVariant] = useState<string>('');
-  const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
   
   // SEO fields - language-specific
   const [seoTitle, setSeoTitle] = useState<LocalizedField>({});
@@ -75,8 +71,40 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
   const [navHidden, setNavHidden] = useState<boolean>(false);
   const [navBadge, setNavBadge] = useState<LocalizedField>({});
   
-  const { createPageVersion, updatePageVersion, loading: versionLoading, error: versionError } = usePageVersionManagement();
+  // Slots state
+  const [slots, setSlots] = useState<BlockInstance[]>([]);
+  const [showSlotEditor, setShowSlotEditor] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<BlockInstance | null>(null);
+  
+  // Publish state
+  const [isPublished, setIsPublished] = useState(false);
+  const [publishedVersion, setPublishedVersion] = useState<number | null>(null);
+  const [publishLoading, setPublishLoading] = useState(false);
+  
+  const { createPageVersion, error: versionError } = usePageVersionManagement();
   const { versions, loading: versionsLoading } = usePageVersions(page.id);
+
+  // Check published status on mount
+  useEffect(() => {
+    async function checkPublishedStatus() {
+      try {
+        const published = await getPublishedPageVersion(page.id);
+        if (published.data) {
+          setIsPublished(true);
+          setPublishedVersion(published.data.version);
+        } else {
+          setIsPublished(false);
+          setPublishedVersion(null);
+        }
+      } catch (error) {
+        console.error('Error checking published status:', error);
+        setIsPublished(false);
+        setPublishedVersion(null);
+      }
+    }
+    
+    checkPublishedStatus();
+  }, [page.id]);
 
   // Load latest version on mount
   useEffect(() => {
@@ -90,23 +118,68 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
       // Initialize form with latest version data for all locales
       setTitle(latestVersion.title || {});
       setLayoutVariant(latestVersion.layout_variant || '');
-      setStatus(latestVersion.status);
+        // Status is now tracked in page_publish table, not in page_version
       
       // Parse SEO data for all locales
       if (latestVersion.seo) {
-        setSeoTitle(latestVersion.seo.title || {});
-        setSeoDescription(latestVersion.seo.description || {});
-        setSeoKeywords(latestVersion.seo.keywords || {});
-        setSeoImage(latestVersion.seo.image || {});
+        setSeoTitle((latestVersion.seo.title as LocalizedField) || {});
+        setSeoDescription((latestVersion.seo.description as LocalizedField) || {});
+        setSeoKeywords((latestVersion.seo.keywords as LocalizedField) || {});
+        setSeoImage((latestVersion.seo.image as LocalizedField) || {});
       }
       
       // Parse navigation hints for all locales
       if (latestVersion.nav_hints) {
-        setNavLabel(latestVersion.nav_hints.label || {});
-        setNavOrder(latestVersion.nav_hints.order || 0);
-        setNavHidden(latestVersion.nav_hints.hidden || false);
-        setNavBadge(latestVersion.nav_hints.badge || {});
+        setNavLabel((latestVersion.nav_hints.label as LocalizedField) || {});
+        
+        // Handle order - could be a number or nested object from previous incorrect saves
+        const orderValue = latestVersion.nav_hints.order;
+        if (typeof orderValue === 'number') {
+          setNavOrder(orderValue);
+        } else if (typeof orderValue === 'object' && orderValue !== null) {
+          // If it's a nested object, try to extract a reasonable value
+          // Look for the first numeric value in the nested structure
+          const findNumericValue = (obj: any): number => {
+            if (typeof obj === 'number') return obj;
+            if (typeof obj === 'object' && obj !== null) {
+              for (const key in obj) {
+                const result = findNumericValue(obj[key]);
+                if (typeof result === 'number') return result;
+              }
+            }
+            return 0;
+          };
+          setNavOrder(findNumericValue(orderValue));
+        } else {
+          setNavOrder(0);
+        }
+        
+        // Handle hidden - could be a boolean or nested object from previous incorrect saves
+        const hiddenValue = latestVersion.nav_hints.hidden;
+        if (typeof hiddenValue === 'boolean') {
+          setNavHidden(hiddenValue);
+        } else if (typeof hiddenValue === 'object' && hiddenValue !== null) {
+          // If it's a nested object, try to extract a reasonable value
+          const findBooleanValue = (obj: any): boolean => {
+            if (typeof obj === 'boolean') return obj;
+            if (typeof obj === 'object' && obj !== null) {
+              for (const key in obj) {
+                const result = findBooleanValue(obj[key]);
+                if (typeof result === 'boolean') return result;
+              }
+            }
+            return false;
+          };
+          setNavHidden(findBooleanValue(hiddenValue));
+        } else {
+          setNavHidden(false);
+        }
+        
+        setNavBadge((latestVersion.nav_hints.badge as LocalizedField) || {});
       }
+      
+      // Initialize slots
+      setSlots(latestVersion.slots || []);
     } else {
       console.log('PageVersionEditor: No versions found, initializing with empty data');
     }
@@ -183,14 +256,13 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
           order: navOrder,
           hidden: navHidden
         },
-        slots: currentVersion?.slots || [],
-        status
+        slots: slots
       };
 
       console.log('Creating page version with data:', versionData);
       console.log('Next version number:', nextVersion);
       
-      const result = await createPageVersion(versionData);
+      const result = await createPageVersion(versionData as any);
       console.log('createPageVersion result:', result);
       console.log('versionError from hook:', versionError);
       
@@ -222,11 +294,47 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
     }
   };
 
+  const handlePublish = async () => {
+    if (!currentVersion) return;
+    
+    setPublishLoading(true);
+    try {
+      const result = await publishPage(page.id, currentVersion.version);
+      if (result) {
+        setIsPublished(true);
+        setPublishedVersion(currentVersion.version);
+        console.log('Page published successfully');
+      }
+    } catch (error) {
+      console.error('Error publishing page:', error);
+      alert('Failed to publish page. Please try again.');
+    } finally {
+      setPublishLoading(false);
+    }
+  };
+
+  const handleUnpublish = async () => {
+    setPublishLoading(true);
+    try {
+      const result = await unpublishPage(page.id);
+      if (result) {
+        setIsPublished(false);
+        setPublishedVersion(null);
+        console.log('Page unpublished successfully');
+      }
+    } catch (error) {
+      console.error('Error unpublishing page:', error);
+      alert('Failed to unpublish page. Please try again.');
+    } finally {
+      setPublishLoading(false);
+    }
+  };
 
   const tabs = [
     { id: 'content' as const, label: 'Content & SEO', icon: mdiTranslate },
     { id: 'navigation' as const, label: 'Navigation', icon: mdiNavigation },
-    { id: 'layout' as const, label: 'Layout', icon: mdiPalette }
+    { id: 'layout' as const, label: 'Layout', icon: mdiPalette },
+    { id: 'slots' as const, label: 'Page Slots', icon: mdiViewGrid }
   ];
 
   if (versionsLoading) {
@@ -319,20 +427,7 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Status
-                    </label>
-                    <select
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value as 'draft' | 'published' | 'archived')}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    >
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </div>
+                  {/* Status is now managed through publish/unpublish buttons in footer */}
                 </div>
               </div>
 
@@ -480,7 +575,7 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
                   Page Slots (JSON)
                 </label>
                 <textarea
-                  value={JSON.stringify(currentVersion?.slots || [], null, 2)}
+                  value={JSON.stringify(slots, null, 2)}
                   readOnly
                   className="w-full h-32 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white font-mono text-sm"
                   placeholder="Slots will be managed in the slots editor..."
@@ -491,12 +586,94 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
               </div>
             </div>
           )}
+
+          {/* Slots Tab */}
+          {activeTab === 'slots' && (
+            <div className="space-y-6">
+              <div className="bg-gray-750 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-white">Page Slots</h3>
+                  <button
+                    onClick={() => setShowSlotEditor(true)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+                  >
+                    <Icon path={mdiViewGrid} size={0.9} />
+                    <span>Manage Slots</span>
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {slots.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400">
+                      <Icon path={mdiViewGrid} size={3} className="mx-auto mb-4 text-gray-500" />
+                      <p className="text-lg font-medium">No blocks configured</p>
+                      <p className="text-sm">Click "Manage Slots" to add blocks to page slots</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {slots.map((block, index) => (
+                        <div key={block.block_id} className="flex items-center justify-between p-3 bg-gray-700 rounded-md border border-gray-600">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-sm text-gray-400">#{index + 1}</span>
+                            <div>
+                              <div className="text-white font-medium">
+                                {block.slot} Slot
+                              </div>
+                              <div className="text-sm text-gray-400">
+                                Block {block.block_id.slice(0, 8)}... (Order: {block.order})
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => setEditingBlock(block)}
+                              className="p-2 text-gray-400 hover:text-white hover:bg-gray-600 rounded-md transition-colors"
+                              title="Configure block"
+                            >
+                              <Icon path={mdiCog} size={0.8} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                const newSlots = slots.filter(b => b.block_id !== block.block_id);
+                                setSlots(newSlots);
+                              }}
+                              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md transition-colors"
+                              title="Remove block"
+                            >
+                              <Icon path={mdiMinus} size={0.8} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-700">
-          <div className="text-sm text-gray-400">
-            {currentVersion && `Version ${currentVersion.version}`}
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-400">
+              {currentVersion && `Version ${currentVersion.version}`}
+            </div>
+            {isPublished && publishedVersion === currentVersion?.version ? (
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span className="text-green-400">
+                  This version is published
+                </span>
+              </div>
+            ) : isPublished && publishedVersion !== currentVersion?.version ? (
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                <span className="text-yellow-400">
+                  Version {publishedVersion} is published
+                </span>
+              </div>
+            ) : null}
           </div>
           <div className="flex items-center space-x-3">
             <button
@@ -505,6 +682,23 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
             >
               Cancel
             </button>
+            {isPublished && publishedVersion === currentVersion?.version ? (
+              <button
+                onClick={handleUnpublish}
+                disabled={publishLoading}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {publishLoading ? 'Unpublishing...' : 'Unpublish'}
+              </button>
+            ) : (
+              <button
+                onClick={handlePublish}
+                disabled={publishLoading || !currentVersion}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {publishLoading ? 'Publishing...' : 'Publish'}
+              </button>
+            )}
             <button
               onClick={handleSave}
               disabled={isLoading}
@@ -516,6 +710,30 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
           </div>
         </div>
       </div>
+
+      {/* Slot Editor Modal */}
+      {showSlotEditor && (
+        <PageSlotEditor
+          slots={slots}
+          onSlotsChange={setSlots}
+          onClose={() => setShowSlotEditor(false)}
+        />
+      )}
+
+      {/* Block Instance Config Modal */}
+      {editingBlock && (
+        <BlockInstanceConfig
+          blockInstance={editingBlock}
+          onSave={(updatedBlock) => {
+            const newSlots = slots.map(block => 
+              block.block_id === updatedBlock.block_id ? updatedBlock : block
+            );
+            setSlots(newSlots);
+            setEditingBlock(null);
+          }}
+          onClose={() => setEditingBlock(null)}
+        />
+      )}
     </div>
   );
 }

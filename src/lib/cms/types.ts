@@ -174,7 +174,7 @@ export interface Page {
   site_id: string;
   slug: string;
   is_system: boolean;
-  system_key?: string;
+  system_key?: string | null;
 }
 
 export interface PageVersion {
@@ -182,15 +182,19 @@ export interface PageVersion {
   page_id: string;
   version: number;
   title: LocalizedContent<string>;
-  layout_variant?: string;
+  layout_variant?: string | null;
   seo: LocalizedContent<Record<string, unknown>>;
-  nav_hints: LocalizedContent<Record<string, unknown>>;
+  nav_hints: {
+    label: LocalizedContent<string>;
+    badge: LocalizedContent<string>;
+    order: number;
+    hidden: boolean;
+  };
   slots: Array<BlockInstance>;
-  status: PublishStatus;
   created_at: string;
   created_by: string;
-  updated_by?: string;
-  updated_at?: string;
+  updated_by?: string | null;
+  updated_at?: string | null;
 }
 
 export interface PagePublish {
