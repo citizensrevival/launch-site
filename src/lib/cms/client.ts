@@ -418,12 +418,8 @@ export async function publishPage(pageId: string, version: number): Promise<ApiR
 
     if (error) throw error;
 
-    // Update page version status to published
-    await supabase
-      .from('page_version')
-      .update({ status: 'published' })
-      .eq('page_id', pageId)
-      .eq('version', version);
+    // Note: We no longer update page_version.status since status is tracked in page_publish table
+    // The published status is now managed entirely through the page_publish table
 
     const pagePublish = zPagePublish.parse(data);
     return { data: pagePublish, error: null };

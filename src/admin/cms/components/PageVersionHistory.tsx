@@ -129,7 +129,7 @@ export function PageVersionHistory({ page, onClose, onRestore }: PageVersionHist
   };
 
   const handleRestoreVersion = async (version: PageVersion) => {
-    if (confirm(`Are you sure you want to restore version ${version.version}? This will create a new version based on the selected one.`)) {
+    if (confirm(`Are you sure you want to restore version ${version.version}? This will create a new version based on the selected one and publish it immediately.`)) {
       try {
         // Create a new version based on the selected version
         const newVersionData = {
@@ -139,12 +139,28 @@ export function PageVersionHistory({ page, onClose, onRestore }: PageVersionHist
           layout_variant: version.layout_variant,
           seo: version.seo,
           nav_hints: version.nav_hints,
-          slots: version.slots,
-          status: 'draft' as const
+          slots: version.slots
+          // Note: status is no longer tracked in page_version table
+          // All page versions are drafts by default, published status is tracked in page_publish table
         };
 
         const result = await createPageVersion(newVersionData);
         if (result) {
+          // Auto-publish the restored version
+          try {
+            const { publishPage } = await import('../../../lib/cms/client');
+            const publishResult = await publishPage(page.id, result.version);
+            if (publishResult) {
+              console.log('Version restored and published successfully');
+            } else {
+              console.error('Failed to publish restored version');
+              alert('Version restored but failed to publish. You can publish it manually from the page editor.');
+            }
+          } catch (publishError) {
+            console.error('Error publishing restored version:', publishError);
+            alert('Version restored but failed to publish. You can publish it manually from the page editor.');
+          }
+          
           onRestore(result);
           setSelectedVersions([]);
         }
