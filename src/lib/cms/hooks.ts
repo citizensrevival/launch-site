@@ -508,13 +508,18 @@ export function usePageVersionManagement() {
     try {
       setLoading(true);
       setError(null);
+      console.log('usePageVersionManagement: calling createPageVersion with:', versionData);
       const response = await createPageVersion(versionData);
+      console.log('usePageVersionManagement: createPageVersion response:', response);
       if (response.error) {
+        console.error('usePageVersionManagement: createPageVersion error:', response.error);
         setError(response.error);
         return null;
       }
+      console.log('usePageVersionManagement: returning data:', response.data);
       return response.data;
     } catch (err) {
+      console.error('usePageVersionManagement: catch block error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       return null;
     } finally {

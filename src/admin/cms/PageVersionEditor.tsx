@@ -75,7 +75,7 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
   const [navHidden, setNavHidden] = useState<boolean>(false);
   const [navBadge, setNavBadge] = useState<LocalizedField>({});
   
-  const { createPageVersion, updatePageVersion } = usePageVersionManagement();
+  const { createPageVersion, updatePageVersion, loading: versionLoading, error: versionError } = usePageVersionManagement();
   const { versions, loading: versionsLoading } = usePageVersions(page.id);
 
   // Load latest version on mount
@@ -191,9 +191,13 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
       console.log('Next version number:', nextVersion);
       
       const result = await createPageVersion(versionData);
+      console.log('createPageVersion result:', result);
+      console.log('versionError from hook:', versionError);
       
       if (!result) {
-        throw new Error('Failed to create page version - no result returned');
+        console.error('createPageVersion returned null/undefined');
+        console.error('Hook error:', versionError);
+        throw new Error(`Failed to create page version - no result returned. Hook error: ${versionError || 'Unknown error'}`);
       }
 
       console.log('Page version created successfully:', result);
