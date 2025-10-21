@@ -124,9 +124,20 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
       setIsLoading(true);
       setError(null);
 
+      // Calculate next version number
+      let nextVersion = 1;
+      if (versions && versions.length > 0) {
+        console.log('Existing versions:', versions.map(v => ({ id: v.id, version: v.version })));
+        const maxVersion = Math.max(...versions.map(v => v.version));
+        nextVersion = maxVersion + 1;
+        console.log('Max existing version:', maxVersion, 'Next version:', nextVersion);
+      } else {
+        console.log('No existing versions, starting with version 1');
+      }
+
       const versionData = {
         page_id: page.id,
-        version: currentVersion ? currentVersion.version + 1 : 1,
+        version: nextVersion,
         title,
         layout_variant: layoutVariant || null,
         seo: {
@@ -146,18 +157,31 @@ export function PageVersionEditor({ page, onClose, onSave }: PageVersionEditorPr
       };
 
       console.log('Creating page version with data:', versionData);
+      console.log('Next version number:', nextVersion);
       
       const result = await createPageVersion(versionData);
       
       if (!result) {
-        throw new Error('Failed to create page version');
+        throw new Error('Failed to create page version - no result returned');
       }
 
       console.log('Page version created successfully:', result);
       onSave(result);
     } catch (error) {
       console.error('Error saving page version:', error);
-      setError(error instanceof Error ? error.message : 'Failed to save page version');
+      console.error('Error details:', error);
+      
+      // Show more detailed error information
+      let errorMessage = 'Failed to save page version';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
