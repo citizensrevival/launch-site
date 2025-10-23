@@ -159,9 +159,9 @@ export const zBlock = z.object({
   id: z.string().uuid(),
   site_id: z.string().uuid(),
   type: z.string(),
-  tag: z.string().optional(),
+  tag: z.string().nullable().optional(),
   is_system: z.boolean(),
-  system_key: z.string().optional()
+  system_key: z.string().nullable().optional()
 });
 
 export const zBlockVersion = z.object({
@@ -260,7 +260,7 @@ export const zResolvedPage = z.object({
   locale: z.string(),
   version: z.number().int(),
   title: z.string(),
-  layout_variant: z.string().optional(),
+  layout_variant: z.string().nullable().optional(),
   seo: z.record(z.string(), z.unknown()),
   nav_hints: z.record(z.string(), z.unknown()),
   slots: z.record(z.string(), z.array(zResolvedBlock))
@@ -320,7 +320,7 @@ export const zMenu = z.object({
   handle: z.string(),
   label: z.string(),
   is_system: z.boolean(),
-  system_key: z.string().optional()
+  system_key: z.string().nullable().optional()
 });
 
 export const zMenuVersion = z.object({

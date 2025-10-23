@@ -192,8 +192,10 @@ export function BlockContentEditor({ content, onChange, layoutVariant, blockType
             className="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none"
           >
             <option value="">Select {field.label}</option>
-            {field.options?.map((option: string) => (
-              <option key={option} value={option}>{option}</option>
+            {field.options?.map((option: any) => (
+              <option key={option.value || option} value={option.value || option}>
+                {option.label || option}
+              </option>
             ))}
           </select>
         );
