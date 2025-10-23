@@ -22,7 +22,7 @@ export function useSites() {
 
       const { data, error } = await supabase
         .from('system_sites')
-        .select('id, name as handle, name as label, default_locale, slug')
+        .select('*')
         .order('created_at', { ascending: true });
 
       if (error) {

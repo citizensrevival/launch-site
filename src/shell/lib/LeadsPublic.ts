@@ -133,7 +133,7 @@ export class LeadsPublic {
   async emailExists(email: string): Promise<{ exists: boolean; error?: DatabaseError }> {
     try {
       const { data, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('id')
         .eq('email', email)
         .single();
@@ -167,7 +167,7 @@ export class LeadsPublic {
   async getLeadById(id: string): Promise<{ success: boolean; data?: Lead; error?: DatabaseError }> {
     try {
       const { data, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('*')
         .eq('id', id)
         .single();

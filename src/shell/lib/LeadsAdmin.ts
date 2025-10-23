@@ -30,7 +30,7 @@ export class LeadsAdmin {
       } = options;
 
       let query = this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('*', { count: 'exact' });
 
       // Apply filters
@@ -129,7 +129,7 @@ export class LeadsAdmin {
   async countTotalLeads(): Promise<{ success: boolean; data?: number; error?: DatabaseError }> {
     try {
       const { count, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('*', { count: 'exact', head: true });
 
       if (error) {
@@ -162,7 +162,7 @@ export class LeadsAdmin {
   async countByLeadKind(kind: LeadType): Promise<{ success: boolean; data?: number; error?: DatabaseError }> {
     try {
       const { count, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('*', { count: 'exact', head: true })
         .eq('lead_kind', kind);
 
@@ -239,7 +239,7 @@ export class LeadsAdmin {
   async getLeadById(id: string): Promise<{ success: boolean; data?: Lead; error?: DatabaseError }> {
     try {
       const { data, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('*')
         .eq('id', id)
         .single();
@@ -274,7 +274,7 @@ export class LeadsAdmin {
   async updateLead(id: string, updates: UpdateLeadInput): Promise<{ success: boolean; data?: Lead; error?: DatabaseError }> {
     try {
       const { data, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .update(updates)
         .eq('id', id)
         .select()
@@ -310,7 +310,7 @@ export class LeadsAdmin {
   async deleteLead(id: string): Promise<{ success: boolean; error?: DatabaseError }> {
     try {
       const { error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .delete()
         .eq('id', id);
 
@@ -416,7 +416,7 @@ export class LeadsAdmin {
     try {
       // Get total count
       const { count: totalCount, error: totalError } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('*', { count: 'exact', head: true });
 
       if (totalError) {
@@ -431,7 +431,7 @@ export class LeadsAdmin {
 
       // Get count by lead kind
       const { data: kindData, error: kindError } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('lead_kind, count', { count: 'exact' });
 
       if (kindError) {
@@ -449,7 +449,7 @@ export class LeadsAdmin {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const { count: recentCount, error: recentError } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', thirtyDaysAgo.toISOString());
 

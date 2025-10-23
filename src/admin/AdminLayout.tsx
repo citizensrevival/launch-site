@@ -345,7 +345,7 @@ export function AdminLayout({ children, pageHeader, title, subtitle, actions }: 
                     >
                       {sites.map((site) => (
                         <option key={site.id} value={site.id} className="bg-gray-800">
-                          {site.label}
+                          {site.name}
                         </option>
                       ))}
                     </select>
