@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Icon } from '@mdi/react';
+import { useBlockVersions } from '../../../lib/cms/hooks';
 import { 
   mdiClose,
   mdiContentSave,
@@ -46,14 +47,9 @@ export function BlockInstanceConfig({ blockInstance, onSave, onClose }: BlockIns
 
   const loadBlockVersions = async () => {
     try {
-      // TODO: Implement actual API call to get block versions
-      // For now, simulate with mock data
-      const mockVersions: BlockVersion[] = [
-        { id: '1', version: 1, status: 'published', created_at: '2024-01-01T00:00:00Z' },
-        { id: '2', version: 2, status: 'draft', created_at: '2024-01-02T00:00:00Z' },
-        { id: '3', version: 3, status: 'draft', created_at: '2024-01-03T00:00:00Z' }
-      ];
-      setAvailableVersions(mockVersions);
+      // Use the actual block versions hook
+      const { versions } = useBlockVersions(blockId);
+      setAvailableVersions(versions || []);
     } catch (error) {
       console.error('Failed to load block versions:', error);
     }

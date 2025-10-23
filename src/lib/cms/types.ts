@@ -269,7 +269,6 @@ export interface MenuVersion {
   menu_id: string;
   version: number;
   items: LocalizedContent<MenuItem[]>;
-  status: PublishStatus;
   created_at: string;
   created_by: string;
   updated_by?: string;

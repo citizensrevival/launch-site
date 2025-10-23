@@ -119,33 +119,36 @@ Build reusable content blocks:
 - [x] Files: `src/admin/cms/components/AssetPicker.tsx`, `src/admin/cms/components/BlockAssetManager.tsx`, `src/admin/cms/components/LinkedAssetsDisplay.tsx`
 - [x] **COMMITTED**: feat(cms): Phase 3.4: Block Asset Management - Complete implementation with role-based asset linking, validation, and enhanced UX
 
-### Phase 4: Menus Management
+### Phase 4: Menus Management ✅ COMPLETED
 Build navigation menu system:
 
-#### 4.1 Menu List & Basic CRUD
-- [ ] Display menus with site filtering
-- [ ] Create menu (handle, label, system_key)
-- [ ] Edit/delete menus
-- [ ] Files: `src/admin/cms/CmsMenus.tsx`, `src/admin/cms/components/MenuList.tsx`
+#### 4.1 Menu List & Basic CRUD ✅ COMPLETED
+- [x] Display menus with site filtering
+- [x] Create menu (handle, label, system_key)
+- [x] Edit/delete menus
+- [x] Files: `src/admin/cms/CmsMenus.tsx`, `src/admin/cms/components/MenuList.tsx`
 
-#### 4.2 Simple Menu Editor
-- [ ] Menu item tree editor
-- [ ] Add/edit/delete menu items
-- [ ] Support types: page, external, anchor, separator, group
-- [ ] Configure label, target, rel attributes
-- [ ] Files: `src/admin/cms/components/MenuEditor.tsx`, `src/admin/cms/components/MenuItemEditor.tsx`
+#### 4.2 Simple Menu Editor ✅ COMPLETED
+- [x] Menu item tree editor
+- [x] Add/edit/delete menu items
+- [x] Support types: page, external, anchor, separator, group
+- [x] Configure label, target, rel attributes
+- [x] Files: `src/admin/cms/components/MenuEditor.tsx`, `src/admin/cms/components/MenuItemEditor.tsx`
 
-#### 4.3 Menu Item Visibility
-- [ ] Configure visibility rules (device, audience, feature flags, schedule)
-- [ ] Badge configuration
-- [ ] Style hints
-- [ ] Files: `src/admin/cms/components/MenuItemVisibilityEditor.tsx`
+#### 4.3 Menu Item Visibility ✅ COMPLETED
+- [x] Configure visibility rules (device, audience, feature flags, schedule)
+- [x] Badge configuration
+- [x] Style hints
+- [x] Files: `src/admin/cms/components/MenuItemVisibilityEditor.tsx`
 
 #### 4.4 Menu Rules (Optional/Future)
 - [ ] Dynamic menu item generation based on rules
 - [ ] Auto-include pages by path prefix, tag, section
 - [ ] Sorting and capping options
 - [ ] Files: `src/admin/cms/components/MenuRuleEditor.tsx` (skip for now, implement if needed)
+- [x] **COMMITTED**: feat(cms): Phase 4: Menus Management - Complete implementation with tree editor, visibility rules, and comprehensive menu management
+- [x] **ENHANCED**: Added menu publishing functionality with publish/unpublish buttons
+- [x] **OPTIMIZED**: Removed redundant status column from menu_version table (status tracked via menu_publish table)
 
 ### Phase 5: Publishing Workflow
 Implement versioning and publishing:

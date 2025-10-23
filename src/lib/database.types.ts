@@ -624,7 +624,6 @@ export type Database = {
           id: string
           items: Json
           menu_id: string
-          status: Database["public"]["Enums"]["publish_status"]
           updated_at: string | null
           updated_by: string | null
           version: number
@@ -635,7 +634,6 @@ export type Database = {
           id?: string
           items?: Json
           menu_id: string
-          status?: Database["public"]["Enums"]["publish_status"]
           updated_at?: string | null
           updated_by?: string | null
           version: number
@@ -646,7 +644,6 @@ export type Database = {
           id?: string
           items?: Json
           menu_id?: string
-          status?: Database["public"]["Enums"]["publish_status"]
           updated_at?: string | null
           updated_by?: string | null
           version?: number

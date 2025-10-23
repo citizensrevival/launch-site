@@ -21,6 +21,9 @@ import {
 interface AdminLayoutProps {
   children: React.ReactNode;
   pageHeader?: React.ReactNode;
+  title?: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
 }
 
 type SidebarGroupKey = 'primary' | 'analytics' | 'content' | 'settings';
@@ -37,7 +40,7 @@ function getInitialsFromEmail(email?: string | null): string {
   return initials || 'U';
 }
 
-export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
+export function AdminLayout({ children, pageHeader, title, subtitle, actions }: AdminLayoutProps) {
   const dispatch = useAppDispatch();
   const globalSearch = useAppSelector((state) => state.admin.globalSearch);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -415,6 +418,28 @@ export function AdminLayout({ children, pageHeader }: AdminLayoutProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {/* Page header */}
               <div className="mb-4">{pageHeader}</div>
+              
+              {/* Title and Actions */}
+              {(title || subtitle || actions) && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {title && (
+                        <h1 className="text-2xl font-bold text-white">{title}</h1>
+                      )}
+                      {subtitle && (
+                        <p className="mt-1 text-sm text-gray-400">{subtitle}</p>
+                      )}
+                    </div>
+                    {actions && (
+                      <div className="flex items-center gap-4">
+                        {actions}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               {/* Content */}
               {children}
             </div>

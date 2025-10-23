@@ -8,7 +8,7 @@ import type {
   Block, BlockVersion, BlockPublish,
   UserPermissions, AuditLogEntry, ContentFilters, ContentSort,
   PaginatedResponse, ApiResponse, AssetMeta, AssetKind, LocalizedContent, AssetEditOperation,
-  ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu
+  ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu, Menu, MenuVersion
 } from './types';
 import {
   zSite, zPage, zPageVersion, zPagePublish, zAsset, zAssetPublish,

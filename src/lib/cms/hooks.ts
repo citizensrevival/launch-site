@@ -7,7 +7,7 @@ import type {
   Site, Page, PageVersion, Asset, AssetVersion, Block, BlockVersion,
   ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu,
   UserPermissions, AuditLogEntry, ContentFilters, ContentSort,
-  PaginatedResponse, AssetMeta
+  PaginatedResponse, AssetMeta, Menu
 } from './types';
 import {
   getSite, getPages, getPage,
@@ -25,6 +25,11 @@ import {
   saveEditedAsset, updateExistingAsset,
   type AssetVariant
 } from './client';
+import {
+  getMenus, getMenu, createMenu, updateMenu, deleteMenu,
+  getMenuVersions, createMenuVersion, updateMenuVersion,
+  publishMenu, unpublishMenu
+} from './menuClient';
 
 // Site hooks
 
@@ -304,6 +309,298 @@ export function usePublishedMenu(systemKey: string, locale = 'en-US') {
   }, [systemKey, locale]);
 
   return { menu, loading, error };
+}
+
+// Menu hooks
+export function useMenus(
+  siteId: string,
+  filters?: ContentFilters,
+  sort?: ContentSort,
+  page = 1,
+  pageSize = 20
+) {
+  const [menus, setMenus] = useState<PaginatedResponse<Menu> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMenus = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getMenus(siteId, filters, sort, page, pageSize);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setMenus(response.data || null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, [siteId, filters, sort, page, pageSize]);
+
+  useEffect(() => {
+    if (siteId && siteId.trim() !== '') {
+      fetchMenus();
+    } else {
+      setMenus(null);
+      setLoading(false);
+      setError(null);
+    }
+  }, [siteId, fetchMenus]);
+
+  return { menus, loading, error, refresh: fetchMenus };
+}
+
+export function useMenu(menuId: string) {
+  const [menu, setMenu] = useState<Menu | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMenu = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getMenu(menuId);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setMenu(response.data || null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, [menuId]);
+
+  useEffect(() => {
+    if (menuId) {
+      fetchMenu();
+    }
+  }, [menuId, fetchMenu]);
+
+  return { menu, loading, error, refresh: fetchMenu };
+}
+
+export function useMenuVersions(menuId: string) {
+  const [versions, setVersions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchVersions = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await getMenuVersions(menuId);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setVersions(response.data || []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, [menuId]);
+
+  useEffect(() => {
+    if (menuId) {
+      fetchVersions();
+    }
+  }, [menuId, fetchVersions]);
+
+  return { versions, loading, error, refresh: fetchVersions };
+}
+
+export function useMenuManagement() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createMenuHandler = useCallback(async (menuData: Omit<Menu, 'id'>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await createMenu(menuData);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateMenuHandler = useCallback(async (menuId: string, updates: Partial<Menu>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await updateMenu(menuId, updates);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteMenuHandler = useCallback(async (menuId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await deleteMenu(menuId);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const publishMenuHandler = useCallback(async (menuId: string, versionNumber: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await publishMenu(menuId, versionNumber);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const unpublishMenuHandler = useCallback(async (menuId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await unpublishMenu(menuId);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    createMenu: createMenuHandler,
+    updateMenu: updateMenuHandler,
+    deleteMenu: deleteMenuHandler,
+    publishMenu: publishMenuHandler,
+    unpublishMenu: unpublishMenuHandler,
+    loading,
+    error
+  };
+}
+
+export function useMenuVersionManagement() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createMenuVersionHandler = useCallback(async (versionData: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await createMenuVersion(versionData);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateMenuVersionHandler = useCallback(async (versionId: string, updates: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await updateMenuVersion(versionId, updates);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const publishMenuHandler = useCallback(async (menuId: string, versionNumber: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await publishMenu(menuId, versionNumber);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const unpublishMenuHandler = useCallback(async (menuId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await unpublishMenu(menuId);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    createMenuVersion: createMenuVersionHandler,
+    updateMenuVersion: updateMenuVersionHandler,
+    publishMenu: publishMenuHandler,
+    unpublishMenu: unpublishMenuHandler,
+    loading,
+    error
+  };
 }
 
 // Permission hooks
