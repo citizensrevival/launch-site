@@ -57,9 +57,14 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Edge Function called with method:', req.method)
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()))
+    
     const { assetId } = await req.json()
+    console.log('Received assetId:', assetId)
 
     if (!assetId) {
+      console.log('No assetId provided')
       return new Response(JSON.stringify({ error: 'assetId is required' }), {
         status: 400,
         headers: { 
@@ -72,14 +77,29 @@ serve(async (req) => {
     console.log(`Processing variants for asset: ${assetId}`)
 
     // Fetch asset metadata from database
+    console.log('Fetching asset from database...')
     const { data: asset, error: assetError } = await supabase
       .from('asset')
       .select('*')
       .eq('id', assetId)
       .single()
 
-    if (assetError || !asset) {
-      console.error('Error fetching asset:', assetError)
+    if (assetError) {
+      console.error('Database error fetching asset:', assetError)
+      return new Response(JSON.stringify({ 
+        error: 'Database error', 
+        details: assetError.message 
+      }), {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+    }
+
+    if (!asset) {
+      console.log('Asset not found in database')
       return new Response(JSON.stringify({ error: 'Asset not found' }), {
         status: 404,
         headers: { 
@@ -88,6 +108,8 @@ serve(async (req) => {
         }
       })
     }
+
+    console.log('Asset found:', { id: asset.id, kind: asset.kind, site_id: asset.site_id })
 
     // Only process images
     if (asset.kind !== 'image') {
@@ -104,7 +126,7 @@ serve(async (req) => {
     }
 
     // Determine bucket name
-    const bucketName = `site-${asset.site_id.replace(/-/g, '')}`
+    const bucketName = asset.site_id
     console.log(`Using bucket: ${bucketName}`)
 
     // Download original image from storage

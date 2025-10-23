@@ -585,8 +585,13 @@ export function useAssets(
   }, [siteId, filters, sort, page, pageSize]);
 
   useEffect(() => {
-    if (siteId) {
+    if (siteId && siteId.trim() !== '') {
       fetchAssets();
+    } else {
+      // Reset state when no siteId
+      setAssets(null);
+      setLoading(false);
+      setError(null);
     }
   }, [siteId, fetchAssets]);
 

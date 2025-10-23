@@ -68,7 +68,7 @@ END $$;
 
 -- Create the site-specific storage bucket
 -- Note: This requires the service role key or manual creation in dashboard
--- We'll create the bucket with the site ID as the bucket name
+-- We'll create the bucket with a simple name format
 DO $$
 DECLARE
   site_uuid uuid;
@@ -77,17 +77,17 @@ BEGIN
   SELECT id INTO site_uuid FROM site WHERE handle = 'aztec-citizens-revival';
   
   IF site_uuid IS NOT NULL THEN
-    -- Create bucket with a more standard name format
+    -- Create bucket with site ID as bucket name
     INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
     VALUES (
-      'site-' || replace(site_uuid::text, '-', ''),
-      'site-' || replace(site_uuid::text, '-', ''),
+      site_uuid,
+      site_uuid,
       true,
       52428800, -- 50MB in bytes
       ARRAY['image/*', 'video/*', 'application/*']
     ) ON CONFLICT (id) DO NOTHING;
     
-    RAISE NOTICE 'Created storage bucket for site: %', site_uuid;
+    RAISE NOTICE 'Created storage bucket: % for site: %', site_uuid, site_uuid;
   ELSE
     RAISE EXCEPTION 'Site not found - cannot create bucket';
   END IF;

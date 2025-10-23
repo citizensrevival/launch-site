@@ -21,6 +21,7 @@ interface BlockListProps {
   loading: boolean;
   error: string | null;
   onEdit: (block: Block) => void;
+  onEditVersions: (block: Block) => void;
   onDelete: (block: Block) => void;
   sort: ContentSort;
   onSort: (field: 'type' | 'tag' | 'system_key') => void;
@@ -33,6 +34,7 @@ export function BlockList({
   loading,
   error,
   onEdit,
+  onEditVersions, // Used in line 249
   onDelete,
   sort,
   onSort,
@@ -132,6 +134,7 @@ export function BlockList({
                 key={block.id}
                 block={block}
                 onEdit={onEdit}
+                onEditVersions={onEditVersions}
                 onDelete={onDelete}
               />
             ))}
@@ -174,10 +177,12 @@ export function BlockList({
 function BlockRow({ 
   block, 
   onEdit, 
+  onEditVersions,
   onDelete 
 }: { 
   block: Block; 
   onEdit: (block: Block) => void; 
+  onEditVersions: (block: Block) => void;
   onDelete: (block: Block) => void; 
 }) {
   const { usageCount, loading: usageLoading } = useBlockUsageCount(block.id);
@@ -239,6 +244,15 @@ function BlockRow({
               className="p-2 text-gray-400 hover:text-blue-400 hover:bg-gray-600 rounded transition-colors"
             >
               <Icon path={mdiPencil} size={0.8} />
+            </button>
+          </Tooltip>
+          
+          <Tooltip content="Edit Versions">
+            <button
+              onClick={() => onEditVersions(block)}
+              className="p-2 text-gray-400 hover:text-green-400 hover:bg-gray-600 rounded transition-colors"
+            >
+              <Icon path={mdiCubeOutline} size={0.8} />
             </button>
           </Tooltip>
           

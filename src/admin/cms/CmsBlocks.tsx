@@ -7,6 +7,7 @@ import { useBlocks, useBlockManagement } from '../../lib/cms/hooks';
 import { useAppSelector } from '../../shell/store/hooks';
 import type { Block, ContentFilters, ContentSort } from '../../lib/cms/types';
 import { BlockList } from './components/BlockList';
+import { BlockEditor } from './components/BlockEditor';
 import { Icon } from '@mdi/react';
 import { 
   mdiPlus, 
@@ -48,6 +49,8 @@ export function CmsBlocks() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingBlock, setEditingBlock] = useState<Block | null>(null);
+  const [isBlockEditorOpen, setIsBlockEditorOpen] = useState(false);
+  const [editingBlockForVersion, setEditingBlockForVersion] = useState<Block | null>(null);
 
   // Form state for create/edit
   const [formData, setFormData] = useState({
@@ -252,6 +255,12 @@ export function CmsBlocks() {
     setIsEditModalOpen(true);
   };
 
+  // Open block editor for version management
+  const openBlockEditor = (block: Block) => {
+    setEditingBlockForVersion(block);
+    setIsBlockEditorOpen(true);
+  };
+
   // Reset form
   const resetForm = () => {
     setFormData({ type: '', tag: '', system_key: '', is_system: false });
@@ -392,6 +401,7 @@ export function CmsBlocks() {
           loading={loading}
           error={error}
           onEdit={openEditModal}
+          onEditVersions={openBlockEditor}
           onDelete={handleDeleteBlock}
           sort={sort}
           onSort={handleSort}
@@ -599,6 +609,22 @@ export function CmsBlocks() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Block Editor Modal */}
+        {editingBlockForVersion && (
+          <BlockEditor
+            block={editingBlockForVersion}
+            isOpen={isBlockEditorOpen}
+            onClose={() => {
+              setIsBlockEditorOpen(false);
+              setEditingBlockForVersion(null);
+            }}
+            onSave={(version) => {
+              console.log('✅ [CmsBlocks] Block version saved:', version);
+              handleRefresh(); // Refresh the blocks list
+            }}
+          />
         )}
       </div>
     </AdminLayout>

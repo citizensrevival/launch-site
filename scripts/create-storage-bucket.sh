@@ -15,24 +15,27 @@ fi
 # Get the site ID from the database
 SITE_ID=$(supabase db query "SELECT id FROM site WHERE handle = 'aztec-citizens-revival' LIMIT 1;" --output json | jq -r '.[0].id')
 
-if [ -z "$SITE_ID" ]; then
-    echo "❌ Error: Could not find site ID. Make sure the database is seeded."
+if [ -z "$SITE_ID" ] || [ "$SITE_ID" = "null" ]; then
+    echo "❌ Could not find site ID. Make sure the database is seeded."
     echo "Run: npm run db:reset"
     exit 1
 fi
 
-echo "Found site ID: $SITE_ID"
+# Create the CMS assets bucket with site ID
+BUCKET_NAME="$SITE_ID"
+
+echo "Creating storage bucket: $BUCKET_NAME for site: $SITE_ID"
 
 # Create the bucket using Supabase CLI
-supabase storage create-bucket "$SITE_ID" --public
+supabase storage create-bucket "$BUCKET_NAME" --public
 
 if [ $? -eq 0 ]; then
-    echo "✅ Site bucket $SITE_ID created successfully!"
+    echo "✅ Storage bucket $BUCKET_NAME created successfully!"
     echo "You can now upload files to the CMS."
 else
     echo "❌ Failed to create bucket. You may need to:"
     echo "1. Make sure you're logged in: supabase login"
     echo "2. Link your project: supabase link"
     echo "3. Or create the bucket manually in the Supabase dashboard"
-    echo "4. Bucket name should be: $SITE_ID"
+    echo "4. Bucket name should be: $BUCKET_NAME"
 fi

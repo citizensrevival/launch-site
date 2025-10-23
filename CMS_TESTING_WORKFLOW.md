@@ -100,7 +100,7 @@ If something doesn't work:
    ```
 
 4. **Verify storage bucket**:
-   - Check if `cms-assets` bucket exists in Supabase Storage
+   - Check if site-specific bucket exists in Supabase Storage
    - Verify RLS policies are set up
 
 ### 6. Git Workflow

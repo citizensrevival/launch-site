@@ -39,7 +39,7 @@ export function generateTempId(): string {
  * @returns The full URL to the asset
  */
 export function getAssetUrl(storageKey: string, siteId: string): string {
-  const { data } = supabase.storage.from('cms-assets').getPublicUrl(`${siteId}/${storageKey}`);
+  const { data } = supabase.storage.from(siteId).getPublicUrl(storageKey);
   return data.publicUrl;
 }
 
@@ -51,6 +51,6 @@ export function getAssetUrl(storageKey: string, siteId: string): string {
  * @returns The full URL to the asset variant
  */
 export function getAssetVariantUrl(storageKey: string, siteId: string, variant: string): string {
-  const { data } = supabase.storage.from('cms-assets').getPublicUrl(`${siteId}/variants/${variant}/${storageKey}`);
+  const { data } = supabase.storage.from(siteId).getPublicUrl(`variants/${variant}/${storageKey}`);
   return data.publicUrl;
 }

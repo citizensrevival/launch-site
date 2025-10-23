@@ -166,7 +166,7 @@ export function UploadDialog({ onUploadComplete }: UploadDialogProps) {
               <p><strong>To fix this:</strong></p>
               <ol className="list-decimal list-inside mt-1 space-y-1">
                 <li>Run: <code className="bg-red-100 px-1 rounded">./scripts/create-storage-bucket.sh</code></li>
-                <li>Or create the "cms-assets" bucket manually in your Supabase dashboard</li>
+                <li>Or create the "{siteId}" bucket manually in your Supabase dashboard</li>
                 <li>Make sure the bucket is public and allows the file types you're uploading</li>
               </ol>
             </div>
