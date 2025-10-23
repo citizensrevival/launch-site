@@ -1,4 +1,4 @@
-# Change the layout of managing content to provide a easy-to-user cohesive experience for the user
+# Change the layout of managing content to provide a easy-to-use cohesive experience for the user
 This new layout will combine elements of Assets, Pages, Blocks, and Menus into a single editor where the user can add and edit content in-place and see their changes in real-time without having to navigate to multiple pages and edit multiple tables to compose content.
 
 

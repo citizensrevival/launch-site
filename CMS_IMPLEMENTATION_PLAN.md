@@ -151,7 +151,7 @@ Build navigation menu system:
 - [x] **OPTIMIZED**: Removed redundant status column from menu_version table (status tracked via menu_publish table)
 
 ### Phase 5: Publishing Workflow ✅ MOSTLY COMPLETE
-Implement versioning and publishing:
+Implement versioning and publishing with hybrid approach:
 
 #### 5.1 Version Management UI ✅ COMPLETE
 - [x] Create new versions for pages/blocks/menus
@@ -159,20 +159,52 @@ Implement versioning and publishing:
 - [ ] Status badges (draft, published, archived) - Status column removed from schema
 - [x] Files: `src/admin/cms/components/VersionSelector.tsx` (integrated into existing editors)
 
-#### 5.2 Publish/Unpublish Operations ✅ COMPLETE
+#### 5.2 Individual Entity Publishing ✅ COMPLETE
 - [x] Publish button with confirmation
 - [x] Update publish tables (page_publish, block_publish, menu_publish)
 - [x] Unpublish operation
 - [x] Show publish status and timestamp
 - [x] Files: Add to existing editors
 
-#### 5.3 Audit Logging ❌ NOT IMPLEMENTED
+#### 5.3 Hybrid Publishing System ❌ NOT IMPLEMENTED
+- [ ] **Database Schema Updates**:
+  - [ ] Add 'staged' to publish_status enum: `ALTER TYPE publish_status ADD VALUE 'staged';`
+  - [ ] Create site_staging table for site-level staging
+  - [ ] Add staging_status columns to version tables
+  - [ ] Create staging dependency tracking table
+- [ ] **Individual Entity Staging**:
+  - [ ] Implement stageEntity() function for pages, blocks, menus, assets
+  - [ ] Add staging status tracking
+  - [ ] Create staging preview capabilities
+- [ ] **Site-Level Staging**:
+  - [ ] Implement stageSite() function
+  - [ ] Add site_staging table management
+  - [ ] Create atomic staging workflow
+- [ ] **Staging Management UI**:
+  - [ ] Create staging dashboard
+  - [ ] Add staging controls to existing editors
+  - [ ] Implement staging status indicators
+- [ ] **Dependency Management**:
+  - [ ] Add dependency checking for staged content
+  - [ ] Create dependency visualization
+  - [ ] Implement dependency resolution
+- [ ] Files: `src/lib/cms/staging.ts`, `src/admin/cms/StagingManager.tsx`, `supabase/migrations/add_staging_support.sql`
+
+#### 5.4 Staging Workflow Features ❌ NOT IMPLEMENTED
+- [ ] Stage individual entities (pages, blocks, menus, assets)
+- [ ] Stage entire site at once
+- [ ] Preview staged content
+- [ ] Publish all staged content atomically
+- [ ] Rollback staging changes
+- [ ] Files: `src/admin/cms/components/StagingControls.tsx`
+
+#### 5.5 Audit Logging ❌ NOT IMPLEMENTED
 - [ ] Log all CMS operations using `log_cms_audit` function
 - [ ] Display audit log in CmsAudit page
 - [ ] Filter by entity type, entity ID, user, date
 - [ ] Files: `src/admin/cms/CmsAudit.tsx`, `src/admin/cms/components/AuditLogTable.tsx`
 
-#### 5.4 Permissions Integration ❌ NOT IMPLEMENTED
+#### 5.6 Permissions Integration ❌ NOT IMPLEMENTED
 - [ ] Check permissions before operations (cms:page:create, cms:block:edit, etc.)
 - [ ] Display permission errors
 - [ ] Manage user permissions in CmsUsers
@@ -293,6 +325,132 @@ Replace hardcoded pages with CMS-driven rendering:
 - [ ] Structured data (JSON-LD)
 - [ ] Files: `src/public/components/PageHead.tsx`
 
+### Phase 9: Cohesive Editor Implementation
+Build the unified content editing experience as specified in `CMS_COHESIVE_EDITOR.md`:
+
+#### 9.1 Cohesive Page Editor Layout ❌ NOT IMPLEMENTED
+- [ ] Create unified page editor with top bar, right panel, bottom bar, and content area
+- [ ] Implement top bar with page info, version selector, and toolbar
+- [ ] Build right panel for context-sensitive editing (blocks, assets, library)
+- [ ] Create bottom bar for metadata display
+- [ ] Design middle content area for in-place editing
+- [ ] Files: `src/admin/cms/CohesivePageEditor.tsx`, `src/admin/cms/components/CohesiveEditorLayout.tsx`
+
+#### 9.2 In-Place Content Editing ❌ NOT IMPLEMENTED
+- [ ] Implement drag-and-drop for content blocks
+- [ ] Create in-place editing for blocks (styled to look like final output)
+- [ ] Add drag-and-drop for assets into blocks
+- [ ] Build block reordering and nesting
+- [ ] Files: `src/admin/cms/components/InPlaceEditor.tsx`, `src/admin/cms/components/BlockDragDrop.tsx`
+
+#### 9.3 Context-Sensitive Right Panel ❌ NOT IMPLEMENTED
+- [ ] Block editor panel (version selector, layout, attributes)
+- [ ] Asset editor panel (version selector, variants, editing)
+- [ ] Content library panel (blocks and assets for drag-and-drop)
+- [ ] Dynamic panel switching based on selection
+- [ ] Files: `src/admin/cms/components/ContextPanel.tsx`, `src/admin/cms/components/BlockEditorPanel.tsx`
+
+#### 9.4 Menu and Auxiliary Pages Integration ❌ NOT IMPLEMENTED
+- [ ] Add menu outline component to admin navigation
+- [ ] Implement menu item editing with drag-and-drop
+- [ ] Create auxiliary pages component
+- [ ] Add navigation between cohesive editor and menu/auxiliary pages
+- [ ] Files: `src/admin/cms/components/MenuOutline.tsx`, `src/admin/cms/components/AuxiliaryPages.tsx`
+
+#### 9.5 Publishing Integration ❌ NOT IMPLEMENTED
+- [ ] Integrate individual publishing into cohesive editor
+- [ ] Add staging workflow controls
+- [ ] Implement dependency visualization
+- [ ] Create publishing workflow selection (individual vs. staging)
+- [ ] Files: `src/admin/cms/components/CohesivePublishing.tsx`
+
+#### 9.6 Real-Time Preview ❌ NOT IMPLEMENTED
+- [ ] Implement live preview of content changes
+- [ ] Add preview mode toggle
+- [ ] Create preview rendering system
+- [ ] Handle staged vs. published content preview
+- [ ] Files: `src/admin/cms/components/LivePreview.tsx`, `src/admin/cms/hooks/usePreview.ts`
+
+### Phase 10: Database Object Organization
+Implement properly named database objects with prefixes for better organization and clarity:
+
+#### 10.1 Analytics Objects Implementation ❌ NOT IMPLEMENTED
+- [ ] **Tables**:
+  - [ ] Create `analytics_users` table
+  - [ ] Create `analytics_sessions` table
+  - [ ] Create `analytics_pageviews` table
+  - [ ] Create `analytics_events` table
+  - [ ] Create `analytics_excluded_users` table
+- [ ] **Functions**: Create analytics-related functions with `analytics_` prefix
+- [ ] **Edge Functions**: Create analytics edge functions with `analytics_` prefix
+  - [ ] `analytics_ingest_batch`
+  - [ ] `analytics_ingest_end_session`
+  - [ ] `analytics_ingest_event`
+  - [ ] `analytics_ingest_heartbeat`
+  - [ ] `analytics_ingest_pageview`
+  - [ ] `analytics_ingest_start_session`
+  - [ ] `analytics_ingest_update_session_context`
+  - [ ] `analytics_ingest_upsert_user`
+
+#### 10.2 Leads Objects Implementation ❌ NOT IMPLEMENTED
+- [ ] **Tables**:
+  - [ ] Create `leads_submissions` table
+  - [ ] Create `system_admins` table (moved to system category)
+- [ ] **Functions**: Create leads-related functions with `leads_` prefix
+
+#### 10.3 System Objects Implementation ❌ NOT IMPLEMENTED
+- [ ] **Tables**:
+  - [ ] Create `system_sites` table
+  - [ ] Create `system_user_permissions` table
+  - [ ] Create `system_audit_log` table
+- [ ] **Functions**: Create system-related functions with `system_` prefix
+
+#### 10.4 CMS Objects Implementation ❌ NOT IMPLEMENTED
+- [ ] **Tables**:
+  - [ ] Create `cms_pages` table
+  - [ ] Create `cms_page_versions` table
+  - [ ] Create `cms_page_publishes` table
+  - [ ] Create `cms_blocks` table
+  - [ ] Create `cms_block_versions` table
+  - [ ] Create `cms_block_publishes` table
+  - [ ] Create `cms_menus` table
+  - [ ] Create `cms_menu_versions` table
+  - [ ] Create `cms_menu_publishes` table
+  - [ ] Create `cms_assets` table
+  - [ ] Create `cms_asset_versions` table
+  - [ ] Create `cms_asset_publishes` table
+  - [ ] Create `cms_asset_variants` table
+  - [ ] Create `cms_asset_usage` table
+- [ ] **Functions**: Create CMS-related functions with `cms_` prefix
+- [ ] **Edge Functions**: Create CMS edge functions with `cms_` prefix
+  - [ ] `cms_process_asset_variants`
+
+#### 10.5 Implementation Strategy ❌ NOT IMPLEMENTED
+- [ ] **Create New Schema**:
+  - [ ] Create new migration with properly named tables from the start
+  - [ ] Set up all foreign key relationships with new table names
+  - [ ] Create RLS policies with new table names
+  - [ ] Create all client code with new table names
+  - [ ] Generate TypeScript types and interfaces
+- [ ] **Client Code Implementation**:
+  - [ ] Implement all Supabase client calls with new table names
+  - [ ] Create all TypeScript interfaces and types
+  - [ ] Build all React components with new table names
+  - [ ] Create all hooks and utility functions
+- [ ] **Testing Strategy**:
+  - [ ] Test all functionality with new table names
+  - [ ] Verify all foreign key relationships work
+  - [ ] Test all client code with new names
+  - [ ] Verify RLS policies work with new names
+- [ ] Files: `supabase/migrations/create_properly_named_schema.sql`, `src/lib/database.types.ts`, `src/lib/cms/`
+
+#### 10.6 Documentation Creation ❌ NOT IMPLEMENTED
+- [ ] Create documentation with properly named objects from the start
+- [ ] Create API documentation with new object names
+- [ ] Create client code examples with new names
+- [ ] Create database schema documentation
+- [ ] Files: `README.md`, `CMS_IMPLEMENTATION_PLAN.md`, `src/lib/cms/`
+
 ## Success Criteria
 - ✅ Can upload, organize, and manage assets with variants
 - ✅ Can create, edit, version, and publish pages
@@ -302,6 +460,85 @@ Replace hardcoded pages with CMS-driven rendering:
 - ✅ Published content is resolved via Edge Functions
 - ✅ Public site renders CMS content dynamically
 - ✅ Existing pages migrated to CMS without losing functionality
+- [ ] **Hybrid Publishing**: Can publish individual entities OR stage entire site
+- [ ] **Cohesive Editor**: Unified editing experience with in-place content editing
+- [ ] **Staging Workflow**: Complete site preview and atomic publishing
+- [ ] **Dependency Management**: Visualize and manage content dependencies
+- [ ] **Database Organization**: All database objects properly prefixed and organized
+
+## Hybrid Publishing Architecture
+
+### Publishing Approach Decision
+Based on analysis of the current schema and requirements, the CMS implements a **hybrid publishing approach** that provides both individual entity publishing and site-level staging:
+
+#### Individual Entity Publishing (Current Implementation)
+- **Granular Control**: Publish specific pages, blocks, or assets independently
+- **Content Reuse**: Blocks and assets can be published and reused across pages
+- **Incremental Updates**: Update single entities without affecting the entire site
+- **Risk Mitigation**: Changes to one entity don't break the whole site
+- **Content Team Workflow**: Different team members can work on different content types
+
+#### Site-Level Staging (Phase 5.3-5.4)
+- **Consistency Guarantee**: All content is tested together before going live
+- **Atomic Updates**: Either everything publishes or nothing does
+- **Quality Control**: Complete site preview before publishing
+- **Major Releases**: Ideal for comprehensive site updates and redesigns
+
+#### Hybrid Benefits
+- **Flexibility**: Choose the right approach for each situation
+- **Content Team Efficiency**: Quick individual updates + comprehensive staging for major releases
+- **Risk Management**: Can do both incremental updates and major overhauls safely
+- **User Experience**: Content creators can choose their preferred workflow
+
+### Cohesive Editor Architecture
+
+#### Unified Editing Experience
+The cohesive editor (Phase 9) provides a single interface for managing all content:
+
+- **Top Bar**: Page info, version selector, toolbar (save, publish, preview, etc.)
+- **Right Panel**: Context-sensitive editing (blocks, assets, library)
+- **Bottom Bar**: Metadata display for selected content
+- **Middle Area**: In-place content editing with drag-and-drop
+
+#### Key Features
+- **In-Place Editing**: Content looks like the final output while editing
+- **Context-Sensitive Panels**: Right panel changes based on selection
+- **Drag-and-Drop**: Blocks and assets can be moved and reordered
+- **Real-Time Preview**: See changes as you make them
+- **Dependency Visualization**: Understand how content relates
+
+### Database Organization Architecture
+
+#### Naming Convention Benefits
+The database object renaming (Phase 10) provides several key benefits:
+
+#### **Analytics Objects** (`analytics_` prefix)
+- **Clear Separation**: Analytics data is clearly separated from content and system data
+- **Performance**: Analytics queries are isolated and can be optimized independently
+- **Scaling**: Analytics tables can be moved to separate databases if needed
+- **Security**: Analytics data can have different access controls and retention policies
+
+#### **Leads Objects** (`leads_` prefix)
+- **Lead Management**: All lead-related functionality is clearly identified
+- **CRM Integration**: Easier to integrate with external CRM systems
+- **Data Privacy**: Lead data can have specific privacy controls and GDPR compliance
+
+#### **System Objects** (`system_` prefix)
+- **Core Infrastructure**: System tables are clearly identified as core infrastructure
+- **Admin Functions**: System administration is separated from content management
+- **Security**: System objects can have elevated security requirements
+
+#### **CMS Objects** (`cms_` prefix)
+- **Content Management**: All content-related tables are clearly identified
+- **Content Workflow**: CMS functionality is isolated and can be optimized
+- **Content Security**: Content data can have specific access controls
+- **Content Scaling**: CMS can be scaled independently from other systems
+
+#### **Direct Implementation Benefits**
+- **Clean Start**: No legacy naming conventions to work around
+- **Consistent Naming**: All objects follow the same naming pattern from the beginning
+- **Simplified Development**: No need to maintain backward compatibility
+- **Better Organization**: Clear separation of concerns from day one
 
 ## Architecture Principles
 
@@ -670,4 +907,15 @@ After each implementation step:
 - ✅ **Phase 2.4**: Page Version History - COMPLETED
 - ✅ **Phase 3.1**: Block List & CRUD - COMPLETED
 - ✅ **Phase 3.2**: Block Version Editor - COMPLETED
-- ⏳ **Phase 6**: Testing Infrastructure - IN PROGRESS
+- ✅ **Phase 3.3**: Block Types & Templates - COMPLETED
+- ✅ **Phase 3.4**: Block Asset Management - COMPLETED
+- ✅ **Phase 4**: Menus Management - COMPLETED
+- ✅ **Phase 5.1**: Version Management UI - COMPLETED
+- ✅ **Phase 5.2**: Individual Entity Publishing - COMPLETED
+- ❌ **Phase 5.3-5.4**: Hybrid Publishing System - NOT IMPLEMENTED
+- ❌ **Phase 5.5-5.6**: Audit Logging & Permissions - NOT IMPLEMENTED
+- ✅ **Phase 6**: Testing Infrastructure - COMPLETED
+- ❌ **Phase 7**: Supabase Edge Functions - NOT IMPLEMENTED
+- ❌ **Phase 8**: Public Page Rendering System - NOT IMPLEMENTED
+- ❌ **Phase 9**: Cohesive Editor Implementation - NOT IMPLEMENTED
+- ❌ **Phase 10**: Database Object Renaming and Organization - NOT IMPLEMENTED
