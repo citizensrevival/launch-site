@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, ReactNode } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '../store'
 import { setSelectedSite, setLoading, setError } from '../store/slices/siteSlice'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 
 interface SiteContextType {
   site: any | null
@@ -28,16 +28,7 @@ export function SiteProvider({ children, slug }: SiteProviderProps) {
       dispatch(setLoading(true))
       
       try {
-        // Create Supabase client
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-        
-        if (!supabaseUrl || !supabaseAnonKey) {
-          throw new Error('Supabase configuration missing')
-        }
-
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
+        // Use singleton Supabase client
         // Fetch site by slug
         const { data, error: fetchError } = await supabase
           .from('site')

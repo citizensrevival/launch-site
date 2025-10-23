@@ -94,7 +94,7 @@ export class CustomConfigProvider implements ConfigProvider {
   }
 }
 
-// Create a default client instance
+// Create a default client instance using singleton pattern
 const configProvider = new EnvironmentConfigProvider();
 const config = configProvider.getSupabaseConfig();
-export const supabase = SupabaseClientFactory.createClient(config);
+export const supabase = SupabaseClientFactory.getInstance(config);

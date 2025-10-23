@@ -117,10 +117,17 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
           return
         }
 
-        await analyticsTracker.init()
-        const context = analyticsTracker.getContext()
-        setUser(context.user)
-        setSession(context.session)
+        try {
+          await analyticsTracker.init()
+          const context = analyticsTracker.getContext()
+          setUser(context.user)
+          setSession(context.session)
+        } catch (error) {
+          console.warn('Analytics initialization failed, continuing without tracking:', error)
+          // Set default values to prevent blocking
+          setUser(null)
+          setSession(null)
+        }
         setIsInitialized(true)
       } catch (error) {
         console.error('Failed to initialize analytics:', error)

@@ -84,7 +84,7 @@ export class PageService {
         .eq('site_id', siteId);
 
       if (error) throw error;
-      const pages = data.map(page => zPage.parse(page));
+      const pages = data.map((page: any) => zPage.parse(page));
       return { data: pages, error: null };
     } catch (error) {
       return { 

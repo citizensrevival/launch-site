@@ -39,7 +39,7 @@ export function AdminRoute() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-white">&nbsp;</div>
       </div>
     }>
       <Routes>

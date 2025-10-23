@@ -97,7 +97,12 @@ export default function App() {
       <ThemeProvider disableTransitionOnChange>
         <AuthProvider>
           <AnalyticsProvider>
-            <Router>
+            <Router
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+              }}
+            >
               <AppContent />
             </Router>
           </AnalyticsProvider>

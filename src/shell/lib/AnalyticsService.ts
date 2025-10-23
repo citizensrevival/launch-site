@@ -1037,13 +1037,25 @@ export class AnalyticsService {
     excludedBy: string = 'admin'
   ): Promise<{ success: boolean; id?: string; error?: string }> {
     try {
+      // Convert excludedBy to UUID if it's not already a valid UUID
+      let excludedByUuid: string | null = null;
+      if (excludedBy && excludedBy !== 'system' && excludedBy !== 'admin') {
+        // Try to use as UUID if it looks like one
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(excludedBy)) {
+          excludedByUuid = excludedBy;
+        }
+      }
+      
+      // Only pass sessionId if it's a valid UUID
+      const validSessionId = sessionId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId) ? sessionId : null;
+      
       const { data, error } = await supabase.rpc('exclude_user', {
         p_user_id: userId || null,
-        p_session_id: sessionId || null,
+        p_session_id: validSessionId,
         p_ip_address: ipAddress || null,
         p_anon_id: anonId || null,
         p_reason: reason,
-        p_excluded_by: excludedBy
+        p_excluded_by: excludedByUuid
       })
 
       if (error) throw error
@@ -1062,9 +1074,12 @@ export class AnalyticsService {
     anonId?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
+      // Only pass sessionId if it's a valid UUID
+      const validSessionId = sessionId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId) ? sessionId : null;
+      
       const { error } = await supabase.rpc('remove_exclusion', {
         p_user_id: userId || null,
-        p_session_id: sessionId || null,
+        p_session_id: validSessionId,
         p_ip_address: ipAddress || null,
         p_anon_id: anonId || null
       })
@@ -1085,9 +1100,12 @@ export class AnalyticsService {
     anonId?: string
   ): Promise<boolean> {
     try {
+      // Only pass sessionId if it's a valid UUID
+      const validSessionId = sessionId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId) ? sessionId : null;
+      
       const { data, error } = await supabase.rpc('is_user_excluded', {
         p_user_id: userId || null,
-        p_session_id: sessionId || null,
+        p_session_id: validSessionId,
         p_ip_address: ipAddress || null,
         p_anon_id: anonId || null
       })

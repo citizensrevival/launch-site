@@ -85,22 +85,29 @@ class AnalyticsTrackerImpl implements AnalyticsTracker {
       })
       
       if (error) {
-        console.error('Failed to upsert user:', error)
+        console.warn('Failed to upsert user, continuing without userId:', error)
         return
       }
       
       if (data?.userId) {
         // Store the userId (UUID) returned from the backend
         this.user = { ...this.user, userId: data.userId }
+      } else {
+        console.warn('No userId returned from upsert-user function')
       }
     } catch (error) {
-      console.error('Failed to upsert user:', error)
+      console.warn('Failed to upsert user, continuing without userId:', error)
     }
   }
 
   async startSession(): Promise<void> {
-    if (!this.user || !this.user.userId) {
-      throw new Error('User must be identified and have a userId before starting session')
+    if (!this.user) {
+      throw new Error('User must be identified before starting session')
+    }
+    
+    if (!this.user.userId) {
+      console.warn('No userId available, skipping session start')
+      return
     }
 
     const sessionId = this.generateSessionId()
