@@ -13,7 +13,7 @@ import {
 } from '@mdi/js';
 import { useBlockVersions, useBlockVersionManagement, useBlockManagement } from '../../../lib/cms/hooks';
 import { BlockContentEditor } from './BlockContentEditor';
-import { AssetPickerButton } from './AssetPicker';
+import { BlockAssetManager } from './BlockAssetManager';
 import type { Block, BlockVersion, LocalizedContent } from '../../../lib/cms/types';
 
 interface BlockEditorProps {
@@ -150,14 +150,6 @@ export function BlockEditor({ block, isOpen, onClose, onSave }: BlockEditorProps
     setShowVersionSelector(false);
   };
 
-  // Handle asset management
-  const handleAssetAdd = (role: string, assetId: string) => {
-    setAssets(prev => [...prev.filter(a => a.role !== role), { role, asset_id: assetId }]);
-  };
-
-  const handleAssetRemove = (role: string) => {
-    setAssets(prev => prev.filter(a => a.role !== role));
-  };
 
   if (!isOpen) return null;
 
@@ -263,25 +255,11 @@ export function BlockEditor({ block, isOpen, onClose, onSave }: BlockEditorProps
 
               {/* Asset Management */}
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-300 mb-2">Assets</h4>
-                <div className="space-y-2">
-                  {assets.map((asset, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-800 rounded">
-                      <span className="text-sm text-gray-300">{asset.role}</span>
-                      <button
-                        onClick={() => handleAssetRemove(asset.role)}
-                        className="p-1 hover:bg-gray-700 rounded"
-                      >
-                        <Icon path={mdiTrashCanOutline} size={0.8} className="text-red-400" />
-                      </button>
-                    </div>
-                  ))}
-                  <AssetPickerButton
-                    onAssetSelect={(assetId) => handleAssetAdd('content', assetId)}
-                    buttonText="Add Asset"
-                    buttonIcon={mdiPlus}
-                  />
-                </div>
+                <BlockAssetManager
+                  assets={assets}
+                  onAssetsChange={setAssets}
+                  blockType={block.type}
+                />
               </div>
             </div>
           </div>
@@ -292,6 +270,7 @@ export function BlockEditor({ block, isOpen, onClose, onSave }: BlockEditorProps
               content={content}
               onChange={handleContentChange}
               layoutVariant={layoutVariant}
+              blockType={block.type}
             />
           </div>
         </div>

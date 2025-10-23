@@ -1,7 +1,7 @@
 // Asset Picker Component
 // Modal for selecting assets to link to blocks
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Icon } from '@mdi/react';
 import { 
   mdiClose, 
@@ -14,7 +14,7 @@ import {
 import { useAssets } from '../../../lib/cms/hooks';
 import { useAppSelector } from '../../../shell/store/hooks';
 import { getAssetUrl, getAssetVariantUrl } from '../../../lib/cms/utils';
-import type { Asset } from '../../../lib/cms/types';
+import type { Asset, ContentFilters, ContentSort } from '../../../lib/cms/types';
 
 interface AssetPickerProps {
   isOpen: boolean;
@@ -23,20 +23,36 @@ interface AssetPickerProps {
   buttonText?: string;
   buttonIcon?: string;
   selectedAssetId?: string;
+  role?: string;
+  acceptedTypes?: ('image' | 'video' | 'file')[];
+  multiple?: boolean;
 }
 
 export function AssetPicker({ 
   isOpen, 
   onClose, 
-  onAssetSelect
+  onAssetSelect,
+  role,
+  acceptedTypes = ['image']
 }: AssetPickerProps) {
   const selectedSite = useAppSelector((state) => state.site.selectedSite);
   
-  // Memoize filters and sort to prevent infinite loops
-  const filters = useMemo(() => ({ kind: 'image' }), []);
-  const sort = useMemo(() => ({ field: 'created_at', direction: 'desc' as const }), []);
+  // Use refs to store stable values and prevent infinite loops
+  const filtersRef = useRef<ContentFilters>({});
+  const sortRef = useRef<ContentSort>({ field: 'created_at', direction: 'desc' });
   
-  const { assets, loading, error } = useAssets(selectedSite?.id || '', filters, sort, 1, 50);
+  // Update filters only when acceptedTypes changes
+  useEffect(() => {
+    if (acceptedTypes.length === 1) {
+      filtersRef.current = { kind: acceptedTypes[0] };
+    } else {
+      filtersRef.current = {};
+    }
+  }, [acceptedTypes.join(',')]);
+  
+  // Use a stable site ID to prevent unnecessary re-renders
+  const siteId = selectedSite?.id || '';
+  const { assets, loading, error } = useAssets(siteId, filtersRef.current, sortRef.current, 1, 50);
   
   // Debug logging
   useEffect(() => {
@@ -83,26 +99,6 @@ export function AssetPicker({
     }
   }, [isOpen]);
 
-  // Get asset preview URL
-  const getAssetPreviewUrl = (asset: Asset) => {
-    // This would typically come from your asset service
-    // For now, return a placeholder
-    return `/api/assets/${asset.id}/preview`;
-  };
-
-  // Get asset icon based on kind
-  const getAssetIcon = (asset: Asset) => {
-    switch (asset.kind) {
-      case 'image':
-        return mdiImage;
-      case 'video':
-        return mdiFile; // You might want a video icon
-      case 'file':
-        return mdiFile;
-      default:
-        return mdiFile;
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -111,7 +107,14 @@ export function AssetPicker({
       <div className="bg-gray-800 rounded-lg w-full max-w-4xl h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-xl font-semibold text-white">Select Asset</h2>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Select Asset</h2>
+            {role && (
+              <p className="text-sm text-gray-400 capitalize">
+                Role: {role.replace('_', ' ')}
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-700 rounded-lg transition-colors"

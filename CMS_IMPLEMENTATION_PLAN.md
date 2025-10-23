@@ -105,17 +105,19 @@ Build reusable content blocks:
 - [x] Asset reference management
 - [x] Files: `src/admin/cms/components/BlockEditor.tsx`, `src/admin/cms/components/BlockContentEditor.tsx`
 
-#### 3.3 Block Types & Templates
-- [ ] Define common block types (hero, features, CTA, text, image-text)
-- [ ] Create type-specific content schemas
-- [ ] Build visual block previews
-- [ ] Files: `src/lib/cms/blockTypes.ts`, `src/admin/cms/components/BlockPreview.tsx`
+#### 3.3 Block Types & Templates ✅ COMPLETED
+- [x] Define common block types (hero, features, CTA, text, image-text)
+- [x] Create type-specific content schemas
+- [x] Build visual block previews
+- [x] Files: `src/lib/cms/blockTypes.ts`, `src/admin/cms/components/BlockPreview.tsx`
+- [x] **COMMITTED**: feat(cms): Phase 3.3: Block Types & Templates - Complete implementation with 8 block types, schemas, and visual previews
 
-#### 3.4 Block Asset Management
-- [ ] Link assets to blocks with roles (hero_image, thumbnail, gallery)
-- [ ] Asset picker component
-- [ ] Display linked assets
-- [ ] Files: `src/admin/cms/components/AssetPicker.tsx`
+#### 3.4 Block Asset Management ✅ COMPLETED
+- [x] Link assets to blocks with roles (hero_image, thumbnail, gallery)
+- [x] Asset picker component
+- [x] Display linked assets
+- [x] Files: `src/admin/cms/components/AssetPicker.tsx`, `src/admin/cms/components/BlockAssetManager.tsx`, `src/admin/cms/components/LinkedAssetsDisplay.tsx`
+- [x] **COMMITTED**: feat(cms): Phase 3.4: Block Asset Management - Complete implementation with role-based asset linking, validation, and enhanced UX
 
 ### Phase 4: Menus Management
 Build navigation menu system:

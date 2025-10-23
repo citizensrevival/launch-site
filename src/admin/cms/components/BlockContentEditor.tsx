@@ -10,11 +10,14 @@ import {
   mdiMinus
 } from '@mdi/js';
 import type { LocalizedContent } from '../../../lib/cms/types';
+import { getBlockTypeFields } from '../../../lib/cms/blockTypes';
+import { BlockPreview } from './BlockPreview';
 
 interface BlockContentEditorProps {
   content: LocalizedContent<Record<string, unknown>>;
   onChange: (content: LocalizedContent<Record<string, unknown>>) => void;
   layoutVariant: string;
+  blockType?: string;
 }
 
 interface LocaleData {
@@ -22,8 +25,8 @@ interface LocaleData {
   data: Record<string, unknown>;
 }
 
-export function BlockContentEditor({ content, onChange, layoutVariant }: BlockContentEditorProps) {
-  const [activeTab, setActiveTab] = useState<'visual' | 'json'>('visual');
+export function BlockContentEditor({ content, onChange, layoutVariant, blockType }: BlockContentEditorProps) {
+  const [activeTab, setActiveTab] = useState<'visual' | 'json' | 'preview'>('visual');
   const [activeLocale, setActiveLocale] = useState<string>('en-US');
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [isValidJson, setIsValidJson] = useState(true);
@@ -69,15 +72,19 @@ export function BlockContentEditor({ content, onChange, layoutVariant }: BlockCo
     { code: 'de-DE', name: 'German (Germany)' }
   ], []);
 
-  // Layout variant specific fields
-  const getFieldsForLayout = (variant: string) => {
+  // Get fields from block type definition
+  const fields = useMemo(() => {
+    if (blockType) {
+      return getBlockTypeFields(blockType);
+    }
+    // Fallback to layout variant for backward compatibility
     const commonFields = [
       { key: 'title', label: 'Title', type: 'text', required: true },
       { key: 'subtitle', label: 'Subtitle', type: 'text', required: false },
       { key: 'description', label: 'Description', type: 'textarea', required: false }
     ];
 
-    switch (variant) {
+    switch (layoutVariant) {
       case 'hero':
         return [
           ...commonFields,
@@ -107,9 +114,7 @@ export function BlockContentEditor({ content, onChange, layoutVariant }: BlockCo
       default:
         return commonFields;
     }
-  };
-
-  const fields = useMemo(() => getFieldsForLayout(layoutVariant), [layoutVariant]);
+  }, [blockType, layoutVariant]);
 
   // Handle field changes
   const handleFieldChange = (key: string, value: unknown) => {
@@ -300,6 +305,19 @@ export function BlockContentEditor({ content, onChange, layoutVariant }: BlockCo
             <Icon path={mdiEye} size={1} className="mr-2" />
             Visual
           </button>
+          {blockType && (
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`px-3 py-2 rounded-lg transition-colors ${
+                activeTab === 'preview' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              <Icon path={mdiEye} size={1} className="mr-2" />
+              Preview
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('json')}
             className={`px-3 py-2 rounded-lg transition-colors ${
@@ -316,7 +334,20 @@ export function BlockContentEditor({ content, onChange, layoutVariant }: BlockCo
 
       {/* Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {activeTab === 'visual' ? (
+        {activeTab === 'preview' ? (
+          /* Block Preview */
+          <div className="flex-1 p-4 bg-gray-50">
+            <div className="max-w-4xl mx-auto">
+              <BlockPreview
+                blockType={blockType || layoutVariant}
+                content={localContent}
+                layoutVariant={layoutVariant}
+                locale={activeLocale}
+                className="bg-white rounded-lg shadow-sm"
+              />
+            </div>
+          </div>
+        ) : activeTab === 'visual' ? (
           <>
             {/* Locale Tabs */}
             <div className="flex items-center gap-2 p-4 border-b border-gray-700">

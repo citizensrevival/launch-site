@@ -8,6 +8,7 @@ import { useAppSelector } from '../../shell/store/hooks';
 import type { Block, ContentFilters, ContentSort } from '../../lib/cms/types';
 import { BlockList } from './components/BlockList';
 import { BlockEditor } from './components/BlockEditor';
+import { BlockTypeSelector } from './components/BlockPreview';
 import { Icon } from '@mdi/react';
 import { 
   mdiPlus, 
@@ -412,7 +413,7 @@ export function CmsBlocks() {
         {/* Create Block Modal */}
         {isCreateModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-white">Create New Block</h2>
                 <button
@@ -428,13 +429,10 @@ export function CmsBlocks() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Block Type *
                   </label>
-                  <input
-                    type="text"
-                    value={formData.type}
-                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-blue-500 focus:outline-none"
-                    placeholder="e.g., hero, features, cta"
-                    required
+                  <BlockTypeSelector
+                    onSelect={(type) => setFormData(prev => ({ ...prev, type }))}
+                    selectedType={formData.type}
+                    className="mb-4"
                   />
                 </div>
 
