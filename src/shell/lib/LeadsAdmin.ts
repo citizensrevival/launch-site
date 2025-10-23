@@ -12,8 +12,8 @@ export class LeadsAdmin {
 
   constructor(configProvider: ConfigProvider) {
     const config = configProvider.getSupabaseConfig();
-    // Always use regular client - admin operations should be handled via RLS policies
-    this.supabase = SupabaseClientFactory.createClient(config);
+    // Always use singleton client - admin operations should be handled via RLS policies
+    this.supabase = SupabaseClientFactory.getInstance(config);
   }
 
   /**

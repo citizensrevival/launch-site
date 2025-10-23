@@ -1,6 +1,6 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { CreateLeadInput, Lead, DatabaseError } from './types';
-import { ConfigProvider } from './supabase';
+import { ConfigProvider, SupabaseClientFactory } from './supabase';
 
 /**
  * Public leads service for submitting new leads
@@ -11,11 +11,7 @@ export class LeadsPublic {
 
   constructor(configProvider: ConfigProvider) {
     const config = configProvider.getSupabaseConfig();
-    this.supabase = this.createClient(config);
-  }
-
-  private createClient(config: any) {
-    return createClient(config.url, config.anonKey);
+    this.supabase = SupabaseClientFactory.getInstance(config);
   }
 
   /**

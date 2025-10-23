@@ -6,6 +6,7 @@ import { SupabaseConfig } from './types';
  */
 export class SupabaseClientFactory {
   private static instance: SupabaseClient | null = null;
+  private static config: SupabaseConfig | null = null;
 
   /**
    * Creates a Supabase client with the provided configuration
@@ -27,8 +28,12 @@ export class SupabaseClientFactory {
    * Gets or creates a singleton instance of the Supabase client
    */
   static getInstance(config: SupabaseConfig): SupabaseClient {
-    if (!this.instance) {
+    // Check if we need to create a new instance or if config has changed
+    if (!this.instance || !this.config || 
+        this.config.url !== config.url || 
+        this.config.anonKey !== config.anonKey) {
       this.instance = this.createClient(config);
+      this.config = config;
     }
     return this.instance;
   }
@@ -38,6 +43,7 @@ export class SupabaseClientFactory {
    */
   static resetInstance(): void {
     this.instance = null;
+    this.config = null;
   }
 }
 
