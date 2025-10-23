@@ -32,7 +32,7 @@ serve(async (req) => {
 
     // Update session with end time using public view
     const { error } = await supabase
-      .from('sessions') // Using public view instead of analytics.sessions
+      .from('analytics_sessions')
       .update({ ended_at: new Date().toISOString() })
       .eq('id', sessionId)
 

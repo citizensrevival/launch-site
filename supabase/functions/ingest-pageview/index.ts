@@ -13,16 +13,15 @@ serve(async (req) => {
 
     // Insert pageview
     const { data, error } = await supabase
-      .from('analytics.pageviews')
+      .from('analytics_pageviews')
       .insert({
         session_id: sessionId,
         user_id: userId,
-        url: url,
-        path: path,
-        title: title,
+        page_path: path,
+        page_title: title,
         referrer: referrer,
         properties: properties || {},
-        occurred_at: occurredAt || new Date().toISOString()
+        timestamp: occurredAt || new Date().toISOString()
       })
       .select('id')
       .single()

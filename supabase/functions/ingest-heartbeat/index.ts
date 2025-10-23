@@ -13,7 +13,7 @@ serve(async (req) => {
 
     // Update session's ended_at to extend the session
     const { error } = await supabase
-      .from('sessions')
+      .from('analytics_sessions')
       .update({ ended_at: new Date().toISOString() })
       .eq('id', sessionId)
 

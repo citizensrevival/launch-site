@@ -95,7 +95,7 @@ export async function revokePermission(
 export async function getSites(): Promise<ApiResponse<Site[]>> {
   try {
     const { data, error } = await supabase
-      .from('site')
+      .from('system_sites')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -110,7 +110,7 @@ export async function getSites(): Promise<ApiResponse<Site[]>> {
 export async function getSite(siteId: string): Promise<ApiResponse<Site>> {
   try {
     const { data, error } = await supabase
-      .from('site')
+      .from('system_sites')
       .select('*')
       .eq('id', siteId)
       .single();

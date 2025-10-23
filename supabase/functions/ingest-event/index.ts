@@ -13,16 +13,15 @@ serve(async (req) => {
 
     // Insert event
     const { data, error } = await supabase
-      .from('analytics.events')
+      .from('analytics_events')
       .insert({
         session_id: sessionId,
         user_id: userId,
-        name: name,
-        label: label,
-        value_num: valueNum,
-        value_text: valueText,
+        event_name: name,
+        event_category: label,
+        event_value: valueNum,
         properties: properties || {},
-        occurred_at: occurredAt || new Date().toISOString()
+        timestamp: occurredAt || new Date().toISOString()
       })
       .select('id')
       .single()

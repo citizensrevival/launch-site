@@ -31,6 +31,22 @@ serve(async (req) => {
     const body = await req.json()
     const { anonId, sessionId, landingPage, landingPath, referrer, utm, device } = StartSessionReq.parse(body)
 
+    // First upsert the user to get a proper user ID
+    const { data: userId, error: userError } = await supabase.rpc('upsert_user_by_anon_id', {
+      p_anon_id: anonId
+    })
+
+    if (userError) {
+      console.error('Error upserting user:', userError)
+      return new Response(JSON.stringify({ error: userError.message }), {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+    }
+
     // Get client IP and parse user agent
     const clientIP = getClientIP(req)
     const userAgent = req.headers.get('User-Agent') || ''
@@ -41,10 +57,10 @@ serve(async (req) => {
 
     // Insert session
     const { data, error } = await supabase
-      .from('sessions')
+      .from('analytics_sessions')
       .insert({
-        id: sessionId,
-        user_id: anonId, // This should be the user_id from upsert-user
+        session_id: sessionId,
+        user_id: userId, // Use the returned user ID from upsert
         landing_page: landingPage,
         landing_path: landingPath,
         referrer: referrer,

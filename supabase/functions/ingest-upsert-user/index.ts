@@ -49,7 +49,7 @@ serve(async (req) => {
     // Update properties if provided
     if (traits && Object.keys(traits).length > 0) {
       const { error: updateError } = await supabase
-        .from('users')
+        .from('analytics_users')
         .update({ properties: traits })
         .eq('id', data)
 

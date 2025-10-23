@@ -42,7 +42,7 @@ serve(async (req) => {
 
     // Update session
     const { error } = await supabase
-      .from('analytics.sessions')
+      .from('analytics_sessions')
       .update(updateData)
       .eq('id', sessionId)
 

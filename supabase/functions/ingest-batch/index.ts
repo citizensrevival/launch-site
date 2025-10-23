@@ -66,11 +66,27 @@ serve(async (req) => {
     if (session) {
       const { sessionId, anonId, landingPage, landingPath, referrer, utm, device } = session
       
+      // First upsert the user to get a proper user ID
+      const { data: userId, error: userError } = await supabase.rpc('upsert_user_by_anon_id', {
+        p_anon_id: anonId
+      })
+
+      if (userError) {
+        console.error('Error upserting user in batch session:', userError)
+        return new Response(JSON.stringify({ error: userError.message }), {
+          status: 500,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        })
+      }
+      
       const { data, error } = await supabase
-        .from('sessions')
+        .from('analytics_sessions')
         .insert({
-          id: sessionId,
-          user_id: anonId,
+          session_id: sessionId,
+          user_id: userId,
           landing_page: landingPage,
           landing_path: landingPath,
           referrer: referrer,
@@ -107,7 +123,7 @@ serve(async (req) => {
       // Verify that all sessions referenced by pageviews exist
       const sessionIds = [...new Set(pageviews.map(pv => pv.sessionId))]
       const { data: existingSessions, error: sessionCheckError } = await supabase
-        .from('sessions')
+        .from('analytics_sessions')
         .select('id')
         .in('id', sessionIds)
 
@@ -140,16 +156,15 @@ serve(async (req) => {
       }
 
       const { data, error } = await supabase
-        .from('pageviews')
+        .from('analytics_pageviews')
         .insert(pageviews.map(pv => ({
           session_id: pv.sessionId,
           user_id: pv.userId,
-          url: pv.url,
-          path: pv.path,
-          title: pv.title,
+          page_path: pv.path,
+          page_title: pv.title,
           referrer: pv.referrer,
           properties: pv.properties || {},
-          occurred_at: pv.occurredAt || new Date().toISOString()
+          timestamp: pv.occurredAt || new Date().toISOString()
         })))
         .select('id')
 
@@ -172,7 +187,7 @@ serve(async (req) => {
       // Verify that all sessions referenced by events exist
       const sessionIds = [...new Set(events.map(ev => ev.sessionId))]
       const { data: existingSessions, error: sessionCheckError } = await supabase
-        .from('sessions')
+        .from('analytics_sessions')
         .select('id')
         .in('id', sessionIds)
 
@@ -205,16 +220,15 @@ serve(async (req) => {
       }
 
       const { data, error } = await supabase
-        .from('events')
+        .from('analytics_events')
         .insert(events.map(ev => ({
           session_id: ev.sessionId,
           user_id: ev.userId,
-          name: ev.name,
-          label: ev.label,
-          value_num: ev.valueNum,
-          value_text: ev.valueText,
+          event_name: ev.name,
+          event_category: ev.label,
+          event_value: ev.valueNum,
           properties: ev.properties || {},
-          occurred_at: ev.occurredAt || new Date().toISOString()
+          timestamp: ev.occurredAt || new Date().toISOString()
         })))
         .select('id')
 

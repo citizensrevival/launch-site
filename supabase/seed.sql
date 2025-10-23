@@ -58,12 +58,14 @@ SELECT
 FROM auth.users WHERE email = 'pwningcode@gmail.com';
 
 -- Create the main site with a proper UUID
-INSERT INTO system_sites (id, name, domain, settings)
+INSERT INTO system_sites (id, name, domain, settings, default_locale, slug)
 VALUES (
   gen_random_uuid(),
   'Aztec Citizens Revival',
   'aztec-citizens-revival.local',
-  '{"default_locale": "en-US", "slug": "aztec"}'::jsonb
+  '{}'::jsonb,
+  'en',
+  'aztec'
 );
 
 -- Verify the site was created

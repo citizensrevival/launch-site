@@ -21,8 +21,8 @@ export function useSites() {
       dispatch(setError(null));
 
       const { data, error } = await supabase
-        .from('site')
-        .select('id, handle, label, default_locale, slug')
+        .from('system_sites')
+        .select('id, name as handle, name as label, default_locale, slug')
         .order('created_at', { ascending: true });
 
       if (error) {

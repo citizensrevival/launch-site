@@ -31,7 +31,7 @@ export function SiteProvider({ children, slug }: SiteProviderProps) {
         // Use singleton Supabase client
         // Fetch site by slug
         const { data, error: fetchError } = await supabase
-          .from('site')
+          .from('system_sites')
           .select('*')
           .eq('slug', slug)
           .single()
