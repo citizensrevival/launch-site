@@ -20,6 +20,7 @@ const CmsAssets = lazy(() => import('./cms/CmsAssets').then(module => ({ default
 const CmsMenus = lazy(() => import('./cms/CmsMenus').then(module => ({ default: module.CmsMenus })));
 const CmsUsers = lazy(() => import('./cms/CmsUsers').then(module => ({ default: module.CmsUsers })));
 const CmsAudit = lazy(() => import('./cms/CmsAudit').then(module => ({ default: module.CmsAudit })));
+const SettingsUsers = lazy(() => import('./settings').then(module => ({ default: module.SettingsUsers })));
 
 export function AdminRoute() {
   const { user, loading } = useAuth();
@@ -58,6 +59,7 @@ export function AdminRoute() {
         <Route path="cms/menus" element={<CmsRoute><CmsMenus /></CmsRoute>} />
         <Route path="cms/users" element={<CmsRoute><CmsUsers /></CmsRoute>} />
         <Route path="cms/audit" element={<CmsRoute><CmsAudit /></CmsRoute>} />
+        <Route path="settings/users" element={<SettingsUsers />} />
         <Route path="*" element={<Navigate to="/manage" replace />} />
       </Routes>
     </Suspense>

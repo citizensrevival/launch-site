@@ -137,6 +137,12 @@ export function AdminLayout({ children, pageHeader, title, subtitle, actions }: 
     ) },
   ];
 
+  const settingsItems = [
+    { name: 'Users', href: '/manage/settings/users', icon: (
+      <Icon path={mdiAccountGroup} className="h-5 w-5" />
+    ) },
+  ];
+
 
   const initials = getInitialsFromEmail(user?.email);
 
@@ -272,27 +278,37 @@ export function AdminLayout({ children, pageHeader, title, subtitle, actions }: 
               </nav>
             </div>
 
-            {/* Settings section commented out for now */}
-            {/* <div className="mt-6 px-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Settings</h2>
-            </div>
-            <div className="mt-2">
+            <div className="mt-6">
               <button
                 className="w-full flex items-center justify-between px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-gray-700"
                 onClick={() => setOpenGroups((s) => ({ ...s, settings: !s.settings }))}
               >
-                <span className="font-medium">Manage</span>
-                <svg className={classNames('h-4 w-4 transform transition-transform', openGroups.settings && 'rotate-180')} viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.38a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"/></svg>
+                <span className="font-medium">Settings</span>
+                <Icon path={mdiChevronDown} className={classNames('h-4 w-4 transform transition-transform', openGroups.settings && 'rotate-180')} />
               </button>
               <nav className={classNames('px-2 space-y-1', openGroups.settings ? 'block' : 'hidden')}>
-                {settingsItems.map((item) => (
-                  <a key={item.name} href={item.href} className="group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <span className="text-gray-400 group-hover:text-gray-200">{item.icon}</span>
-                    {item.name}
-                  </a>
-                ))}
+                {settingsItems.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <a 
+                      key={item.name} 
+                      href={item.href} 
+                      className={classNames(
+                        'group flex items-center gap-3 px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                        active 
+                          ? 'bg-gray-700 text-white' 
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      )}
+                    >
+                      <span className={classNames(
+                        active ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'
+                      )}>{item.icon}</span>
+                      {item.name}
+                    </a>
+                  );
+                })}
               </nav>
-            </div> */}
+            </div>
           </div>
         </div>
       </div>
