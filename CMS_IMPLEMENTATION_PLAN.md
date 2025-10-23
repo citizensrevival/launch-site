@@ -91,12 +91,12 @@ Build the page management system:
 ### Phase 3: Blocks Management
 Build reusable content blocks:
 
-#### 3.1 Block List & CRUD
-- [ ] Display blocks with filtering (type, tag, system blocks)
-- [ ] Create "New Block" form (type, tag, system_key)
-- [ ] Implement edit/delete operations
-- [ ] Show usage count (where block is used)
-- [ ] Files: `src/admin/cms/CmsBlocks.tsx`, `src/admin/cms/components/BlockList.tsx`
+#### 3.1 Block List & CRUD ✅ COMPLETED
+- [x] Display blocks with filtering (type, tag, system blocks)
+- [x] Create "New Block" form (type, tag, system_key)
+- [x] Implement edit/delete operations
+- [x] Show usage count (where block is used)
+- [x] Files: `src/admin/cms/CmsBlocks.tsx`, `src/admin/cms/components/BlockList.tsx`
 
 #### 3.2 Block Version Editor
 - [ ] Create block version editor
@@ -328,6 +328,10 @@ Replace hardcoded pages with CMS-driven rendering:
 - Supabase Edge Functions (Phase 7) can be developed in parallel with Phase 8
 - Keep simple menu editor, expand to rules only if needed
 - All changes should maintain existing analytics and lead capture functionality
+- All progress should be tracked in this document
+- Ensure all code follows the rules of React; especially hooks
+- Ensure all Supabase features are re-deployed locally after each phase completion; never remotely
+- Ensure there are no console errors before completion
 
 ### Testing Workflow
 After each implementation step:
@@ -350,4 +354,5 @@ After each implementation step:
 - ✅ **Phase 2.2**: Page Version Editor - COMPLETED
 - ✅ **Phase 2.3**: Page Slots System - COMPLETED
 - ✅ **Phase 2.4**: Page Version History - COMPLETED
+- ✅ **Phase 3.1**: Block List & CRUD - COMPLETED
 - ⏳ **Phase 6**: Testing Infrastructure - IN PROGRESS

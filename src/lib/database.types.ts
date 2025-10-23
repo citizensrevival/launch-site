@@ -482,6 +482,7 @@ export type Database = {
         Row: {
           anon_id: string | null
           excluded_at: string
+          excluded_by: string | null
           id: string
           ip_address: unknown | null
           reason: string | null
@@ -491,6 +492,7 @@ export type Database = {
         Insert: {
           anon_id?: string | null
           excluded_at?: string
+          excluded_by?: string | null
           id?: string
           ip_address?: unknown | null
           reason?: string | null
@@ -500,6 +502,7 @@ export type Database = {
         Update: {
           anon_id?: string | null
           excluded_at?: string
+          excluded_by?: string | null
           id?: string
           ip_address?: unknown | null
           reason?: string | null
@@ -777,6 +780,7 @@ export type Database = {
           id: string
           occurred_at: string
           path: string
+          properties: Json | null
           referrer: string | null
           session_id: string
           title: string | null
@@ -787,6 +791,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           path: string
+          properties?: Json | null
           referrer?: string | null
           session_id: string
           title?: string | null
@@ -797,6 +802,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           path?: string
+          properties?: Json | null
           referrer?: string | null
           session_id?: string
           title?: string | null
@@ -851,6 +857,7 @@ export type Database = {
       sessions: {
         Row: {
           browser_name: string | null
+          browser_version: string | null
           device_category: string | null
           ended_at: string | null
           geo_city: string | null
@@ -862,6 +869,7 @@ export type Database = {
           landing_page: string | null
           landing_path: string | null
           os_name: string | null
+          os_version: string | null
           referrer: string | null
           started_at: string
           user_agent: string | null
@@ -874,6 +882,7 @@ export type Database = {
         }
         Insert: {
           browser_name?: string | null
+          browser_version?: string | null
           device_category?: string | null
           ended_at?: string | null
           geo_city?: string | null
@@ -885,6 +894,7 @@ export type Database = {
           landing_page?: string | null
           landing_path?: string | null
           os_name?: string | null
+          os_version?: string | null
           referrer?: string | null
           started_at?: string
           user_agent?: string | null
@@ -897,6 +907,7 @@ export type Database = {
         }
         Update: {
           browser_name?: string | null
+          browser_version?: string | null
           device_category?: string | null
           ended_at?: string | null
           geo_city?: string | null
@@ -908,6 +919,7 @@ export type Database = {
           landing_page?: string | null
           landing_path?: string | null
           os_name?: string | null
+          os_version?: string | null
           referrer?: string | null
           started_at?: string
           user_agent?: string | null
@@ -1605,6 +1617,17 @@ export type Database = {
       }
     }
     Functions: {
+      exclude_user: {
+        Args: {
+          p_anon_id?: string
+          p_excluded_by?: string
+          p_ip_address?: unknown
+          p_reason?: string
+          p_session_id?: string
+          p_user_id?: string
+        }
+        Returns: string
+      }
       get_analytics_data: {
         Args: { end_date?: string; start_date?: string }
         Returns: {
@@ -1619,6 +1642,24 @@ export type Database = {
       }
       has_permission: {
         Args: { permission: string; user_id: string }
+        Returns: boolean
+      }
+      is_user_excluded: {
+        Args: {
+          p_anon_id?: string
+          p_ip_address?: unknown
+          p_session_id?: string
+          p_user_id?: string
+        }
+        Returns: boolean
+      }
+      remove_exclusion: {
+        Args: {
+          p_anon_id?: string
+          p_ip_address?: unknown
+          p_session_id?: string
+          p_user_id?: string
+        }
         Returns: boolean
       }
       track_event: {
@@ -1652,6 +1693,10 @@ export type Database = {
           p_source_path?: string
           p_website?: string
         }
+        Returns: string
+      }
+      upsert_user_by_anon_id: {
+        Args: { p_anon_id: string }
         Returns: string
       }
     }

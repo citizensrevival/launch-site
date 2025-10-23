@@ -32,7 +32,7 @@ export function BlockInstanceConfig({ blockInstance, onSave, onClose }: BlockIns
   const [instanceProps, setInstanceProps] = useState<Record<string, unknown>>(blockInstance.instance_props || {});
   const [propsJson, setPropsJson] = useState<string>('');
   const [jsonError, setJsonError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false); // TODO: Implement loading state
 
   // Load available versions for the block
   useEffect(() => {
@@ -45,7 +45,6 @@ export function BlockInstanceConfig({ blockInstance, onSave, onClose }: BlockIns
   }, [instanceProps]);
 
   const loadBlockVersions = async () => {
-    setIsLoading(true);
     try {
       // TODO: Implement actual API call to get block versions
       // For now, simulate with mock data
@@ -57,8 +56,6 @@ export function BlockInstanceConfig({ blockInstance, onSave, onClose }: BlockIns
       setAvailableVersions(mockVersions);
     } catch (error) {
       console.error('Failed to load block versions:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

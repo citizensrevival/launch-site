@@ -5,12 +5,14 @@ import { supabase } from '../../shell/lib/supabase';
 import { getAssetUrl } from './utils';
 import type {
   Site, Page, PageVersion, PagePublish, Asset, AssetVersion, AssetPublish,
+  Block, BlockVersion, BlockPublish,
   UserPermissions, AuditLogEntry, ContentFilters, ContentSort,
   PaginatedResponse, ApiResponse, AssetMeta, AssetKind, LocalizedContent, AssetEditOperation,
   ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu
 } from './types';
 import {
   zSite, zPage, zPageVersion, zPagePublish, zAsset, zAssetPublish,
+  zBlock, zBlockVersion, zBlockPublish,
   zUserPermissions, zAuditLogEntry
 } from './schemas';
 
@@ -549,6 +551,454 @@ export async function getPublishedPageVersion(pageId: string): Promise<ApiRespon
 
     return { data, error: null };
   } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Block management
+export async function getBlocks(
+  siteId: string,
+  filters?: ContentFilters,
+  sort?: ContentSort,
+  page = 1,
+  pageSize = 20
+): Promise<ApiResponse<PaginatedResponse<Block>>> {
+  try {
+    console.log('🔍 [getBlocks] Starting block fetch:', {
+      siteId,
+      filters,
+      sort,
+      page,
+      pageSize
+    });
+
+    let query = supabase
+      .from('block')
+      .select('*', { count: 'exact' })
+      .eq('site_id', siteId);
+
+    if (filters?.is_system !== undefined) {
+      console.log('🔍 [getBlocks] Applying system filter:', filters.is_system);
+      query = query.eq('is_system', filters.is_system);
+    }
+
+    if (filters?.type) {
+      console.log('🔍 [getBlocks] Applying type filter:', filters.type);
+      query = query.eq('type', filters.type);
+    }
+
+    if (filters?.search) {
+      console.log('🔍 [getBlocks] Applying search filter:', filters.search);
+      query = query.or(`type.ilike.%${filters.search}%,tag.ilike.%${filters.search}%,system_key.ilike.%${filters.search}%`);
+    }
+
+    if (sort) {
+      console.log('🔍 [getBlocks] Applying sort:', sort);
+      query = query.order(sort.field, { ascending: sort.direction === 'asc' });
+    } else {
+      console.log('🔍 [getBlocks] Using default sort: type asc');
+      query = query.order('type', { ascending: true });
+    }
+
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    console.log('🔍 [getBlocks] Applying pagination:', { from, to });
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error('❌ [getBlocks] Database error:', error);
+      throw error;
+    }
+
+    console.log('✅ [getBlocks] Raw data received:', {
+      dataCount: data?.length || 0,
+      totalCount: count,
+      page,
+      pageSize
+    });
+
+    const blocks = zBlock.array().parse(data);
+    const totalPages = Math.ceil((count || 0) / pageSize);
+
+    console.log('✅ [getBlocks] Successfully fetched blocks:', {
+      blocksCount: blocks.length,
+      totalCount: count,
+      totalPages,
+      currentPage: page
+    });
+
+    return {
+      data: {
+        data: blocks,
+        count: count || 0,
+        page,
+        page_size: pageSize,
+        total_pages: totalPages
+      },
+      error: null
+    };
+  } catch (error) {
+    console.error('❌ [getBlocks] Error fetching blocks:', error);
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function getBlock(blockId: string): Promise<ApiResponse<Block>> {
+  try {
+    console.log('🔍 [getBlock] Fetching block:', blockId);
+    
+    const { data, error } = await supabase
+      .from('block')
+      .select('*')
+      .eq('id', blockId)
+      .single();
+
+    if (error) {
+      console.error('❌ [getBlock] Database error:', error);
+      throw error;
+    }
+
+    console.log('✅ [getBlock] Raw data received:', data);
+    const block = zBlock.parse(data);
+    console.log('✅ [getBlock] Successfully parsed block:', block);
+    
+    return { data: block, error: null };
+  } catch (error) {
+    console.error('❌ [getBlock] Error fetching block:', error);
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function getBlockBySystemKey(systemKey: string): Promise<ApiResponse<Block>> {
+  try {
+    const { data, error } = await supabase
+      .from('block')
+      .select('*')
+      .eq('system_key', systemKey)
+      .single();
+
+    if (error) throw error;
+    const block = zBlock.parse(data);
+    return { data: block, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function createBlock(blockData: Omit<Block, 'id'>): Promise<ApiResponse<Block>> {
+  try {
+    console.log('🆕 [createBlock] Starting block creation:', blockData);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('❌ [createBlock] User not authenticated');
+      throw new Error('User not authenticated');
+    }
+
+    console.log('✅ [createBlock] User authenticated:', user.id);
+
+    // Clean up undefined values
+    const cleanedData: any = { ...blockData };
+    if (cleanedData.system_key === undefined) {
+      cleanedData.system_key = null;
+    }
+    if (cleanedData.tag === undefined) {
+      cleanedData.tag = null;
+    }
+
+    console.log('🆕 [createBlock] Cleaned data for insertion:', cleanedData);
+
+    const { data, error } = await supabase
+      .from('block')
+      .insert(cleanedData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ [createBlock] Supabase error creating block:', error);
+      throw error;
+    }
+    
+    console.log('✅ [createBlock] Raw data from database:', data);
+    const block = zBlock.parse(data);
+    console.log('✅ [createBlock] Successfully created block:', block);
+    
+    return { data: block, error: null };
+  } catch (error) {
+    console.error('❌ [createBlock] Error in createBlock:', error);
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function updateBlock(blockId: string, updates: Partial<Block>): Promise<ApiResponse<Block>> {
+  try {
+    console.log('✏️ [updateBlock] Starting block update:', { blockId, updates });
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('❌ [updateBlock] User not authenticated');
+      throw new Error('User not authenticated');
+    }
+
+    console.log('✅ [updateBlock] User authenticated:', user.id);
+
+    // Clean up undefined values
+    const cleanedUpdates: any = { ...updates };
+    if (cleanedUpdates.system_key === undefined) {
+      cleanedUpdates.system_key = null;
+    }
+    if (cleanedUpdates.tag === undefined) {
+      cleanedUpdates.tag = null;
+    }
+
+    console.log('✏️ [updateBlock] Cleaned updates for database:', cleanedUpdates);
+
+    const { data, error } = await supabase
+      .from('block')
+      .update(cleanedUpdates)
+      .eq('id', blockId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ [updateBlock] Supabase error updating block:', error);
+      throw error;
+    }
+    
+    console.log('✅ [updateBlock] Raw data from database:', data);
+    const block = zBlock.parse(data);
+    console.log('✅ [updateBlock] Successfully updated block:', block);
+    
+    return { data: block, error: null };
+  } catch (error) {
+    console.error('❌ [updateBlock] Error in updateBlock:', error);
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function deleteBlock(blockId: string): Promise<ApiResponse<void>> {
+  try {
+    console.log('🗑️ [deleteBlock] Starting block deletion:', blockId);
+    
+    const { error } = await supabase
+      .from('block')
+      .delete()
+      .eq('id', blockId);
+
+    if (error) {
+      console.error('❌ [deleteBlock] Supabase error deleting block:', error);
+      throw error;
+    }
+    
+    console.log('✅ [deleteBlock] Successfully deleted block:', blockId);
+    return { data: undefined, error: null };
+  } catch (error) {
+    console.error('❌ [deleteBlock] Error in deleteBlock:', error);
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Block version management
+export async function getBlockVersions(blockId: string): Promise<ApiResponse<BlockVersion[]>> {
+  try {
+    const { data, error } = await supabase
+      .from('block_version')
+      .select('*')
+      .eq('block_id', blockId)
+      .order('version', { ascending: false });
+
+    if (error) throw error;
+    const versions = zBlockVersion.array().parse(data);
+    return { data: versions, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function getBlockVersion(blockId: string, version: number): Promise<ApiResponse<BlockVersion>> {
+  try {
+    const { data, error } = await supabase
+      .from('block_version')
+      .select('*')
+      .eq('block_id', blockId)
+      .eq('version', version)
+      .single();
+
+    if (error) throw error;
+    const blockVersion = zBlockVersion.parse(data);
+    return { data: blockVersion, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function createBlockVersion(versionData: Omit<BlockVersion, 'id' | 'created_at' | 'created_by'>): Promise<ApiResponse<BlockVersion>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Filter out null values for optional fields
+    const insertData: any = {
+      ...versionData,
+      created_by: user.id,
+      updated_by: null,
+      updated_at: null
+    };
+    
+    // Remove null values for optional fields that might cause issues
+    if (insertData.updated_by === null) {
+      delete insertData.updated_by;
+    }
+    if (insertData.updated_at === null) {
+      delete insertData.updated_at;
+    }
+
+    const { data, error } = await supabase
+      .from('block_version')
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    const blockVersion = zBlockVersion.parse(data);
+    return { data: blockVersion, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function updateBlockVersion(
+  blockId: string,
+  version: number,
+  updates: Partial<BlockVersion>
+): Promise<ApiResponse<BlockVersion>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('block_version')
+      .update({
+        ...updates,
+        updated_by: user.id
+      })
+      .eq('block_id', blockId)
+      .eq('version', version)
+      .select()
+      .single();
+
+    if (error) throw error;
+    const blockVersion = zBlockVersion.parse(data);
+    return { data: blockVersion, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Block publishing
+export async function publishBlock(blockId: string, version: number): Promise<ApiResponse<BlockPublish>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Check if user has publish permission
+    const canPublish = await hasPermission('cms.blocks.publish');
+    if (!canPublish) throw new Error('Insufficient permissions to publish blocks');
+
+    const { data, error } = await supabase
+      .from('block_publish')
+      .upsert({
+        block_id: blockId,
+        version,
+        published_by: user.id
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const blockPublish = zBlockPublish.parse(data);
+    return { data: blockPublish, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function unpublishBlock(blockId: string): Promise<ApiResponse<void>> {
+  try {
+    const canPublish = await hasPermission('cms.blocks.publish');
+    if (!canPublish) throw new Error('Insufficient permissions to unpublish blocks');
+
+    const { error } = await supabase
+      .from('block_publish')
+      .delete()
+      .eq('block_id', blockId);
+
+    if (error) throw error;
+    return { data: undefined, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Get published version info for a block
+export async function getPublishedBlockVersion(blockId: string): Promise<ApiResponse<BlockPublish>> {
+  try {
+    const { data, error } = await supabase
+      .from('block_publish')
+      .select('*')
+      .eq('block_id', blockId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No published version found
+        return { data: null, error: null };
+      }
+      throw error;
+    }
+
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+// Get block usage count (where block is used in pages)
+export async function getBlockUsageCount(blockId: string): Promise<ApiResponse<number>> {
+  try {
+    console.log('📊 [getBlockUsageCount] Starting usage count calculation:', blockId);
+    
+    const { data, error } = await supabase
+      .from('page_version')
+      .select('slots')
+      .contains('slots', `[{"block_id":"${blockId}"}]`);
+
+    if (error) {
+      console.error('❌ [getBlockUsageCount] Database error:', error);
+      throw error;
+    }
+
+    console.log('📊 [getBlockUsageCount] Raw page versions data:', data);
+
+    // Count occurrences in all page versions
+    let usageCount = 0;
+    if (data) {
+      for (const pageVersion of data) {
+        if (pageVersion.slots && Array.isArray(pageVersion.slots)) {
+          const blockOccurrences = pageVersion.slots.filter((slot: any) => slot.block_id === blockId).length;
+          usageCount += blockOccurrences;
+          console.log('📊 [getBlockUsageCount] Found', blockOccurrences, 'occurrences in page version');
+        }
+      }
+    }
+
+    console.log('✅ [getBlockUsageCount] Total usage count:', usageCount);
+    return { data: usageCount, error: null };
+  } catch (error) {
+    console.error('❌ [getBlockUsageCount] Error calculating usage count:', error);
     return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

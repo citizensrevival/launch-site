@@ -3,7 +3,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   test: {
-    environment: 'node', // Use node environment instead of jsdom for now
+    environment: 'node', // Use node environment to avoid jsdom issues
     setupFiles: ['./src/__tests__/setup.ts'],
     globals: true,
     coverage: {

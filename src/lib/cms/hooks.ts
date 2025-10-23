@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 export { useSites } from './hooks/sites';
 import type {
-  Site, Page, PageVersion, Asset, AssetVersion,
+  Site, Page, PageVersion, Asset, AssetVersion, Block, BlockVersion,
   ResolvedPage, ResolvedBlock, ResolvedAsset, ResolvedMenu,
   UserPermissions, AuditLogEntry, ContentFilters, ContentSort,
   PaginatedResponse, AssetMeta
@@ -14,6 +14,9 @@ import {
   getPageVersions, createPage, updatePage, deletePage,
   createPageVersion, updatePageVersion,
   publishPage, unpublishPage,
+  getBlocks, getBlock, createBlock, updateBlock, deleteBlock,
+  getBlockVersions, createBlockVersion, updateBlockVersion,
+  publishBlock, unpublishBlock, getBlockUsageCount,
   getPublishedPage, getPublishedPageByKey, getPublishedBlockByKey,
   getPublishedAssetByKey, getPublishedMenuByKey, getUserPermissions,
   getAuditLog, hasPermission as checkPermission, getAssets, getAsset, uploadAsset,
@@ -830,6 +833,308 @@ export function useAssetManagement() {
     publishAsset: publishAssetHandler,
     unpublishAsset: unpublishAssetHandler,
     saveEditedAsset: saveEditedAssetHandler,
+    loading,
+    error
+  };
+}
+
+// Block hooks
+export function useBlocks(
+  siteId: string,
+  filters?: ContentFilters,
+  sort?: ContentSort,
+  page = 1,
+  pageSize = 20
+) {
+  const [blocks, setBlocks] = useState<PaginatedResponse<Block> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchBlocks() {
+      try {
+        console.log('🔄 [useBlocks] Starting block fetch:', { siteId, filters, sort, page, pageSize });
+        setLoading(true);
+        setError(null);
+        const response = await getBlocks(siteId, filters, sort, page, pageSize);
+        if (response.error) {
+          console.error('❌ [useBlocks] Error fetching blocks:', response.error);
+          setError(response.error);
+        } else {
+          console.log('✅ [useBlocks] Successfully fetched blocks:', response.data);
+          setBlocks(response.data || null);
+        }
+      } catch (err) {
+        console.error('❌ [useBlocks] Exception in fetchBlocks:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Only fetch if we have a valid siteId
+    if (siteId && siteId.trim() !== '') {
+      fetchBlocks();
+    } else {
+      // Reset state when no siteId
+      setBlocks(null);
+      setLoading(false);
+      setError(null);
+    }
+  }, [siteId, filters, sort, page, pageSize]);
+
+  return { blocks, loading, error };
+}
+
+export function useBlock(blockId: string) {
+  const [block, setBlock] = useState<Block | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchBlock() {
+      try {
+        setLoading(true);
+        const response = await getBlock(blockId);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setBlock(response.data || null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (blockId) {
+      fetchBlock();
+    }
+  }, [blockId]);
+
+  return { block, loading, error };
+}
+
+export function useBlockVersions(blockId: string) {
+  const [versions, setVersions] = useState<BlockVersion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchVersions() {
+      try {
+        setLoading(true);
+        const response = await getBlockVersions(blockId);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setVersions(response.data || []);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (blockId) {
+      fetchVersions();
+    }
+  }, [blockId]);
+
+  return { versions, loading, error };
+}
+
+export function useBlockUsageCount(blockId: string) {
+  const [usageCount, setUsageCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchUsageCount() {
+      try {
+        setLoading(true);
+        const response = await getBlockUsageCount(blockId);
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setUsageCount(response.data || 0);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (blockId) {
+      fetchUsageCount();
+    }
+  }, [blockId]);
+
+  return { usageCount, loading, error };
+}
+
+// Block management hooks
+export function useBlockManagement() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createBlockHandler = useCallback(async (blockData: Omit<Block, 'id'>) => {
+    try {
+      console.log('🆕 [useBlockManagement] Starting block creation:', blockData);
+      setLoading(true);
+      setError(null);
+      const response = await createBlock(blockData);
+      if (response.error) {
+        console.error('❌ [useBlockManagement] Error creating block:', response.error);
+        setError(response.error);
+        return null;
+      }
+      console.log('✅ [useBlockManagement] Successfully created block:', response.data);
+      return response.data;
+    } catch (err) {
+      console.error('❌ [useBlockManagement] Exception in createBlock:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateBlockHandler = useCallback(async (blockId: string, updates: Partial<Block>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await updateBlock(blockId, updates);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteBlockHandler = useCallback(async (blockId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await deleteBlock(blockId);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const publishBlockHandler = useCallback(async (blockId: string, version: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await publishBlock(blockId, version);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const unpublishBlockHandler = useCallback(async (blockId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await unpublishBlock(blockId);
+      if (response.error) {
+        setError(response.error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    createBlock: createBlockHandler,
+    updateBlock: updateBlockHandler,
+    deleteBlock: deleteBlockHandler,
+    publishBlock: publishBlockHandler,
+    unpublishBlock: unpublishBlockHandler,
+    loading,
+    error
+  };
+}
+
+// Block version management hook
+export function useBlockVersionManagement() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createBlockVersionHandler = useCallback(async (versionData: Omit<BlockVersion, 'id' | 'created_at' | 'created_by'>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('useBlockVersionManagement: calling createBlockVersion with:', versionData);
+      const response = await createBlockVersion(versionData);
+      console.log('useBlockVersionManagement: createBlockVersion response:', response);
+      if (response.error) {
+        console.error('useBlockVersionManagement: createBlockVersion error:', response.error);
+        setError(response.error);
+        return null;
+      }
+      console.log('useBlockVersionManagement: returning data:', response.data);
+      return response.data;
+    } catch (err) {
+      console.error('useBlockVersionManagement: catch block error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateBlockVersionHandler = useCallback(async (blockId: string, version: number, updates: Partial<BlockVersion>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await updateBlockVersion(blockId, version, updates);
+      if (response.error) {
+        setError(response.error);
+        return null;
+      }
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    createBlockVersion: createBlockVersionHandler,
+    updateBlockVersion: updateBlockVersionHandler,
     loading,
     error
   };

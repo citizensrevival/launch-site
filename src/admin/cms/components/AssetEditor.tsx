@@ -31,7 +31,7 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const cropStartRef = useRef<{ x: number; y: number } | null>(null);
-  const cropPreviewRef = useRef<HTMLCanvasElement>(null);
+  // const cropPreviewRef = useRef<HTMLCanvasElement>(null); // TODO: Implement crop preview
 
   // Load the original image
   useEffect(() => {

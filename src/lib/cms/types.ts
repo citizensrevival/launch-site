@@ -142,9 +142,9 @@ export interface Block {
   id: string;
   site_id: string;
   type: string;
-  tag?: string;
+  tag?: string | null;
   is_system: boolean;
-  system_key?: string;
+  system_key?: string | null;
 }
 
 export interface BlockVersion {
@@ -157,8 +157,8 @@ export interface BlockVersion {
   status: PublishStatus;
   created_at: string;
   created_by: string;
-  updated_by?: string;
-  updated_at?: string;
+  updated_by?: string | null;
+  updated_at?: string | null;
 }
 
 export interface BlockPublish {
