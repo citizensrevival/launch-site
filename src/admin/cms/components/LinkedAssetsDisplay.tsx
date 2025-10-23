@@ -11,15 +11,9 @@ import {
   mdiAlertCircle,
   mdiLoading
 } from '@mdi/js';
-import { useAssets } from '../../../lib/cms/hooks';
 import { getAssetUrl, getAssetVariantUrl } from '../../../lib/cms/utils';
 import type { Asset } from '../../../lib/cms/types';
 
-interface LinkedAsset {
-  role: string;
-  asset_id: string;
-  asset?: Asset;
-}
 
 interface LinkedAssetsDisplayProps {
   assets: Array<{ role: string; asset_id: string }>;
@@ -56,7 +50,7 @@ export function LinkedAssetsDisplay({
   showPreviews = true,
   compact = false
 }: LinkedAssetsDisplayProps) {
-  const [loadedAssets, setLoadedAssets] = useState<Record<string, Asset>>({});
+  const [loadedAssets] = useState<Record<string, Asset>>({});
   const [loadingAssets, setLoadingAssets] = useState<Set<string>>(new Set());
   const [assetErrors, setAssetErrors] = useState<Set<string>>(new Set());
 
@@ -65,8 +59,6 @@ export function LinkedAssetsDisplay({
     const loadAssets = async () => {
       const assetIds = assets.map(a => a.asset_id);
       const newLoadingAssets = new Set<string>();
-      const newLoadedAssets = { ...loadedAssets };
-      const newAssetErrors = new Set<string>();
 
       for (const assetId of assetIds) {
         if (!loadedAssets[assetId] && !loadingAssets.has(assetId)) {

@@ -8,8 +8,6 @@ import {
   mdiContentSave, 
   mdiEye,
   mdiChevronDown,
-  mdiPlus,
-  mdiTrashCanOutline
 } from '@mdi/js';
 import { useBlockVersions, useBlockVersionManagement, useBlockManagement } from '../../../lib/cms/hooks';
 import { BlockContentEditor } from './BlockContentEditor';

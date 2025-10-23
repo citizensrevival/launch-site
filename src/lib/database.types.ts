@@ -52,6 +52,207 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_category: string | null
+          event_name: string
+          event_value: number | null
+          id: string
+          properties: Json | null
+          session_id: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_category?: string | null
+          event_name: string
+          event_value?: number | null
+          id?: string
+          properties?: Json | null
+          session_id: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_category?: string | null
+          event_name?: string
+          event_value?: number | null
+          id?: string
+          properties?: Json | null
+          session_id?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_excluded_users: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      analytics_pageviews: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          id: string
+          page_path: string
+          page_title: string | null
+          properties: Json | null
+          referrer: string | null
+          session_id: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+          viewport_height: number | null
+          viewport_width: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          page_path: string
+          page_title?: string | null
+          properties?: Json | null
+          referrer?: string | null
+          session_id: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          page_path?: string
+          page_title?: string | null
+          properties?: Json | null
+          referrer?: string | null
+          session_id?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+          viewport_height?: number | null
+          viewport_width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_pageviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_sessions: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          ended_at: string | null
+          event_count: number | null
+          id: string
+          page_count: number | null
+          properties: Json | null
+          session_id: string
+          started_at: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          event_count?: number | null
+          id?: string
+          page_count?: number | null
+          properties?: Json | null
+          session_id: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          event_count?: number | null
+          id?: string
+          page_count?: number | null
+          properties?: Json | null
+          session_id?: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "analytics_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_users: {
+        Row: {
+          created_at: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          properties: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          properties?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          properties?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       asset: {
         Row: {
           checksum: string | null
@@ -219,6 +420,7 @@ export type Database = {
           edit_operation: Json | null
           id: string
           meta: Json
+          staging_status: Database["public"]["Enums"]["publish_status"] | null
           status: Database["public"]["Enums"]["publish_status"]
           updated_at: string | null
           updated_by: string | null
@@ -231,6 +433,7 @@ export type Database = {
           edit_operation?: Json | null
           id?: string
           meta?: Json
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           status?: Database["public"]["Enums"]["publish_status"]
           updated_at?: string | null
           updated_by?: string | null
@@ -243,6 +446,7 @@ export type Database = {
           edit_operation?: Json | null
           id?: string
           meta?: Json
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           status?: Database["public"]["Enums"]["publish_status"]
           updated_at?: string | null
           updated_by?: string | null
@@ -331,6 +535,7 @@ export type Database = {
           created_by: string
           id: string
           layout_variant: string
+          staging_status: Database["public"]["Enums"]["publish_status"] | null
           status: Database["public"]["Enums"]["publish_status"]
           updated_at: string | null
           updated_by: string | null
@@ -344,6 +549,7 @@ export type Database = {
           created_by: string
           id?: string
           layout_variant: string
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           status?: Database["public"]["Enums"]["publish_status"]
           updated_at?: string | null
           updated_by?: string | null
@@ -357,6 +563,7 @@ export type Database = {
           created_by?: string
           id?: string
           layout_variant?: string
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           status?: Database["public"]["Enums"]["publish_status"]
           updated_at?: string | null
           updated_by?: string | null
@@ -368,6 +575,196 @@ export type Database = {
             columns: ["block_id"]
             isOneToOne: false
             referencedRelation: "block"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_asset_publishes: {
+        Row: {
+          asset_id: string | null
+          id: string
+          published_at: string
+          published_by: string | null
+          version: number
+        }
+        Insert: {
+          asset_id?: string | null
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          version: number
+        }
+        Update: {
+          asset_id?: string | null
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_asset_publishes_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: true
+            referencedRelation: "cms_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_asset_usage: {
+        Row: {
+          asset_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          role: string | null
+        }
+        Insert: {
+          asset_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          asset_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_asset_usage_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "cms_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_asset_variants: {
+        Row: {
+          asset_id: string | null
+          created_at: string
+          file_size: number | null
+          height: number | null
+          id: string
+          storage_key: string
+          variant_name: string
+          width: number | null
+        }
+        Insert: {
+          asset_id?: string | null
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          storage_key: string
+          variant_name: string
+          width?: number | null
+        }
+        Update: {
+          asset_id?: string | null
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          storage_key?: string
+          variant_name?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_asset_variants_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "cms_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_asset_versions: {
+        Row: {
+          asset_id: string | null
+          created_at: string
+          created_by: string | null
+          edit_operation: Json | null
+          id: string
+          meta: Json | null
+          version: number
+        }
+        Insert: {
+          asset_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          edit_operation?: Json | null
+          id?: string
+          meta?: Json | null
+          version: number
+        }
+        Update: {
+          asset_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          edit_operation?: Json | null
+          id?: string
+          meta?: Json | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_asset_versions_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "cms_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_assets: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          height: number | null
+          id: string
+          kind: string
+          site_id: string | null
+          storage_key: string
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          kind: string
+          site_id?: string | null
+          storage_key: string
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          kind?: string
+          site_id?: string | null
+          storage_key?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_assets_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "system_sites"
             referencedColumns: ["id"]
           },
         ]
@@ -407,6 +804,345 @@ export type Database = {
           version?: number | null
         }
         Relationships: []
+      }
+      cms_block_publishes: {
+        Row: {
+          block_id: string | null
+          id: string
+          published_at: string
+          published_by: string | null
+          version: number
+        }
+        Insert: {
+          block_id?: string | null
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          version: number
+        }
+        Update: {
+          block_id?: string | null
+          id?: string
+          published_at?: string
+          published_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_block_publishes_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: true
+            referencedRelation: "cms_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_block_versions: {
+        Row: {
+          assets: Json | null
+          block_id: string | null
+          content: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          layout_variant: string | null
+          version: number
+        }
+        Insert: {
+          assets?: Json | null
+          block_id?: string | null
+          content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout_variant?: string | null
+          version: number
+        }
+        Update: {
+          assets?: Json | null
+          block_id?: string | null
+          content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout_variant?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_block_versions_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "cms_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_blocks: {
+        Row: {
+          created_at: string
+          id: string
+          is_system: boolean | null
+          site_id: string | null
+          system_key: string | null
+          tag: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          site_id?: string | null
+          system_key?: string | null
+          tag?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          site_id?: string | null
+          system_key?: string | null
+          tag?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_blocks_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "system_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_menu_publishes: {
+        Row: {
+          id: string
+          menu_id: string | null
+          published_at: string
+          published_by: string | null
+          version: number
+        }
+        Insert: {
+          id?: string
+          menu_id?: string | null
+          published_at?: string
+          published_by?: string | null
+          version: number
+        }
+        Update: {
+          id?: string
+          menu_id?: string | null
+          published_at?: string
+          published_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_menu_publishes_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: true
+            referencedRelation: "cms_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_menu_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          items: Json | null
+          menu_id: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json | null
+          menu_id?: string | null
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          items?: Json | null
+          menu_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_menu_versions_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "cms_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_menus: {
+        Row: {
+          created_at: string
+          handle: string
+          id: string
+          is_system: boolean | null
+          label: string
+          site_id: string | null
+          system_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          handle: string
+          id?: string
+          is_system?: boolean | null
+          label: string
+          site_id?: string | null
+          system_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          handle?: string
+          id?: string
+          is_system?: boolean | null
+          label?: string
+          site_id?: string | null
+          system_key?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_menus_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "system_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_page_publishes: {
+        Row: {
+          id: string
+          page_id: string | null
+          published_at: string
+          published_by: string | null
+          version: number
+        }
+        Insert: {
+          id?: string
+          page_id?: string | null
+          published_at?: string
+          published_by?: string | null
+          version: number
+        }
+        Update: {
+          id?: string
+          page_id?: string | null
+          published_at?: string
+          published_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_page_publishes_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: true
+            referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_page_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          layout_variant: string | null
+          nav_hints: Json | null
+          page_id: string | null
+          seo: Json | null
+          slots: Json | null
+          title: Json
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout_variant?: string | null
+          nav_hints?: Json | null
+          page_id?: string | null
+          seo?: Json | null
+          slots?: Json | null
+          title?: Json
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout_variant?: string | null
+          nav_hints?: Json | null
+          page_id?: string | null
+          seo?: Json | null
+          slots?: Json | null
+          title?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_page_versions_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_pages: {
+        Row: {
+          created_at: string
+          id: string
+          is_system: boolean | null
+          site_id: string | null
+          slug: string
+          system_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          site_id?: string | null
+          slug: string
+          system_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_system?: boolean | null
+          site_id?: string | null
+          slug?: string
+          system_key?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_pages_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "system_sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {
@@ -553,6 +1289,54 @@ export type Database = {
         }
         Relationships: []
       }
+      leads_submissions: {
+        Row: {
+          created_at: string
+          form_data: Json
+          form_name: string
+          id: string
+          ip_address: unknown | null
+          referrer: string | null
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          created_at?: string
+          form_data?: Json
+          form_name: string
+          id?: string
+          ip_address?: unknown | null
+          referrer?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          created_at?: string
+          form_data?: Json
+          form_name?: string
+          id?: string
+          ip_address?: unknown | null
+          referrer?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       menu: {
         Row: {
           handle: string
@@ -624,6 +1408,7 @@ export type Database = {
           id: string
           items: Json
           menu_id: string
+          staging_status: Database["public"]["Enums"]["publish_status"] | null
           updated_at: string | null
           updated_by: string | null
           version: number
@@ -634,6 +1419,7 @@ export type Database = {
           id?: string
           items?: Json
           menu_id: string
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           updated_at?: string | null
           updated_by?: string | null
           version: number
@@ -644,6 +1430,7 @@ export type Database = {
           id?: string
           items?: Json
           menu_id?: string
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           updated_at?: string | null
           updated_by?: string | null
           version?: number
@@ -729,6 +1516,7 @@ export type Database = {
           page_id: string
           seo: Json
           slots: Json
+          staging_status: Database["public"]["Enums"]["publish_status"] | null
           title: Json
           updated_at: string | null
           updated_by: string | null
@@ -743,6 +1531,7 @@ export type Database = {
           page_id: string
           seo?: Json
           slots?: Json
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           title: Json
           updated_at?: string | null
           updated_by?: string | null
@@ -757,6 +1546,7 @@ export type Database = {
           page_id?: string
           seo?: Json
           slots?: Json
+          staging_status?: Database["public"]["Enums"]["publish_status"] | null
           title?: Json
           updated_at?: string | null
           updated_by?: string | null
@@ -984,6 +1774,184 @@ export type Database = {
           slug?: string | null
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      site_staging: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          site_id: string
+          staged_at: string
+          staged_by: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          site_id: string
+          staged_at?: string
+          staged_by: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          site_id?: string
+          staged_at?: string
+          staged_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_staging_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "site"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staging_dependency: {
+        Row: {
+          created_at: string
+          dependency_entity_id: string | null
+          dependency_entity_type: string | null
+          dependency_type: string
+          dependency_version: number | null
+          entity_id: string
+          entity_type: string
+          id: string
+          staging_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          dependency_entity_id?: string | null
+          dependency_entity_type?: string | null
+          dependency_type: string
+          dependency_version?: number | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          staging_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          dependency_entity_id?: string | null
+          dependency_entity_type?: string | null
+          dependency_type?: string
+          dependency_version?: number | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          staging_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staging_dependency_staging_id_fkey"
+            columns: ["staging_id"]
+            isOneToOne: false
+            referencedRelation: "site_staging"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_sites: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          name: string
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          name: string
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          name?: string
+          settings?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      system_user_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permissions: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permissions?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permissions?: string[]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1637,6 +2605,18 @@ export type Database = {
           unique_visitors: number
         }[]
       }
+      get_staging_dependencies: {
+        Args: { staging_id_param: string }
+        Returns: {
+          dependency_entity_id: string
+          dependency_entity_type: string
+          dependency_type: string
+          dependency_version: number
+          entity_id: string
+          entity_type: string
+          version: number
+        }[]
+      }
       has_permission: {
         Args: { permission: string; user_id: string }
         Returns: boolean
@@ -1650,6 +2630,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      publish_staged_content: {
+        Args: { staging_id_param: string }
+        Returns: boolean
+      }
       remove_exclusion: {
         Args: {
           p_anon_id?: string
@@ -1658,6 +2642,27 @@ export type Database = {
           p_user_id?: string
         }
         Returns: boolean
+      }
+      rollback_staging: {
+        Args: { staging_id_param: string }
+        Returns: boolean
+      }
+      stage_entity: {
+        Args: {
+          entity_id: string
+          entity_type: string
+          staging_id: string
+          version_number: number
+        }
+        Returns: boolean
+      }
+      stage_site: {
+        Args: {
+          site_id_param: string
+          staging_description?: string
+          staging_name: string
+        }
+        Returns: string
       }
       track_event: {
         Args: {
@@ -1700,7 +2705,7 @@ export type Database = {
     Enums: {
       asset_kind: "image" | "video" | "file"
       lead_type: "subscriber" | "vendor" | "sponsor" | "volunteer"
-      publish_status: "draft" | "published" | "archived"
+      publish_status: "draft" | "published" | "archived" | "staged"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1833,7 +2838,7 @@ export const Constants = {
     Enums: {
       asset_kind: ["image", "video", "file"],
       lead_type: ["subscriber", "vendor", "sponsor", "volunteer"],
-      publish_status: ["draft", "published", "archived"],
+      publish_status: ["draft", "published", "archived", "staged"],
     },
   },
 } as const

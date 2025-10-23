@@ -7,12 +7,9 @@ import {
   mdiClose,
   mdiContentSave,
   mdiMonitor,
-  mdiTablet,
-  mdiCellphone,
   mdiAccount,
   mdiFlag,
   mdiCalendar,
-  mdiClock,
   mdiEye,
   mdiEyeOff
 } from '@mdi/js';

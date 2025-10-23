@@ -15,7 +15,6 @@ import {
   mdiMagnify, 
   mdiClose,
   mdiContentSave,
-  mdiFilterVariant
 } from '@mdi/js';
 
 type SortKey = 'handle' | 'label' | 'system_key';

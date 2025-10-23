@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '../AdminLayout';
 import { Icon } from '@mdi/react';
 import { 
@@ -11,8 +11,6 @@ import {
   mdiShieldCheck,
   mdiShieldAlert,
   mdiAccount,
-  mdiEmail,
-  mdiKey
 } from '@mdi/js';
 import { supabase } from '../../shell/lib/supabase';
 

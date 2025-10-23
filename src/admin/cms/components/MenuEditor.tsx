@@ -1,7 +1,7 @@
 // Menu Editor Component
 // Tree-based editor for menu items
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '@mdi/react';
 import { 
   mdiClose,
@@ -22,9 +22,7 @@ import {
 } from '@mdi/js';
 import { useMenuVersions, useMenuVersionManagement, useMenuManagement } from '../../../lib/cms/hooks';
 import { MenuItemEditor } from './MenuItemEditor';
-import { MenuItemVisibilityEditor } from './MenuItemVisibilityEditor';
 import { supabase } from '../../../shell/lib/supabase';
-import type { MenuItem } from '../../../lib/cms/types';
 
 interface MenuEditorProps {
   menuId: string;
@@ -32,25 +30,42 @@ interface MenuEditorProps {
   onClose: () => void;
 }
 
-interface MenuItemWithChildren extends MenuItem {
+interface MenuItemWithChildren {
+  id: string;
+  type: 'page' | 'external' | 'anchor' | 'separator' | 'group';
+  label?: any;
+  target?: string;
+  rel?: any;
+  url?: string;
+  anchor?: string;
+  page_id?: string;
+  order?: number;
   children?: MenuItemWithChildren[];
+  visibility?: any;
+  badge?: any;
+  style_hints?: any;
   isExpanded?: boolean;
   isEditing?: boolean;
   isAddingChild?: boolean;
 }
 
+// Convert MenuItemWithChildren to MenuItem for editing
+function convertToMenuItem(item: MenuItemWithChildren): any {
+  const { isExpanded, isEditing, isAddingChild, children, ...menuItem } = item;
+  return menuItem;
+}
+
 export function MenuEditor({ menuId, isOpen, onClose }: MenuEditorProps) {
   const { versions } = useMenuVersions(menuId);
-  const { createMenuVersion, updateMenuVersion, loading: managementLoading } = useMenuVersionManagement();
+  const { createMenuVersion, loading: managementLoading } = useMenuVersionManagement();
   const { publishMenu, unpublishMenu, loading: publishLoading } = useMenuManagement();
 
   // State
   const [currentVersion, setCurrentVersion] = useState<any>(null);
   const [items, setItems] = useState<MenuItemWithChildren[]>([]);
   const [editingItem, setEditingItem] = useState<MenuItemWithChildren | null>(null);
-  const [addingItem, setAddingItem] = useState<MenuItemWithChildren | null>(null);
+  const [, setAddingItem] = useState<MenuItemWithChildren | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [draggedItem, setDraggedItem] = useState<MenuItemWithChildren | null>(null);
 
   // Load current version
   useEffect(() => {
@@ -324,8 +339,8 @@ export function MenuEditor({ menuId, isOpen, onClose }: MenuEditorProps) {
           <div className="w-96 border-l border-gray-700 bg-gray-750">
             {editingItem ? (
               <MenuItemEditor
-                item={editingItem}
-                onSave={handleSaveItem}
+                item={convertToMenuItem(editingItem)}
+                onSave={(item) => handleSaveItem({ ...item, children: editingItem.children, isExpanded: editingItem.isExpanded, isEditing: editingItem.isEditing, isAddingChild: editingItem.isAddingChild })}
                 onCancel={handleCancelEdit}
               />
             ) : (

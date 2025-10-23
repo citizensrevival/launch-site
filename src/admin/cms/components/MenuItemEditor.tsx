@@ -34,15 +34,15 @@ export function MenuItemEditor({ item, onSave, onCancel }: MenuItemEditorProps) 
   const [formData, setFormData] = useState({
     type: item.type || 'page',
     label: typeof item.label === 'string' ? item.label : item.label?.['en-US'] || '',
-    url: item.url || '',
+    url: (item as any).url || '',
     target: item.target || '_self',
     rel: item.rel || '',
-    anchor: item.anchor || '',
-    page_id: item.page_id || '',
-    order: item.order || 0
+    anchor: (item as any).anchor || '',
+    page_id: (item as any).page_id || '',
+    order: (item as any).order || 0
   });
 
-  const [badge, setBadge] = useState(item.badge || { text: '', style: 'default' });
+  const [badge, setBadge] = useState(item.badge || { 'en-US': { text: '', tone: 'info' as const } });
   const [visibility, setVisibility] = useState(item.visibility || {});
   const [showVisibilityEditor, setShowVisibilityEditor] = useState(false);
   const [showBadgeEditor, setShowBadgeEditor] = useState(false);
@@ -52,25 +52,25 @@ export function MenuItemEditor({ item, onSave, onCancel }: MenuItemEditorProps) 
     setFormData({
       type: item.type || 'page',
       label: typeof item.label === 'string' ? item.label : item.label?.['en-US'] || '',
-      url: item.url || '',
+      url: (item as any).url || '',
       target: item.target || '_self',
       rel: item.rel || '',
-      anchor: item.anchor || '',
-      page_id: item.page_id || '',
-      order: item.order || 0
+      anchor: (item as any).anchor || '',
+      page_id: (item as any).page_id || '',
+      order: (item as any).order || 0
     });
-    setBadge(item.badge || { text: '', style: 'default' });
+    setBadge(item.badge || { 'en-US': { text: '', tone: 'info' as const } });
     setVisibility(item.visibility || {});
   }, [item]);
 
   const handleSave = () => {
-    const updatedItem: MenuItem = {
+    const updatedItem: any = {
       ...item,
       type: formData.type,
       label: { 'en-US': formData.label },
       url: formData.url || undefined,
       target: formData.target || undefined,
-      rel: formData.rel || undefined,
+      rel: Array.isArray(formData.rel) ? formData.rel : undefined,
       anchor: formData.anchor || undefined,
       page_id: formData.page_id || undefined,
       order: formData.order,
@@ -116,7 +116,7 @@ export function MenuItemEditor({ item, onSave, onCancel }: MenuItemEditorProps) 
               </label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'page' | 'external' | 'anchor' | 'separator' | 'group' }))}
                 className="w-full px-3 py-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-blue-500 focus:outline-none"
               >
                 {ITEM_TYPES.map(type => (
@@ -219,7 +219,7 @@ export function MenuItemEditor({ item, onSave, onCancel }: MenuItemEditorProps) 
                 </label>
                 <select
                   value={formData.target}
-                  onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value as '_self' | '_blank' }))}
                   className="w-full px-3 py-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-blue-500 focus:outline-none"
                 >
                   <option value="_self">Same Window</option>
@@ -275,9 +275,9 @@ export function MenuItemEditor({ item, onSave, onCancel }: MenuItemEditorProps) 
               <div className="flex items-center gap-2">
                 <Icon path={mdiChevronRight} size={1} className="text-gray-400" />
                 <span className="text-sm text-gray-300">Badge</span>
-                {badge.text && (
+                {badge['en-US']?.text && (
                   <span className="px-2 py-1 bg-blue-900 text-blue-300 rounded text-xs">
-                    {badge.text}
+                    {badge['en-US'].text}
                   </span>
                 )}
               </div>
@@ -336,8 +336,8 @@ export function MenuItemEditor({ item, onSave, onCancel }: MenuItemEditorProps) 
                 </label>
                 <input
                   type="text"
-                  value={badge.text}
-                  onChange={(e) => setBadge(prev => ({ ...prev, text: e.target.value }))}
+                  value={badge['en-US']?.text || ''}
+                  onChange={(e) => setBadge(prev => ({ ...prev, 'en-US': { ...prev['en-US'], text: e.target.value } }))}
                   className="w-full px-3 py-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-blue-500 focus:outline-none"
                   placeholder="New, Hot, etc."
                 />
@@ -348,8 +348,8 @@ export function MenuItemEditor({ item, onSave, onCancel }: MenuItemEditorProps) 
                   Badge Style
                 </label>
                 <select
-                  value={badge.style}
-                  onChange={(e) => setBadge(prev => ({ ...prev, style: e.target.value }))}
+                  value={badge['en-US']?.tone || 'info'}
+                  onChange={(e) => setBadge(prev => ({ ...prev, 'en-US': { ...prev['en-US'], tone: e.target.value as 'info' | 'success' | 'warning' } }))}
                   className="w-full px-3 py-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-blue-500 focus:outline-none"
                 >
                   <option value="default">Default</option>

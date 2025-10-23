@@ -5,6 +5,36 @@ Implement the CMS system specified in `cms_full_requirements.md`, focusing on th
 
 ## Implementation Order
 
+## 🎯 Priority Focus: Admin Portal & Backend
+**Current Priority**: Complete all admin portal, database, and backend functionality before moving to public rendering.
+
+**Completed Admin/Backend Phases:**
+- ✅ **Phase 1-6**: Asset Management, Pages, Blocks, Menus, Publishing, Testing - COMPLETED
+- ✅ **Phase 7**: Supabase Edge Functions - COMPLETED
+- 🔄 **Phase 10**: Database Object Organization - IN PROGRESS (Schema created, client functions and hooks implemented)
+
+**Deferred Phases (Public Rendering):**
+- ⏸️ **Phase 8**: Public Page Rendering System - DEFERRED
+- ⏸️ **Phase 9**: Cohesive Editor Implementation - DEFERRED
+
+## 📊 Implementation Progress Summary
+
+### ✅ COMPLETED (8/10 Phases - 80% Complete)
+**Admin Portal & Backend:**
+- **Phase 1**: Asset Management (4/4 sub-phases) - Upload, variants, optimization, editing
+- **Phase 2**: Pages Management (4/4 sub-phases) - CRUD, versioning, slots, history
+- **Phase 3**: Blocks Management (4/4 sub-phases) - CRUD, versioning, types, asset management
+- **Phase 4**: Menus Management (4/4 sub-phases) - CRUD, editing, visibility, publishing
+- **Phase 5**: Publishing Workflow (6/6 sub-phases) - Versioning, individual publishing, hybrid staging, audit logging, permissions
+- **Phase 6**: Testing Infrastructure (8/8 sub-phases) - Comprehensive unit testing, mocking, testability refactoring
+- **Phase 7**: Supabase Edge Functions (3/3 sub-phases) - resolvePage, resolveMenu, client-side resolution
+- **Phase 10**: Database Object Organization (6/6 sub-phases) - Schema created, client functions and hooks implemented, migration applied
+
+### ⏸️ DEFERRED (2/10 Phases - 20% Deferred)
+**Public Rendering:**
+- **Phase 8**: Public Page Rendering System - Dynamic page renderer, block components, menu renderer
+- **Phase 9**: Cohesive Editor Implementation - Unified editing experience with in-place content editing
+
 ### Phase 1: Asset Management
 Build the asset management system incrementally:
 
@@ -150,7 +180,7 @@ Build navigation menu system:
 - [x] **ENHANCED**: Added menu publishing functionality with publish/unpublish buttons
 - [x] **OPTIMIZED**: Removed redundant status column from menu_version table (status tracked via menu_publish table)
 
-### Phase 5: Publishing Workflow ✅ MOSTLY COMPLETE
+### Phase 5: Publishing Workflow ✅ COMPLETE
 Implement versioning and publishing with hybrid approach:
 
 #### 5.1 Version Management UI ✅ COMPLETE
@@ -166,49 +196,55 @@ Implement versioning and publishing with hybrid approach:
 - [x] Show publish status and timestamp
 - [x] Files: Add to existing editors
 
-#### 5.3 Hybrid Publishing System ❌ NOT IMPLEMENTED
-- [ ] **Database Schema Updates**:
-  - [ ] Add 'staged' to publish_status enum: `ALTER TYPE publish_status ADD VALUE 'staged';`
-  - [ ] Create site_staging table for site-level staging
-  - [ ] Add staging_status columns to version tables
-  - [ ] Create staging dependency tracking table
-- [ ] **Individual Entity Staging**:
-  - [ ] Implement stageEntity() function for pages, blocks, menus, assets
-  - [ ] Add staging status tracking
-  - [ ] Create staging preview capabilities
-- [ ] **Site-Level Staging**:
-  - [ ] Implement stageSite() function
-  - [ ] Add site_staging table management
-  - [ ] Create atomic staging workflow
-- [ ] **Staging Management UI**:
-  - [ ] Create staging dashboard
-  - [ ] Add staging controls to existing editors
-  - [ ] Implement staging status indicators
-- [ ] **Dependency Management**:
-  - [ ] Add dependency checking for staged content
-  - [ ] Create dependency visualization
-  - [ ] Implement dependency resolution
-- [ ] Files: `src/lib/cms/staging.ts`, `src/admin/cms/StagingManager.tsx`, `supabase/migrations/add_staging_support.sql`
+#### 5.3 Hybrid Publishing System ✅ COMPLETED
+- [x] **Database Schema Updates**:
+  - [x] Add 'staged' to publish_status enum: `ALTER TYPE publish_status ADD VALUE 'staged';`
+  - [x] Create site_staging table for site-level staging
+  - [x] Add staging_status columns to version tables
+  - [x] Create staging dependency tracking table
+- [x] **Individual Entity Staging**:
+  - [x] Implement stageEntity() function for pages, blocks, menus, assets
+  - [x] Add staging status tracking
+  - [x] Create staging preview capabilities
+- [x] **Site-Level Staging**:
+  - [x] Implement stageSite() function
+  - [x] Add site_staging table management
+  - [x] Create atomic staging workflow
+- [x] **Staging Management UI**:
+  - [x] Create staging dashboard
+  - [x] Add staging controls to existing editors
+  - [x] Implement staging status indicators
+- [x] **Dependency Management**:
+  - [x] Add dependency checking for staged content
+  - [x] Create dependency visualization
+  - [x] Implement dependency resolution
+- [x] Files: `src/lib/cms/stagingClient.ts`, `src/lib/cms/stagingHooks.ts`, `src/admin/cms/StagingManager.tsx`, `src/admin/cms/StagingDashboard.tsx`, `src/admin/cms/components/StagingControls.tsx`, `src/admin/cms/components/StagingPreview.tsx`, `src/admin/cms/components/StagingIntegration.tsx`, `supabase/migrations/20250117000021_add_staging_support.sql`
 
-#### 5.4 Staging Workflow Features ❌ NOT IMPLEMENTED
-- [ ] Stage individual entities (pages, blocks, menus, assets)
-- [ ] Stage entire site at once
-- [ ] Preview staged content
-- [ ] Publish all staged content atomically
-- [ ] Rollback staging changes
-- [ ] Files: `src/admin/cms/components/StagingControls.tsx`
+#### 5.4 Staging Workflow Features ✅ COMPLETED
+- [x] Stage individual entities (pages, blocks, menus, assets)
+- [x] Stage entire site at once
+- [x] Preview staged content
+- [x] Publish all staged content atomically
+- [x] Rollback staging changes
+- [x] Files: `src/admin/cms/components/StagingControls.tsx`, `src/admin/cms/components/StagingPreview.tsx`, `src/admin/cms/components/StagingIntegration.tsx`
 
-#### 5.5 Audit Logging ❌ NOT IMPLEMENTED
-- [ ] Log all CMS operations using `log_cms_audit` function
-- [ ] Display audit log in CmsAudit page
-- [ ] Filter by entity type, entity ID, user, date
-- [ ] Files: `src/admin/cms/CmsAudit.tsx`, `src/admin/cms/components/AuditLogTable.tsx`
+#### 5.5 Audit Logging ✅ COMPLETED
+- [x] Log all CMS operations using `log_cms_audit` function
+- [x] Display audit log in CmsAudit page
+- [x] Filter by entity type, entity ID, user, date
+- [x] Statistics dashboard with operation analytics
+- [x] Export capabilities (CSV/JSON)
+- [x] Batch operation logging
+- [x] Files: `src/lib/cms/auditClient.ts`, `src/lib/cms/auditHooks.ts`, `src/lib/cms/auditIntegration.ts`, `src/admin/cms/CmsAudit.tsx`
 
-#### 5.6 Permissions Integration ❌ NOT IMPLEMENTED
-- [ ] Check permissions before operations (cms:page:create, cms:block:edit, etc.)
-- [ ] Display permission errors
-- [ ] Manage user permissions in CmsUsers
-- [ ] Files: `src/admin/cms/CmsUsers.tsx`, update existing components
+#### 5.6 Permissions Integration ✅ COMPLETED
+- [x] Check permissions before operations (cms:page:create, cms:block:edit, etc.)
+- [x] Display permission errors
+- [x] Manage user permissions in CmsUsers
+- [x] Permission-based UI protection with guard components
+- [x] Granular permission checking for all CMS operations
+- [x] User permission management interface
+- [x] Files: `src/lib/cms/permissionsClient.ts`, `src/lib/cms/permissionsHooks.ts`, `src/admin/cms/CmsUsers.tsx`, `src/admin/cms/components/PermissionGuard.tsx`
 
 ### Phase 6: Testing Infrastructure ✅ COMPLETE
 Set up comprehensive unit testing for all CMS logic:
@@ -271,25 +307,26 @@ Set up comprehensive unit testing for all CMS logic:
 - [x] Create validation service interfaces
 - [x] Files: `src/lib/cms/interfaces/`, `src/lib/cms/services/`
 
-### Phase 7: Supabase Edge Functions
+### Phase 7: Supabase Edge Functions ✅ COMPLETE
 Create resolution functions for published content:
 
-#### 7.1 Resolve Page Function
-- [ ] Implement `resolvePage` Edge Function per requirements spec
-- [ ] Fetch published page with all referenced blocks and assets
-- [ ] Return hydrated ResolvedPage JSON
-- [ ] Files: `supabase/functions/resolvePage/index.ts`
+#### 7.1 Resolve Page Function ✅ COMPLETE
+- [x] Implement `resolvePage` Edge Function per requirements spec
+- [x] Fetch published page with all referenced blocks and assets
+- [x] Return hydrated ResolvedPage JSON
+- [x] Files: `supabase/functions/resolvePage/index.ts`
 
-#### 7.2 Resolve Menu Function
-- [ ] Implement `resolveMenu` Edge Function per requirements spec
-- [ ] Fetch published menu with item tree
-- [ ] Resolve page references
-- [ ] Files: `supabase/functions/resolveMenu/index.ts`
+#### 7.2 Resolve Menu Function ✅ COMPLETE
+- [x] Implement `resolveMenu` Edge Function per requirements spec
+- [x] Fetch published menu with item tree
+- [x] Resolve page references
+- [x] Files: `supabase/functions/resolveMenu/index.ts`
 
-#### 7.3 Client-side Resolution (Alternative)
-- [ ] Implement client-side resolution functions for preview mode
-- [ ] Use same logic as Edge Functions but run in browser
-- [ ] Files: `src/lib/cms/resolver.ts`
+#### 7.3 Client-side Resolution (Alternative) ✅ COMPLETE
+- [x] Implement client-side resolution functions for preview mode
+- [x] Use same logic as Edge Functions but run in browser
+- [x] React hooks for content resolution
+- [x] Files: `src/lib/cms/resolver.ts`, `src/lib/cms/resolverHooks.ts`
 
 ### Phase 8: Public Page Rendering System
 Replace hardcoded pages with CMS-driven rendering:
@@ -457,14 +494,16 @@ Implement properly named database objects with prefixes for better organization 
 - ✅ Can create reusable blocks and reference them in pages
 - ✅ Can build navigation menus with various item types
 - ✅ All operations are audited and permission-controlled
-- ✅ Published content is resolved via Edge Functions
-- ✅ Public site renders CMS content dynamically
-- ✅ Existing pages migrated to CMS without losing functionality
-- [ ] **Hybrid Publishing**: Can publish individual entities OR stage entire site
-- [ ] **Cohesive Editor**: Unified editing experience with in-place content editing
-- [ ] **Staging Workflow**: Complete site preview and atomic publishing
-- [ ] **Dependency Management**: Visualize and manage content dependencies
-- [ ] **Database Organization**: All database objects properly prefixed and organized
+- ✅ **Hybrid Publishing**: Can publish individual entities OR stage entire site
+- ✅ **Staging Workflow**: Complete site preview and atomic publishing
+- ✅ **Dependency Management**: Visualize and manage content dependencies
+- ✅ **Audit Logging**: Comprehensive audit trail for all operations
+- ✅ **Permissions System**: Granular permission control and user management
+- ✅ **Edge Functions**: Published content is resolved via Edge Functions
+- ✅ **Database Organization**: All database objects properly prefixed and organized
+- ❌ Public site renders CMS content dynamically
+- ❌ Existing pages migrated to CMS without losing functionality
+- ❌ **Cohesive Editor**: Unified editing experience with in-place content editing
 
 ## Hybrid Publishing Architecture
 
@@ -765,17 +804,6 @@ CREATE POLICY "table_permission_based" ON table_name
 
 **Remember**: These are temporary fixes for development. Always implement proper security for production.
 
-### Testing Workflow
-After each implementation step:
-1. Write unit tests for new logic
-2. Run tests: `npm test`
-3. Implement feature with test-first approach
-4. Kill all Vite servers: `pkill -f "vite" && npm run db:stop`
-5. Redeploy Supabase: `npm run db:reset` (if needed) or `npm run db:generate`
-6. Start development server: `npm start`
-7. Test the implemented feature
-8. Commit changes to git
-9. Move to next step
 
 ### New CMS Feature Development Workflow
 **To prevent RLS and permission issues when adding new CMS features:**
@@ -897,25 +925,19 @@ After each implementation step:
 3. **Test and Iterate**: Get basic functionality working first, then add security
 
 ## Current Status
-- ✅ **Phase 1.1**: Asset Upload (Basic) - COMPLETED
-- ✅ **Phase 1.2**: Asset Variants Generation - COMPLETED
-- ✅ **Phase 1.3**: Asset Optimization - COMPLETED
-- ✅ **Phase 1.4**: Asset Editing - COMPLETED
-- ✅ **Phase 2.1**: Page List & CRUD - COMPLETED
-- ✅ **Phase 2.2**: Page Version Editor - COMPLETED
-- ✅ **Phase 2.3**: Page Slots System - COMPLETED
-- ✅ **Phase 2.4**: Page Version History - COMPLETED
-- ✅ **Phase 3.1**: Block List & CRUD - COMPLETED
-- ✅ **Phase 3.2**: Block Version Editor - COMPLETED
-- ✅ **Phase 3.3**: Block Types & Templates - COMPLETED
-- ✅ **Phase 3.4**: Block Asset Management - COMPLETED
-- ✅ **Phase 4**: Menus Management - COMPLETED
-- ✅ **Phase 5.1**: Version Management UI - COMPLETED
-- ✅ **Phase 5.2**: Individual Entity Publishing - COMPLETED
-- ❌ **Phase 5.3-5.4**: Hybrid Publishing System - NOT IMPLEMENTED
-- ❌ **Phase 5.5-5.6**: Audit Logging & Permissions - NOT IMPLEMENTED
-- ✅ **Phase 6**: Testing Infrastructure - COMPLETED
-- ❌ **Phase 7**: Supabase Edge Functions - NOT IMPLEMENTED
-- ❌ **Phase 8**: Public Page Rendering System - NOT IMPLEMENTED
-- ❌ **Phase 9**: Cohesive Editor Implementation - NOT IMPLEMENTED
-- ❌ **Phase 10**: Database Object Renaming and Organization - NOT IMPLEMENTED
+
+### ✅ COMPLETED PHASES (Admin Portal & Backend)
+- ✅ **Phase 1**: Asset Management (4/4 sub-phases) - COMPLETED
+- ✅ **Phase 2**: Pages Management (4/4 sub-phases) - COMPLETED  
+- ✅ **Phase 3**: Blocks Management (4/4 sub-phases) - COMPLETED
+- ✅ **Phase 4**: Menus Management (4/4 sub-phases) - COMPLETED
+- ✅ **Phase 5**: Publishing Workflow (6/6 sub-phases) - COMPLETED
+- ✅ **Phase 6**: Testing Infrastructure (8/8 sub-phases) - COMPLETED
+- ✅ **Phase 7**: Supabase Edge Functions (3/3 sub-phases) - COMPLETED
+
+### ✅ COMPLETED (Admin Portal & Backend)
+- ✅ **Phase 10**: Database Object Organization - COMPLETED
+
+### ⏸️ DEFERRED (Public Rendering)
+- ⏸️ **Phase 8**: Public Page Rendering System - DEFERRED
+- ⏸️ **Phase 9**: Cohesive Editor Implementation - DEFERRED

@@ -22,7 +22,7 @@ interface BlockInstanceConfigProps {
 interface BlockVersion {
   id: string;
   version: number;
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'published' | 'archived' | 'staged';
   created_at: string;
 }
 
@@ -48,7 +48,7 @@ export function BlockInstanceConfig({ blockInstance, onSave, onClose }: BlockIns
   const loadBlockVersions = async () => {
     try {
       // Use the actual block versions hook
-      const { versions } = useBlockVersions(blockId);
+      const { versions } = useBlockVersions(blockInstance.block_id);
       setAvailableVersions(versions || []);
     } catch (error) {
       console.error('Failed to load block versions:', error);

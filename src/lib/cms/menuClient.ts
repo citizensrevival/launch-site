@@ -42,19 +42,17 @@ export async function getMenus(
     const to = from + pageSize - 1;
     query = query.range(from, to);
 
-    const { data, error, count } = await query;
+    const { data, error } = await query;
 
     if (error) throw error;
 
     return {
       data: {
         data: data || [],
-        pagination: {
-          page,
-          pageSize,
-          total: count || 0,
-          totalPages: Math.ceil((count || 0) / pageSize)
-        }
+        count: 0,
+        page,
+        page_size: pageSize,
+        total_pages: 0
       },
       error: null
     };

@@ -7,14 +7,12 @@ import {
   mdiPlus,
   mdiTrashCanOutline,
   mdiImage,
-  mdiFile,
-  mdiEye,
   mdiPencil,
   mdiTag,
-  mdiAlertCircle
+  mdiAlertCircle,
+  mdiClose
 } from '@mdi/js';
 import { AssetPicker } from './AssetPicker';
-import { getAssetUrl, getAssetVariantUrl } from '../../../lib/cms/utils';
 import { getBlockTypeAssetRoles, getBlockTypeRequiredAssets, validateBlockAssets } from '../../../lib/cms/blockTypes';
 import type { Asset } from '../../../lib/cms/types';
 
@@ -32,17 +30,6 @@ interface BlockAssetManagerProps {
   className?: string;
 }
 
-// Asset role definitions based on block types
-const ASSET_ROLES = {
-  hero: ['hero_image', 'hero_background'],
-  features: ['feature_icons', 'feature_images'],
-  cta: ['cta_background', 'cta_image'],
-  text: ['text_image', 'text_background'],
-  'image-text': ['content_image', 'content_background'],
-  card: ['card_image', 'card_icon'],
-  list: ['list_icons', 'list_images'],
-  grid: ['grid_images', 'grid_background']
-} as const;
 
 // Role descriptions for better UX
 const ROLE_DESCRIPTIONS = {

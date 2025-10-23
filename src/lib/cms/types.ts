@@ -1,7 +1,7 @@
 // CMS TypeScript Interfaces and Types
 // This file contains all the TypeScript interfaces for the CMS system
 
-export type PublishStatus = 'draft' | 'published' | 'archived';
+export type PublishStatus = 'draft' | 'published' | 'archived' | 'staged';
 export type LocaleString = string;
 export type AssetKind = 'image' | 'video' | 'file';
 
@@ -322,6 +322,65 @@ export interface PublishWorkflow {
 export interface PublishResult {
   success: boolean;
   published_files: string[];
+  errors?: string[];
+}
+
+// Staging system interfaces
+export interface SiteStaging {
+  id: string;
+  site_id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  created_by: string;
+  staged_at: string;
+  staged_by: string;
+}
+
+export interface StagingDependency {
+  id: string;
+  staging_id: string;
+  entity_type: 'page' | 'block' | 'menu' | 'asset';
+  entity_id: string;
+  version: number;
+  dependency_type: 'direct' | 'indirect' | 'asset';
+  dependency_entity_type?: string;
+  dependency_entity_id?: string;
+  dependency_version?: number;
+  created_at: string;
+}
+
+export interface StagingWorkflow {
+  createStaging(params: {
+    siteId: string;
+    name: string;
+    description?: string;
+  }): Promise<ApiResponse<SiteStaging>>;
+
+  stageEntity(params: {
+    entityType: 'page' | 'block' | 'menu' | 'asset';
+    entityId: string;
+    version: number;
+    stagingId: string;
+  }): Promise<ApiResponse<boolean>>;
+
+  stageSite(params: {
+    siteId: string;
+    name: string;
+    description?: string;
+  }): Promise<ApiResponse<SiteStaging>>;
+
+  publishStagedContent(stagingId: string): Promise<ApiResponse<boolean>>;
+
+  rollbackStaging(stagingId: string): Promise<ApiResponse<boolean>>;
+
+  getStagingDependencies(stagingId: string): Promise<ApiResponse<StagingDependency[]>>;
+}
+
+export interface StagingResult {
+  success: boolean;
+  staging_id?: string;
+  staged_entities: number;
   errors?: string[];
 }
 
