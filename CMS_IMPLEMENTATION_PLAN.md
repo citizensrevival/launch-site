@@ -150,94 +150,94 @@ Build navigation menu system:
 - [x] **ENHANCED**: Added menu publishing functionality with publish/unpublish buttons
 - [x] **OPTIMIZED**: Removed redundant status column from menu_version table (status tracked via menu_publish table)
 
-### Phase 5: Publishing Workflow
+### Phase 5: Publishing Workflow ✅ MOSTLY COMPLETE
 Implement versioning and publishing:
 
-#### 5.1 Version Management UI
-- [ ] Create new versions for pages/blocks/menus
-- [ ] Version selector dropdown
-- [ ] Status badges (draft, published, archived)
-- [ ] Files: `src/admin/cms/components/VersionSelector.tsx`
+#### 5.1 Version Management UI ✅ COMPLETE
+- [x] Create new versions for pages/blocks/menus
+- [x] Version selector dropdown
+- [ ] Status badges (draft, published, archived) - Status column removed from schema
+- [x] Files: `src/admin/cms/components/VersionSelector.tsx` (integrated into existing editors)
 
-#### 5.2 Publish/Unpublish Operations
-- [ ] Publish button with confirmation
-- [ ] Update publish tables (page_publish, block_publish, menu_publish)
-- [ ] Unpublish operation
-- [ ] Show publish status and timestamp
-- [ ] Files: Add to existing editors
+#### 5.2 Publish/Unpublish Operations ✅ COMPLETE
+- [x] Publish button with confirmation
+- [x] Update publish tables (page_publish, block_publish, menu_publish)
+- [x] Unpublish operation
+- [x] Show publish status and timestamp
+- [x] Files: Add to existing editors
 
-#### 5.3 Audit Logging
+#### 5.3 Audit Logging ❌ NOT IMPLEMENTED
 - [ ] Log all CMS operations using `log_cms_audit` function
 - [ ] Display audit log in CmsAudit page
 - [ ] Filter by entity type, entity ID, user, date
 - [ ] Files: `src/admin/cms/CmsAudit.tsx`, `src/admin/cms/components/AuditLogTable.tsx`
 
-#### 5.4 Permissions Integration
+#### 5.4 Permissions Integration ❌ NOT IMPLEMENTED
 - [ ] Check permissions before operations (cms:page:create, cms:block:edit, etc.)
 - [ ] Display permission errors
 - [ ] Manage user permissions in CmsUsers
 - [ ] Files: `src/admin/cms/CmsUsers.tsx`, update existing components
 
-### Phase 6: Testing Infrastructure
+### Phase 6: Testing Infrastructure ✅ COMPLETE
 Set up comprehensive unit testing for all CMS logic:
 
-#### 6.1 Testing Setup
-- [ ] Install testing dependencies (Vitest, @testing-library/react, msw)
-- [ ] Configure test environment and mocking
-- [ ] Set up test database and fixtures
-- [ ] Create test utilities and helpers
-- [ ] Files: `vitest.config.ts`, `src/__tests__/setup.ts`, `src/__tests__/utils/`
+#### 6.1 Testing Setup ✅ COMPLETE
+- [x] Install testing dependencies (Vitest, @testing-library/react, msw)
+- [x] Configure test environment and mocking
+- [x] Set up test database and fixtures
+- [x] Create test utilities and helpers
+- [x] Files: `vitest.config.ts`, `src/__tests__/setup.ts`, `src/__tests__/utils/`
 
-#### 6.2 Schema Testing
-- [ ] Test all Zod schemas with valid/invalid data
-- [ ] Test edge cases (null, undefined, empty strings, invalid types)
-- [ ] Test schema transformations and validations
-- [ ] Test type inference and compatibility
-- [ ] Files: `src/__tests__/schemas/`
+#### 6.2 Schema Testing ✅ COMPLETE
+- [x] Test all Zod schemas with valid/invalid data
+- [x] Test edge cases (null, undefined, empty strings, invalid types)
+- [x] Test schema transformations and validations
+- [x] Test type inference and compatibility
+- [x] Files: `src/__tests__/schemas/`
 
-#### 6.3 Client Function Testing
-- [ ] Test all client functions with mocked Supabase
-- [ ] Test error handling and edge cases
-- [ ] Test data transformation and validation
-- [ ] Test authentication and permissions
-- [ ] Files: `src/__tests__/client/`
+#### 6.3 Client Function Testing ✅ COMPLETE
+- [x] Test all client functions with mocked Supabase
+- [x] Test error handling and edge cases
+- [x] Test data transformation and validation
+- [x] Test authentication and permissions
+- [x] Files: `src/__tests__/client/`
 
-#### 6.4 Hook Testing
-- [ ] Test all custom hooks with mocked dependencies
-- [ ] Test state management and side effects
-- [ ] Test error states and loading states
-- [ ] Test hook composition and reusability
-- [ ] Files: `src/__tests__/hooks/`
+#### 6.4 Hook Testing ✅ COMPLETE
+- [x] Test all custom hooks with mocked dependencies
+- [x] Test state management and side effects
+- [x] Test error states and loading states
+- [x] Test hook composition and reusability
+- [x] Files: `src/__tests__/hooks/`
 
-#### 6.5 Context Testing
-- [ ] Test all context providers with mocked state
-- [ ] Test context value updates and propagation
-- [ ] Test context composition and nesting
-- [ ] Test context error handling
-- [ ] Files: `src/__tests__/contexts/`
+#### 6.5 Context Testing ✅ COMPLETE
+- [x] Test all context providers with mocked state
+- [x] Test context value updates and propagation
+- [x] Test context composition and nesting
+- [x] Test context error handling
+- [x] Files: `src/__tests__/contexts/`
 
-#### 6.6 Utility Function Testing
-- [ ] Test all utility functions with various inputs
-- [ ] Test data transformation and validation
-- [ ] Test edge cases and error conditions
-- [ ] Test function composition and reusability
-- [ ] Files: `src/__tests__/utils/`
+#### 6.6 Utility Function Testing ✅ COMPLETE
+- [x] Test all utility functions with various inputs
+- [x] Test data transformation and validation
+- [x] Test edge cases and error conditions
+- [x] Test function composition and reusability
+- [x] Files: `src/__tests__/utils/`
 
-#### 6.7 Retrofit Existing Code Tests
-- [ ] Add tests for existing client functions (`src/lib/cms/client.ts`)
-- [ ] Add tests for existing hooks (`src/lib/cms/hooks.ts`)
-- [ ] Add tests for existing schemas (`src/lib/cms/schemas.ts`)
-- [ ] Add tests for existing utility functions (`src/lib/cms/utils.ts`)
-- [ ] Refactor existing code to be more testable (dependency injection)
-- [ ] Files: `src/__tests__/retrofit/`
+#### 6.7 Retrofit Existing Code Tests ✅ COMPLETE
+- [x] Add tests for existing client functions (`src/lib/cms/client.ts`)
+- [x] Add tests for existing hooks (`src/lib/cms/hooks.ts`)
+- [x] Add tests for existing schemas (`src/lib/cms/schemas.ts`)
+- [x] Add tests for existing utility functions (`src/lib/cms/utils.ts`)
+- [x] Refactor existing code to be more testable (dependency injection)
+- [x] Files: `src/__tests__/retrofit/`
 
-#### 6.8 Refactoring for Testability
-- [ ] Create `SupabaseClient` interface for dependency injection
-- [ ] Refactor client functions to accept client as parameter
-- [ ] Create factory functions for client creation
-- [ ] Add error handling interfaces and implementations
-- [ ] Create validation service interfaces
-- [ ] Files: `src/lib/cms/interfaces/`, `src/lib/cms/services/`
+#### 6.8 Refactoring for Testability ✅ COMPLETE
+- [x] Create `SupabaseClient` interface for dependency injection
+- [x] Refactor client functions to accept client as parameter
+- [x] Create factory functions for client creation
+- [x] Add error handling interfaces and implementations
+- [x] Create validation service interfaces
+- [x] Files: `src/lib/cms/interfaces/`, `src/lib/cms/services/`
 
 ### Phase 7: Supabase Edge Functions
 Create resolution functions for published content:
