@@ -1,8 +1,6 @@
-import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '../../../../core/types/database.types';
 import { BaseService } from '../../../../core/services/BaseService';
 import { AssetFiltersSchema, AssetInputSchema, AssetUpdateSchema } from '../schemas/asset.schemas';
-import type { Asset, AssetInput, AssetUpdate, AssetFilters, AssetSortOptions, AssetListResponse, AssetResponse } from '../types/asset.types';
+import type { Asset, AssetInput, AssetUpdate, AssetFilters, AssetSortOptions, AssetListResponse } from '../types/asset.types';
 
 export class AssetService extends BaseService {
   /**
@@ -19,7 +17,7 @@ export class AssetService extends BaseService {
       const validatedFilters = AssetFiltersSchema.parse(filters);
 
       let query = this.supabase
-        .from('asset')
+        .from('cms_assets')
         .select('*', { count: 'exact' })
         .order(sort.field, { ascending: sort.direction === 'asc' })
         .range(offset, offset + limit - 1);
@@ -69,7 +67,7 @@ export class AssetService extends BaseService {
   public async getAsset(id: string): Promise<{ success: true; data: Asset } | { success: false; error: string }> {
     try {
       const { data, error } = await this.supabase
-        .from('asset')
+        .from('cms_assets')
         .select('*')
         .eq('id', id)
         .single();
@@ -97,7 +95,7 @@ export class AssetService extends BaseService {
       const validatedInput = AssetInputSchema.parse(input);
 
       const { data, error } = await this.supabase
-        .from('asset')
+        .from('cms_assets')
         .insert({
           ...validatedInput,
           created_by: validatedInput.published_by,
@@ -128,7 +126,7 @@ export class AssetService extends BaseService {
       const validatedUpdates = AssetUpdateSchema.parse(updates);
 
       const { data, error } = await this.supabase
-        .from('asset')
+        .from('cms_assets')
         .update({
           ...validatedUpdates,
           updated_at: new Date().toISOString(),
@@ -157,7 +155,7 @@ export class AssetService extends BaseService {
   public async deleteAsset(id: string): Promise<{ success: true; data: { id: string } } | { success: false; error: string }> {
     try {
       const { error } = await this.supabase
-        .from('asset')
+        .from('cms_assets')
         .delete()
         .eq('id', id);
 
@@ -181,11 +179,11 @@ export class AssetService extends BaseService {
     try {
       // Generate storage key
       const timestamp = Date.now();
-      const extension = file.name.split('.').pop();
+      // const _extension = file.name.split('.').pop();
       const storageKey = `assets/${timestamp}-${file.name}`;
 
       // Upload file to storage
-      const { data: uploadData, error: uploadError } = await this.supabase.storage
+      const { error: uploadError } = await this.supabase.storage
         .from('assets')
         .upload(storageKey, file);
 
@@ -218,7 +216,7 @@ export class AssetService extends BaseService {
    */
   public async generateVariants(
     assetId: string,
-    variants: string[]
+    _variants: string[]
   ): Promise<{ success: true; data: Asset } | { success: false; error: string }> {
     try {
       // Get the asset first
@@ -238,7 +236,7 @@ export class AssetService extends BaseService {
   /**
    * Get asset URL
    */
-  public getAssetUrl(asset: Asset, variant?: string): string {
+  public getAssetUrl(asset: Asset, _variant?: string): string {
     const { data } = this.supabase.storage
       .from('assets')
       .getPublicUrl(asset.storage_key);
@@ -249,7 +247,7 @@ export class AssetService extends BaseService {
   /**
    * Get asset thumbnail URL
    */
-  public getAssetThumbnail(asset: Asset, size = 150): string {
+  public getAssetThumbnail(asset: Asset, _size = 150): string {
     // For now, return the main asset URL
     // In a real implementation, this would return a thumbnail variant
     return this.getAssetUrl(asset);

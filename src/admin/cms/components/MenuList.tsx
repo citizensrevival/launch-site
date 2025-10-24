@@ -12,7 +12,7 @@ import {
   mdiChevronLeft,
   mdiChevronRight
 } from '@mdi/js';
-import type { Menu } from '../../../lib/cms/types';
+import type { Menu } from '../menus/types/menu.types';
 
 interface MenuListProps {
   menus: Menu[];
@@ -136,21 +136,17 @@ export function MenuList({
               {/* System Key */}
               <div className="col-span-2">
                 <div className="text-sm text-gray-400">
-                  {menu.system_key || '-'}
+                  {/* TODO: Implement system key functionality */}
+                  -
                 </div>
               </div>
 
               {/* Type */}
               <div className="col-span-2 text-center">
-                {menu.is_system ? (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-900 text-blue-300">
-                    System
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-300">
-                    Custom
-                  </span>
-                )}
+                {/* TODO: Implement system menu functionality */}
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-300">
+                  Custom
+                </span>
               </div>
 
               {/* Actions */}
@@ -172,15 +168,14 @@ export function MenuList({
                     <Icon path={mdiPencil} size={1} />
                   </button>
                   
-                  {!menu.is_system && (
-                    <button
-                      onClick={() => onDelete(menu)}
-                      className="p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-gray-700 transition-colors"
-                      title="Delete menu"
-                    >
-                      <Icon path={mdiTrashCanOutline} size={1} />
-                    </button>
-                  )}
+                  {/* TODO: Implement system menu functionality */}
+                  <button
+                    onClick={() => onDelete(menu)}
+                    className="p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-gray-700 transition-colors"
+                    title="Delete menu"
+                  >
+                    <Icon path={mdiTrashCanOutline} size={1} />
+                  </button>
                 </div>
               </div>
             </div>

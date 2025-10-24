@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { SimpleLayout } from '../../shell/SimpleLayout'
-import { Button } from '../../shell/Button'
+import { SimpleLayout } from '../../core/components/SimpleLayout'
+import { Button } from '../../core/components/Button'
 import termsContent from './TermsAndConditions.md?raw'
 
 export default function TermsAndConditionsPage() {

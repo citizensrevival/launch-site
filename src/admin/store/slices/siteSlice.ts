@@ -46,4 +46,5 @@ const siteSlice = createSlice({
 });
 
 export const { setSites, setSelectedSite, setLoading, setError } = siteSlice.actions;
+export { siteSlice };
 export default siteSlice.reducer;

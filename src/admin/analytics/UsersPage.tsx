@@ -1,11 +1,14 @@
 import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
-import { TimeRangeToolbar } from './TimeRangeToolbar'
-import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
-import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../shell/store/slices/adminSlice'
-import { analyticsService, UsersData, AnalyticsUser, AnalyticsSession } from '../../shell/lib/AnalyticsService'
+import { TimeRangeToolbar } from '../TimeRangeToolbar'
+import { useAppSelector, useAppDispatch } from '../store/hooks'
+import { setCacheData, clearCacheType } from '../store/slices/cacheSlice'
+import { getCacheData, isCacheValid } from '../store/cacheHelpers'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../store/slices/adminSlice'
+import { getTimeRangeDates, type TimeRange } from '../TimeRangeToolbar'
+import { analyticsService } from '../analytics/services/AnalyticsService'
+import type { UsersData, AnalyticsUser, AnalyticsSession } from '../analytics/types/analytics.types'
 import { 
   mdiRefresh,
   mdiChevronUp,
@@ -27,7 +30,7 @@ import {
 } from '@mdi/js'
 import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { Tooltip } from '../../shell/Tooltip'
+import { Tooltip } from '../../core/components/Tooltip'
 import { ChartTooltipWrapper } from './ChartComponents'
 
 // Using UsersData from AnalyticsService
@@ -41,7 +44,7 @@ export default function UsersPage() {
   const loading = useAppSelector((state) => (state as any).admin?.analytics?.loading || false)
   const refreshing = useAppSelector((state) => (state as any).admin?.analytics?.refreshing || false)
   const [data, setData] = useState<UsersData | null>(null)
-  const [sortKey, setSortKey] = useState<'firstSeenAt' | 'lastSeenAt' | 'sessions' | 'avgDuration' | 'anonId' | 'hasLead'>('lastSeenAt')
+  const [sortKey, setSortKey] = useState<'firstSeen' | 'lastSeen' | 'totalSessions' | 'avgSessionDuration' | 'anonId'>('lastSeen')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [drawerUser, setDrawerUser] = useState<AnalyticsUser | null>(null)
   const [selectedSession, setSelectedSession] = useState<AnalyticsSession | null>(null)
@@ -66,13 +69,12 @@ export default function UsersPage() {
       dispatch(setAnalyticsLoading(true))
       
       // Fetch data from analytics service
-      const usersData = await analyticsService.getUsersData(timeRange)
+      const usersData = await analyticsService.getUsersData()
       setData(usersData)
       
       // Cache the data
       dispatch(setCacheData({
-        type: 'analytics',
-        key: cacheKey,
+        key: `analytics:${cacheKey}`,
         data: usersData
       }))
     } catch (error) {
@@ -142,12 +144,7 @@ export default function UsersPage() {
     setExcludingUsers(prev => new Set(prev).add(user.id))
     
     try {
-      const result = await analyticsService.removeExclusion(
-        user.id,
-        undefined,
-        undefined,
-        user.anonId
-      )
+      const result = await analyticsService.removeExclusion(user.id)
 
       if (result.success) {
         setExcludedUsers(prev => {
@@ -231,8 +228,8 @@ export default function UsersPage() {
   }
 
   const sortedUsers = [...(data.users || [])].sort((a, b) => {
-    const aVal = a[sortKey]
-    const bVal = b[sortKey]
+    const aVal = a[sortKey] ?? ''
+    const bVal = b[sortKey] ?? ''
     const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
     return sortDirection === 'asc' ? comparison : -comparison
   })
@@ -279,8 +276,14 @@ export default function UsersPage() {
       {/* Time Range Toolbar */}
       <div className="mb-6">
         <TimeRangeToolbar 
-          selectedRange={timeRange} 
-          onRangeChange={(range) => dispatch(setTimeRange(range))}
+          selectedRange={timeRange as TimeRange} 
+          onRangeChange={(range) => {
+            const dateRange = getTimeRangeDates(range)
+            dispatch(setTimeRange({
+              start: dateRange.start.toISOString(),
+              end: dateRange.end.toISOString()
+            }))
+          }}
         />
       </div>
 
@@ -362,11 +365,11 @@ export default function UsersPage() {
             <thead>
               <tr>
                 {headerCell('User ID', 'anonId')}
-                {headerCell('First Visit', 'firstSeenAt')}
-                {headerCell('Last Visit', 'lastSeenAt')}
-                {headerCell('Sessions', 'sessions')}
-                {headerCell('Avg Duration', 'avgDuration')}
-                {headerCell('Lead Submitted', 'hasLead')}
+                {headerCell('First Visit', 'firstSeen')}
+                {headerCell('Last Visit', 'lastSeen')}
+                {headerCell('Sessions', 'totalSessions')}
+                {headerCell('Avg Duration', 'avgSessionDuration')}
+                {headerCell('Lead Submitted', 'anonId')}
                 <th className="sticky top-0 z-10 bg-gray-800 px-3 py-2" />
               </tr>
             </thead>
@@ -379,20 +382,20 @@ export default function UsersPage() {
                   <td className="px-3 py-2 text-white">
                     <div className="flex items-center gap-2">
                       <Icon path={mdiCalendar} className="h-4 w-4 text-gray-400" />
-                      <span>{formatDistanceToNow(new Date(user.firstSeenAt), { addSuffix: true })}</span>
+                      <span>{formatDistanceToNow(new Date(user.firstSeen), { addSuffix: true })}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-white">
                     <div className="flex items-center gap-2">
                       <Icon path={mdiClock} className="h-4 w-4 text-gray-400" />
-                      <span>{formatDistanceToNow(new Date(user.lastSeenAt), { addSuffix: true })}</span>
+                      <span>{formatDistanceToNow(new Date(user.lastSeen), { addSuffix: true })}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-white text-center">
-                    {user.sessions}
+                    {user.totalSessions}
                   </td>
                   <td className="px-3 py-2 text-white text-center">
-                    {formatDuration(user.avgDuration)}
+                    {formatDuration(user.avgSessionDuration)}
                   </td>
                   <td className="px-3 py-2 text-center">
                     <Icon 
@@ -462,10 +465,10 @@ export default function UsersPage() {
                 <div className="text-white font-mono text-sm">{drawerUser.anonId}</div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="First Seen" value={new Date(drawerUser.firstSeenAt).toLocaleString()} />
-                <Field label="Last Seen" value={new Date(drawerUser.lastSeenAt).toLocaleString()} />
-                <Field label="Total Sessions" value={drawerUser.sessions.toString()} />
-                <Field label="Avg Duration" value={formatDuration(drawerUser.avgDuration)} />
+                <Field label="First Seen" value={new Date(drawerUser.firstSeen).toLocaleString()} />
+                <Field label="Last Seen" value={new Date(drawerUser.lastSeen).toLocaleString()} />
+                <Field label="Total Sessions" value={drawerUser.totalSessions.toString()} />
+                <Field label="Avg Duration" value={formatDuration(drawerUser.avgSessionDuration)} />
                 <Field label="Lead Submitted" value={drawerUser.hasLead ? 'Yes' : 'No'} />
                 <Field label="Device Category" value={drawerUser.deviceCategory} />
                 <Field label="Browser" value={drawerUser.browserName} />
@@ -473,9 +476,9 @@ export default function UsersPage() {
                 <Field label="Country" value={drawerUser.geoCountry} />
                 <Field label="City" value={drawerUser.geoCity} />
                 <Field label="First Referrer" value={drawerUser.firstReferrer} isLink={drawerUser.firstReferrer} />
-                <Field label="Last Referrer" value={drawerUser.lastReferrer} isLink={drawerUser.lastReferrer} />
-                <Field label="First UTM Source" value={drawerUser.firstUtmSource} />
-                <Field label="Last UTM Source" value={drawerUser.lastUtmSource} />
+                <Field label="Last Referrer" value={drawerUser.referrer} isLink={drawerUser.referrer} />
+                <Field label="First UTM Source" value={drawerUser.utmSource} />
+                <Field label="Last UTM Source" value={drawerUser.utmSource} />
               </div>
               
               {/* User Sessions */}
@@ -491,12 +494,12 @@ export default function UsersPage() {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <Icon path={getDeviceIcon(session.deviceCategory)} className="h-4 w-4 text-gray-400" />
+                            <Icon path={getDeviceIcon(session.deviceCategory || 'desktop')} className="h-4 w-4 text-gray-400" />
                             <span className="text-white font-mono text-sm">{session.id}</span>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-gray-400">
                             <Icon path={mdiEye} className="h-3 w-3" />
-                            <span>{session.pageviews}</span>
+                            <span>{session.pageViews}</span>
                             <Icon path={mdiMouse} className="h-3 w-3" />
                             <span>{session.events}</span>
                           </div>
@@ -504,11 +507,11 @@ export default function UsersPage() {
                         <div className="flex items-center justify-between text-xs text-gray-300">
                           <div className="flex items-center gap-2">
                             <Icon path={mdiCalendar} className="h-3 w-3" />
-                            <span>{formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}</span>
+                            <span>{formatDistanceToNow(new Date(session.startTime), { addSuffix: true })}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Icon path={mdiClock} className="h-3 w-3" />
-                            <span>{formatDuration(session.duration)}</span>
+                            <span>{formatDuration(session.duration || 0)}</span>
                           </div>
                         </div>
                         <div className="mt-2 text-xs text-gray-400 truncate">
@@ -549,10 +552,10 @@ export default function UsersPage() {
                 <div className="text-white font-mono text-sm">{selectedSession.id}</div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Started At" value={new Date(selectedSession.startedAt).toLocaleString()} />
-                <Field label="Ended At" value={selectedSession.endedAt ? new Date(selectedSession.endedAt).toLocaleString() : 'Still active'} />
-                <Field label="Duration" value={formatDuration(selectedSession.duration)} />
-                <Field label="Pageviews" value={selectedSession.pageviews.toString()} />
+                <Field label="Started At" value={new Date(selectedSession.startTime).toLocaleString()} />
+                <Field label="Ended At" value={selectedSession.endTime ? new Date(selectedSession.endTime).toLocaleString() : 'Still active'} />
+                <Field label="Duration" value={formatDuration(selectedSession.duration || 0)} />
+                <Field label="Pageviews" value={selectedSession.pageViews.toString()} />
                 <Field label="Events" value={selectedSession.events.toString()} />
                 <Field label="Landing Page" value={selectedSession.landingPage} isLink={selectedSession.landingPage} />
                 <Field label="Device Category" value={selectedSession.deviceCategory} />

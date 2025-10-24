@@ -2,7 +2,7 @@
 // This component provides staging controls for individual entities
 
 import { useState } from 'react';
-import { useStagingManagement } from '../../../lib/cms/stagingHooks';
+import { useStagingManagement } from '../staging/hooks/useStaging';
 
 interface StagingControlsProps {
   siteId: string;

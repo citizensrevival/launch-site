@@ -26,7 +26,7 @@ export const ResolvedMenuItemSchema = z.object({
   label: z.record(z.string()),
   target: z.string().optional(),
   rel: z.string().optional(),
-  children: z.array(z.any()).optional(), // Simplified for now - no recursion
+  children: z.array(z.lazy(() => MenuItemSchema)).optional(), // Recursive schema
   visibility: z.object({
     device: z.array(z.enum(['mobile', 'desktop'])).optional(),
     audience: z.array(z.enum(['anon', 'user', 'admin'])).optional(),
@@ -40,7 +40,7 @@ export const ResolvedMenuItemSchema = z.object({
     text: z.record(z.string()),
     color: z.string(),
   }).optional(),
-  style_hints: z.record(z.any()).optional(),
+  style_hints: z.record(z.unknown()).optional(),
 });
 
 export const ResolvedMenuSchema = z.object({

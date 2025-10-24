@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { SupabaseConfig } from './types';
+import { SupabaseConfig } from './types/supabase.types';
 
 /**
  * Supabase client factory with dependency injection

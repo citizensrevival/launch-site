@@ -1,23 +1,24 @@
 import { useEffect, useState, useCallback } from 'react'
-import { createLeadsAdminService } from '../shell/lib'
+import { createLeadsAdminService } from './leads/services/LeadsService'
+import { analyticsService } from './analytics/services/AnalyticsService'
 import { AdminLayout } from './AdminLayout'
 import { Icon } from '@mdi/react'
 import { mdiRefresh, mdiDownload } from '@mdi/js'
 import { TimeRangeToolbar } from './analytics/TimeRangeToolbar'
 import { ChartTooltipWrapper } from './analytics/ChartComponents'
-import { useAppSelector, useAppDispatch } from '../shell/store/hooks'
-import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../shell/store/slices/adminSlice'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../shell/store/slices/cacheSlice'
-import { analyticsService, UsersData } from '../shell/lib/AnalyticsService'
+import { useAppSelector, useAppDispatch } from './store/hooks'
+import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from './store/slices/adminSlice'
+import { setCacheData, clearCacheType } from './store/slices/cacheSlice'
+import { getCacheData, isCacheValid } from './store/cacheHelpers'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
-import type { RootState } from '../shell/store'
+import type { RootState } from './store'
+import type { UsersData } from './analytics/types/analytics.types'
 
 interface CountsState {
   total: number
   vendors: number
   sponsors: number
   volunteers: number
-  subscribers: number
 }
 
 // Create properly typed selectors
@@ -50,7 +51,6 @@ export default function AdminDashboard() {
         vendors: 0,
         sponsors: 0,
         volunteers: 0,
-        subscribers: 0,
       })
     }
     setLoading(false)
@@ -74,13 +74,12 @@ export default function AdminDashboard() {
       dispatch(setAnalyticsLoading(true))
       
       // Fetch data from analytics service
-      const usersData = await analyticsService.getUsersData(timeRange)
+      const usersData = await analyticsService.getUsersData()
       setAnalyticsData(usersData)
       
       // Cache the data
       dispatch(setCacheData({
-        type: 'analytics',
-        key: cacheKey,
+        key: `analytics:${cacheKey}`,
         data: usersData
       }))
     } catch (error) {
@@ -185,9 +184,9 @@ export default function AdminDashboard() {
             href="/manage/leads?type=subscriber"
             className="rounded-lg bg-gray-800 p-4 hover:bg-gray-700 transition-colors cursor-pointer"
           >
-            <div className="text-xs text-gray-400">Subscribers</div>
+            <div className="text-xs text-gray-400">Volunteers</div>
             <div className="mt-1 text-2xl font-semibold text-white">
-              {renderValue(counts?.subscribers)}
+              {renderValue(counts?.volunteers)}
             </div>
           </a>
           <a
@@ -238,7 +237,7 @@ export default function AdminDashboard() {
         <div className="mb-6">
           <TimeRangeToolbar 
             selectedRange={timeRange} 
-            onRangeChange={(range) => dispatch(setTimeRange(range))}
+            onRangeChange={() => dispatch(setTimeRange({ start: '', end: '' }))}
             onRefresh={refreshAnalytics}
             refreshing={analyticsRefreshing}
             showRefresh={false}

@@ -1,6 +1,6 @@
 import { Icon } from '@mdi/react'
 import { mdiRefresh, mdiCalendar } from '@mdi/js'
-import { TimeRange } from '../../shell/store/slices/adminSlice'
+export type TimeRange = '1hour' | '24hours' | '7days' | '30days' | '90days' | '1year'
 
 export interface TimeRangeToolbarProps {
   selectedRange: TimeRange
@@ -12,10 +12,12 @@ export interface TimeRangeToolbarProps {
 }
 
 const TIME_RANGE_OPTIONS: Array<{ value: TimeRange; label: string }> = [
-  { value: 'today', label: 'Today' },
+  { value: '1hour', label: 'Last hour' },
+  { value: '24hours', label: 'Last 24 hours' },
   { value: '7days', label: 'Last 7 days' },
   { value: '30days', label: 'Last 30 days' },
-  { value: 'year', label: 'This year' }
+  { value: '90days', label: 'Last 90 days' },
+  { value: '1year', label: 'Last year' }
 ]
 
 export function TimeRangeToolbar({ 

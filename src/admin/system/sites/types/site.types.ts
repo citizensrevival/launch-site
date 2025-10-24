@@ -3,17 +3,17 @@
  * Based on database schema for system_sites table
  */
 
+import type { Json } from '../../../../core/types/database.types';
+
 export interface Site {
   id: string;
   name: string;
   slug: string;
-  domain?: string;
-  description?: string;
-  settings: Record<string, any>;
+  domain: string;
+  default_locale: string;
+  settings: Json | null;
   created_at: string;
   updated_at: string;
-  created_by: string;
-  updated_by: string;
 }
 
 export interface CreateSiteInput {

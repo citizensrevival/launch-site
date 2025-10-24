@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ColorTheme, GetInvolvedType } from '../../lib/SiteSettingsManager'
+import { ColorTheme, GetInvolvedType } from '../../core/types/session.types'
 
 export interface SessionState {
   colorTheme: ColorTheme

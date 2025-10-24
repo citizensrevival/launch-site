@@ -3,18 +3,18 @@
 
 import { useMemo } from 'react';
 import { AdminLayout } from '../AdminLayout';
-import { usePages } from '../../lib/cms/hooks';
-import { useAppSelector } from '../../shell/store/hooks';
+import { usePages } from './pages/hooks/usePages';
+// import { useAppSelector } from '../store/hooks';
 
 export function CmsDashboard() {
-  const selectedSite = useAppSelector((state) => state.site.selectedSite);
+  // const selectedSite = useAppSelector((state) => state.site.selectedSite);
   
   // Memoize filters and sort to prevent infinite loop
   const filters = useMemo(() => ({}), []);
   const sort = useMemo(() => ({ field: 'slug' as const, direction: 'asc' as const }), []);
   
   // Note: page table doesn't have created_at field, so we sort by slug
-  const { pages, loading, error } = usePages(selectedSite?.id || '', filters, sort, 1, 10);
+  const { pages, loading, error } = usePages(filters, sort, 10);
 
   if (loading) {
     return (
@@ -55,8 +55,8 @@ export function CmsDashboard() {
     );
   }
 
-  const recentPages = pages?.data || [];
-  const totalPages = pages?.count || 0;
+  const recentPages = pages || [];
+  const totalPages = pages?.length || 0;
 
   return (
     <AdminLayout
@@ -101,7 +101,7 @@ export function CmsDashboard() {
                 <dl>
                   <dt className="text-sm font-medium text-gray-400 truncate">Published</dt>
                   <dd className="text-lg font-medium text-white">
-                    {recentPages.filter(page => !page.is_system).length}
+                    {recentPages.length}
                   </dd>
                 </dl>
               </div>
@@ -185,18 +185,19 @@ export function CmsDashboard() {
                             /{page.slug}
                           </p>
                           <div className="flex items-center space-x-2">
-                            {page.is_system && (
+                            {/* TODO: Implement system page functionality */}
+                            {/* {page.is_system && (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-900/30 text-purple-400 border border-purple-800">
                                 System
                               </span>
-                            )}
+                            )} */}
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900/30 text-green-400 border border-green-800">
                               Published
                             </span>
                           </div>
                         </div>
                         <p className="text-sm text-gray-400">
-                          {page.system_key && `Key: ${page.system_key}`}
+                          {/* {page.system_key && `Key: ${page.system_key}`} */}
                         </p>
                       </div>
                       <div className="flex-shrink-0">

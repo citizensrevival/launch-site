@@ -13,7 +13,7 @@ import {
   mdiViewGridOutline,
   mdiImage
 } from '@mdi/js';
-import type { LocalizedContent } from '../../../lib/cms/types';
+import type { LocalizedContent } from '../blocks/types/block.types';
 
 interface BlockPreviewProps {
   blockType: string;

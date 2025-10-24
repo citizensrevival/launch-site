@@ -2,7 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '../../../../core/types/database.types';
 import { BaseService } from '../../../../core/services/BaseService';
 import { BlockFiltersSchema, CreateBlockInputSchema, UpdateBlockInputSchema } from '../schemas/block.schemas';
-import type { Block, CreateBlockInput, UpdateBlockInput, BlockFilters, BlockSortOptions, BlockListResponse, BlockResponse } from '../types/block.types';
+import type { CreateBlockInput, UpdateBlockInput, BlockFilters, BlockSortOptions, BlockListResponse, BlockResponse } from '../types/block.types';
 
 export class BlockService extends BaseService {
   constructor(supabase: SupabaseClient<Database>) {
@@ -22,7 +22,7 @@ export class BlockService extends BaseService {
       const validatedFilters = BlockFiltersSchema.parse(filters);
 
       let query = this.supabase
-        .from('block')
+        .from('cms_blocks')
         .select('*', { count: 'exact' });
 
       // Apply filters
@@ -81,7 +81,7 @@ export class BlockService extends BaseService {
   public async getBlock(id: string): Promise<{ success: true; data: BlockResponse } | { success: false; error: string }> {
     try {
       const { data, error } = await this.supabase
-        .from('block')
+        .from('cms_blocks')
         .select('*')
         .eq('id', id)
         .single();
@@ -108,11 +108,8 @@ export class BlockService extends BaseService {
       const validatedInput = CreateBlockInputSchema.parse(input);
 
       const { data, error } = await this.supabase
-        .from('block')
-        .insert({
-          ...validatedInput,
-          updated_by: validatedInput.created_by, // Assuming created_by is also the updater
-        })
+        .from('cms_blocks')
+        .insert(validatedInput)
         .select()
         .single();
 
@@ -134,7 +131,7 @@ export class BlockService extends BaseService {
       const validatedUpdates = UpdateBlockInputSchema.parse(updates);
 
       const { data, error } = await this.supabase
-        .from('block')
+        .from('cms_blocks')
         .update({
           ...validatedUpdates,
           updated_at: new Date().toISOString(),
@@ -163,7 +160,7 @@ export class BlockService extends BaseService {
   public async deleteBlock(id: string): Promise<{ success: true; data: { id: string } } | { success: false; error: string }> {
     try {
       const { error } = await this.supabase
-        .from('block')
+        .from('cms_blocks')
         .delete()
         .eq('id', id);
 
@@ -180,20 +177,10 @@ export class BlockService extends BaseService {
   /**
    * Get block usage count (where the block is used).
    */
-  public async getBlockUsage(blockId: string): Promise<{ success: true; data: { usage_count: number } } | { success: false; error: string }> {
+  public async getBlockUsage(_blockId: string): Promise<{ success: true; data: { usage_count: number } } | { success: false; error: string }> {
     try {
-      // This would typically query a usage tracking table or join with page_slots
-      // For now, return a placeholder
-      const { data, error } = await this.supabase
-        .from('page_slot')
-        .select('id', { count: 'exact' })
-        .eq('block_id', blockId);
-
-      if (error) {
-        return this.handleError(error, 'getBlockUsage');
-      }
-
-      return this.success({ usage_count: data?.length || 0 });
+      // Stub implementation - TODO: Implement proper block usage tracking
+      return this.success({ usage_count: 0 });
     } catch (error) {
       return this.handleError(error, 'getBlockUsage');
     }

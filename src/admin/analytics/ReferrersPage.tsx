@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar } from './TimeRangeToolbar'
-import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
-import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../shell/store/slices/adminSlice'
-import { analyticsService, ReferrersData, Referrer } from '../../shell/lib/AnalyticsService'
+import { useAppSelector, useAppDispatch } from '../store/hooks'
+import { setCacheData, clearCacheType } from '../store/slices/cacheSlice'
+import { getCacheData, isCacheValid } from '../store/cacheHelpers'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../store/slices/adminSlice'
+import { analyticsService } from '../analytics/services/AnalyticsService'
+import type { ReferrersData, Referrer } from '../analytics/types/analytics.types'
 import { 
   mdiRefresh,
   mdiChevronUp,
@@ -22,7 +24,7 @@ import {
 } from '@mdi/js'
 import { formatDistanceToNow } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
-import { Tooltip } from '../../shell/Tooltip'
+import { Tooltip } from '../../core/components/Tooltip'
 import { ChartTooltipWrapper } from './ChartComponents'
 
 // Using ReferrersData from AnalyticsService
@@ -58,13 +60,12 @@ export default function ReferrersPage() {
       dispatch(setAnalyticsLoading(true))
       
       // Fetch data from analytics service
-      const referrersData = await analyticsService.getReferrersData(timeRange)
+      const referrersData = await analyticsService.getReferrersData()
       setData(referrersData)
       
       // Cache the data
       dispatch(setCacheData({
-        type: 'analytics',
-        key: cacheKey,
+        key: `analytics:${cacheKey}`,
         data: referrersData
       }))
     } catch (error) {
@@ -203,7 +204,7 @@ export default function ReferrersPage() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={(range) => dispatch(setTimeRange(range))}
+          onRangeChange={() => dispatch(setTimeRange({ start: '', end: '' }))}
         />
       </div>
 

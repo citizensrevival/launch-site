@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar } from './TimeRangeToolbar'
-import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
-import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../shell/store/slices/adminSlice'
-import { analyticsService, EventsData } from '../../shell/lib/AnalyticsService'
+import { useAppSelector, useAppDispatch } from '../store/hooks'
+import { setCacheData, clearCacheType } from '../store/slices/cacheSlice'
+import { getCacheData, isCacheValid } from '../store/cacheHelpers'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../store/slices/adminSlice'
+import { analyticsService } from '../analytics/services/AnalyticsService'
+import type { EventData as EventsData } from '../analytics/types/analytics.types'
 import { 
   mdiTrendingUp,
   mdiRefresh,
@@ -30,7 +32,7 @@ export default function EventsPage() {
   const timeRange = useAppSelector((state) => (state as any).admin?.timeRange || '30days')
   const loading = useAppSelector((state) => (state as any).admin?.analytics?.loading || false)
   const refreshing = useAppSelector((state) => (state as any).admin?.analytics?.refreshing || false)
-  const [data, setData] = useState<EventsData | null>(null)
+  const [eventsData, setEventsData] = useState<EventsData[]>([])
   const [sortKey, setSortKey] = useState<'name' | 'count' | 'uniqueUsers' | 'conversionRate' | 'lastOccurred'>('count')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
@@ -41,9 +43,9 @@ export default function EventsPage() {
     
     // Check cache first (unless force refresh)
     if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
-      const cachedData = getCacheData<EventsData>(cache, 'analytics', cacheKey)
+      const cachedData = getCacheData<EventsData[]>(cache, 'analytics', cacheKey)
       if (cachedData) {
-        setData(cachedData)
+        setEventsData(cachedData)
         return
       }
     }
@@ -52,14 +54,13 @@ export default function EventsPage() {
       dispatch(setAnalyticsLoading(true))
       
       // Fetch data from analytics service
-      const eventsData = await analyticsService.getEventsData(timeRange)
-      setData(eventsData)
+      const events = await analyticsService.getEventsData()
+      setEventsData(events)
       
       // Cache the data
       dispatch(setCacheData({
-        type: 'analytics',
-        key: cacheKey,
-        data: eventsData
+        key: `analytics:${cacheKey}`,
+        data: events
       }))
     } catch (error) {
       console.error('Failed to fetch events data:', error)
@@ -122,7 +123,7 @@ export default function EventsPage() {
     )
   }
 
-  if (!data) {
+  if (!eventsData || eventsData.length === 0) {
     return (
       <AdminLayout pageHeader={pageHeader}>
         <div className="text-center py-12">
@@ -132,7 +133,7 @@ export default function EventsPage() {
     )
   }
 
-  const sortedEvents = [...data.events].sort((a, b) => {
+  const sortedEvents = [...eventsData].sort((a, b) => {
     const aVal = a[sortKey]
     const bVal = b[sortKey]
     const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
@@ -169,7 +170,7 @@ export default function EventsPage() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={(range) => dispatch(setTimeRange(range))}
+            onRangeChange={() => dispatch(setTimeRange({ start: '', end: '' }))}
         />
       </div>
 
@@ -180,7 +181,7 @@ export default function EventsPage() {
         className="mb-8"
       >
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={data.eventTrends}>
+          <LineChart data={[]}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis 
               dataKey="day" 
@@ -213,7 +214,7 @@ export default function EventsPage() {
         className="mb-8"
       >
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data.topEvents}>
+          <BarChart data={[]}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis 
               dataKey="name" 
@@ -257,7 +258,7 @@ export default function EventsPage() {
                     <div className="flex items-center gap-3">
                       <Icon path={getEventIcon(event.name)} className="h-5 w-5 text-purple-400" />
                       <div>
-                        <div className="font-medium">{event.label}</div>
+                        <div className="font-medium">{event.name}</div>
                         <div className="text-sm text-gray-400 font-mono">{event.name}</div>
                       </div>
                     </div>

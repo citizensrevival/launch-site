@@ -1,68 +1,52 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { AssetKind, ContentFilters, ContentSort } from '../../../lib/cms/types';
-
-export type ViewMode = 'grid' | 'list';
 
 interface AssetSearchState {
-  filters: ContentFilters;
-  sort: ContentSort;
-  page: number;
-  viewMode: ViewMode;
+  query: string;
+  filters: {
+    type?: string;
+    status?: string;
+    dateRange?: {
+      start: string;
+      end: string;
+    };
+  };
+  sortBy: {
+    field: string;
+    direction: 'asc' | 'desc';
+  };
 }
 
 const initialState: AssetSearchState = {
+  query: '',
   filters: {},
-  sort: { field: 'created_at', direction: 'desc' },
-  page: 1,
-  viewMode: 'grid',
+  sortBy: {
+    field: 'created_at',
+    direction: 'desc',
+  },
 };
 
-const assetSearchSlice = createSlice({
+export const assetSearchSlice = createSlice({
   name: 'assetSearch',
   initialState,
   reducers: {
-    setFilters: (state, action: PayloadAction<ContentFilters>) => {
+    setQuery: (state, action: PayloadAction<string>) => {
+      state.query = action.payload;
+    },
+    setFilters: (state, action: PayloadAction<AssetSearchState['filters']>) => {
       state.filters = action.payload;
-      state.page = 1; // Reset to first page when filters change
     },
-    setSort: (state, action: PayloadAction<ContentSort>) => {
-      state.sort = action.payload;
+    setSortBy: (state, action: PayloadAction<AssetSearchState['sortBy']>) => {
+      state.sortBy = action.payload;
     },
-    setPage: (state, action: PayloadAction<number>) => {
-      state.page = action.payload;
-    },
-    setViewMode: (state, action: PayloadAction<ViewMode>) => {
-      state.viewMode = action.payload;
-    },
-    updateFilter: (state, action: PayloadAction<{ key: keyof ContentFilters; value: any }>) => {
-      const { key, value } = action.payload;
-      if (value === undefined || value === '') {
-        delete state.filters[key];
-      } else {
-        state.filters[key] = value;
-      }
-      state.page = 1; // Reset to first page when filters change
-    },
-    toggleKindFilter: (state, action: PayloadAction<AssetKind>) => {
-      const kind = action.payload;
-      const currentKinds = (state.filters.kinds as AssetKind[]) || [];
-      
-      if (currentKinds.includes(kind)) {
-        // Remove the kind
-        const newKinds = currentKinds.filter(k => k !== kind);
-        if (newKinds.length === 0) {
-          delete state.filters.kinds;
-        } else {
-          state.filters.kinds = newKinds;
-        }
-      } else {
-        // Add the kind
-        state.filters.kinds = [...currentKinds, kind];
-      }
-      state.page = 1; // Reset to first page when filters change
+    clearSearch: (state) => {
+      state.query = '';
+      state.filters = {};
+      state.sortBy = {
+        field: 'created_at',
+        direction: 'desc',
+      };
     },
   },
 });
 
-export const { setFilters, setSort, setPage, setViewMode, updateFilter, toggleKindFilter } = assetSearchSlice.actions;
-export default assetSearchSlice.reducer;
+export const { setQuery, setFilters, setSortBy, clearSearch } = assetSearchSlice.actions;

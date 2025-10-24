@@ -20,3 +20,5 @@ export interface LeadSubmissionResult {
   leadId?: string;
   error?: string;
 }
+
+export type LeadType = 'volunteer' | 'vendor' | 'sponsor' | 'general';

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { Block, CreateBlockInput, UpdateBlockInput, BlockFilters, BlockSortOptions, BlockListResponse, BlockResponse } from '../types/block.types';
 
 // ================================================
 // Block Schemas
@@ -7,24 +6,24 @@ import type { Block, CreateBlockInput, UpdateBlockInput, BlockFilters, BlockSort
 
 export const BlockSchema = z.object({
   id: z.string().uuid(),
-  site_id: z.string().uuid(),
+  site_id: z.string().uuid().nullable().optional(),
   type: z.string().min(1),
   tag: z.string().nullable().optional(),
-  is_system: z.boolean(),
+  is_system: z.boolean().nullable().optional(),
   system_key: z.string().nullable().optional(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
-  created_by: z.string().uuid(),
-  updated_by: z.string().uuid(),
+  // created_by: z.string().uuid(), // TODO: Implement proper user tracking
+  // updated_by: z.string().uuid(), // TODO: Implement proper user tracking
 });
 
 export const CreateBlockInputSchema = z.object({
-  site_id: z.string().uuid(),
+  site_id: z.string().uuid().optional(),
   type: z.string().min(1),
   tag: z.string().optional(),
   is_system: z.boolean().optional().default(false),
   system_key: z.string().optional(),
-  created_by: z.string().uuid(),
+  // created_by: z.string().uuid(), // TODO: Implement proper user tracking
 });
 
 export const UpdateBlockInputSchema = z.object({

@@ -9,10 +9,10 @@ import {
   mdiEye,
   mdiChevronDown,
 } from '@mdi/js';
-import { useBlockVersions, useBlockVersionManagement, useBlockManagement } from '../../../lib/cms/hooks';
+import { useBlockVersions, useBlockVersionManagement, useBlockManagement } from '../blocks/hooks/useBlocks';
 import { BlockContentEditor } from './BlockContentEditor';
 import { BlockAssetManager } from './BlockAssetManager';
-import type { Block, BlockVersion, LocalizedContent } from '../../../lib/cms/types';
+import type { Block, BlockVersion, LocalizedContent } from '../blocks/types/block.types';
 
 interface BlockEditorProps {
   block: Block;

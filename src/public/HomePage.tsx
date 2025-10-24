@@ -1,6 +1,6 @@
-import { Layout } from '../shell/Layout'
-import { Section } from '../shell/Section'
-import { Button } from '../shell/Button'
+import { Layout } from '../core/components/Layout'
+import { Section } from '../core/components/Section'
+import { Button } from '../core/components/Button'
 
 // Get the base path for images
 const getImagePath = (imageName: string) => {

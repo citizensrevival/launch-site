@@ -1,29 +1,18 @@
 import { z } from 'zod';
-import type {
-  UpsertUserRequest,
-  StartSessionRequest,
-  EndSessionRequest,
-  PageviewRequest,
-  EventRequest,
-  BatchRequest,
-  UpdateSessionContextRequest,
-  HeartbeatRequest,
-  AdminExportRequest,
-} from '../types/edge-functions';
 
 // ================================================
 // Request Schemas
 // ================================================
 
 export const UpsertUserRequestSchema = z.object({
-  anonId: z.string().min(10), // UUID-like string from client
-  traits: z.record(z.any()).optional(), // non-PII
+  anonId: z.string().min(10, "AnonId must be at least 10 characters"), // UUID-like string from client
+  traits: z.record(z.string(), z.unknown()).optional(), // non-PII
 });
 
 export const StartSessionRequestSchema = z.object({
   anonId: z.string(),
-  sessionId: z.string().uuid(), // client-generated is fine
-  landingPage: z.string().url(),
+  sessionId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"), // client-generated is fine
+  landingPage: z.string().regex(/^https?:\/\/.+\..+/, "Invalid URL format"),
   landingPath: z.string(),
   referrer: z.string().nullable().optional().transform(val => val === undefined ? null : val),
   utm: z.object({
@@ -43,28 +32,28 @@ export const StartSessionRequestSchema = z.object({
 });
 
 export const EndSessionRequestSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
 });
 
 export const PageviewRequestSchema = z.object({
-  sessionId: z.string().uuid(),
-  userId: z.string().uuid(),
-  url: z.string().url(),
+  sessionId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
+  userId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
+  url: z.string().regex(/^https?:\/\/.+\..+/, "Invalid URL format"),
   path: z.string(),
   title: z.string().optional(),
   referrer: z.string().nullable().optional(),
-  properties: z.record(z.any()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
   occurredAt: z.string().datetime().optional(), // fallback to server now()
 });
 
 export const EventRequestSchema = z.object({
-  sessionId: z.string().uuid(),
-  userId: z.string().uuid(),
+  sessionId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
+  userId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
   name: z.string().min(1),
   label: z.string().optional(),
   valueNum: z.number().optional(),
   valueText: z.string().optional(),
-  properties: z.record(z.any()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
   occurredAt: z.string().datetime().optional(),
 });
 
@@ -76,7 +65,7 @@ export const BatchRequestSchema = z.object({
 });
 
 export const UpdateSessionContextRequestSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
   geo: z.object({
     country: z.string().optional(),
     region: z.string().optional(),
@@ -84,19 +73,19 @@ export const UpdateSessionContextRequestSchema = z.object({
   }).partial().optional(),
   device: StartSessionRequestSchema.shape.device.optional(),
   utm: StartSessionRequestSchema.shape.utm.optional(),
-  properties: z.record(z.any()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const HeartbeatRequestSchema = z.object({
-  sessionId: z.string().uuid(),
-  userId: z.string().uuid(),
+  sessionId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
+  userId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid UUID format"),
 });
 
 export const AdminExportRequestSchema = z.object({
   entity: z.enum(['users','sessions','events','pageviews']),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
-  filters: z.record(z.any()).optional(), // e.g., { eventName:'lead_form_submitted' }
+  filters: z.record(z.string(), z.unknown()).optional(), // e.g., { eventName:'lead_form_submitted' }
   format: z.enum(['json','csv']).default('json'),
 });
 
@@ -143,7 +132,7 @@ export const HeartbeatResponseSchema = z.object({
 
 export const AdminExportResponseSchema = z.object({
   url: z.string().optional(),
-  rows: z.array(z.any()).optional(),
+  rows: z.array(z.unknown()).optional(),
   count: z.number().optional(),
 });
 
@@ -153,5 +142,5 @@ export const AdminExportResponseSchema = z.object({
 
 export const EdgeFunctionErrorSchema = z.object({
   error: z.string(),
-  details: z.any().optional(),
+  details: z.unknown().optional(),
 });

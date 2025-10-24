@@ -9,29 +9,27 @@ export const SiteSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(255),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
-  domain: z.string().url().optional(),
-  description: z.string().max(1000).optional(),
-  settings: z.record(z.any()),
+  domain: z.string().url(),
+  default_locale: z.string().min(2).max(10),
+  settings: z.unknown().nullable(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
-  created_by: z.string().uuid(),
-  updated_by: z.string().uuid(),
 });
 
 export const CreateSiteInputSchema = z.object({
   name: z.string().min(1).max(255),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
-  domain: z.string().url().optional(),
-  description: z.string().max(1000).optional(),
-  settings: z.record(z.any()).optional().default({}),
+  domain: z.string().url(),
+  default_locale: z.string().min(2).max(10),
+  settings: z.unknown().nullable().optional(),
 });
 
 export const UpdateSiteInputSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/).optional(),
   domain: z.string().url().optional(),
-  description: z.string().max(1000).optional(),
-  settings: z.record(z.any()).optional(),
+  default_locale: z.string().min(2).max(10).optional(),
+  settings: z.unknown().nullable().optional(),
 });
 
 export const SiteFiltersSchema = z.object({

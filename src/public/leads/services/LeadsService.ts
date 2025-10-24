@@ -1,5 +1,3 @@
-import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '../../../core/types/database.types';
 import { BaseService } from '../../../core/services/BaseService';
 import type { CreateLeadInput, LeadSubmissionResult } from '../types/leads.types';
 
@@ -28,7 +26,7 @@ export class LeadsService extends BaseService {
 
       // Check if email already exists
       const { data: existingLead } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('id')
         .eq('email', input.email)
         .single();
@@ -43,13 +41,13 @@ export class LeadsService extends BaseService {
       // Create the lead using the upsert_lead RPC function
       const { data, error } = await this.supabase.rpc('upsert_lead', {
         p_email: input.email,
-        p_first_name: input.first_name || null,
-        p_last_name: input.last_name || null,
-        p_phone: input.phone || null,
-        p_company: input.company || null,
+        p_first_name: input.first_name || undefined,
+        p_last_name: input.last_name || undefined,
+        p_phone: input.phone || undefined,
+        p_company: input.company || undefined,
         p_lead_kind: input.lead_kind,
-        p_source: input.source || null,
-        p_notes: input.notes || null,
+        p_source: input.source || undefined,
+        p_notes: input.notes || undefined,
         p_metadata: input.metadata || {},
       });
 
@@ -80,7 +78,7 @@ export class LeadsService extends BaseService {
   public async emailExists(email: string): Promise<{ success: true; data: { exists: boolean } } | { success: false; error: string }> {
     try {
       const { data, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('id')
         .eq('email', email)
         .single();
@@ -107,7 +105,7 @@ export class LeadsService extends BaseService {
   public async getLeadById(id: string): Promise<{ success: true; data: any } | { success: false; error: string }> {
     try {
       const { data, error } = await this.supabase
-        .from('leads')
+        .from('leads_submissions')
         .select('id, email, first_name, last_name, lead_kind, status, created_at')
         .eq('id', id)
         .single();

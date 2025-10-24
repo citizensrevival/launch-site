@@ -12,7 +12,7 @@ import {
   mdiShieldAlert,
   mdiAccount,
 } from '@mdi/js';
-import { supabase } from '../../shell/lib/supabase';
+import { supabase } from '../../core/supabase';
 
 interface AdminUser {
   id: string;

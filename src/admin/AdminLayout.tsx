@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../shell/contexts/AuthContext';
-import { useAppSelector, useAppDispatch } from '../shell/store/hooks';
-import { setGlobalSearch } from '../shell/store/slices/adminSlice';
-import { useSites } from '../lib/cms/hooks';
+import { useAuth } from '../core/contexts/AuthContext';
+import { useAppSelector, useAppDispatch } from './store/hooks';
+import { setGlobalSearch } from './store/slices/adminSlice';
+import { useSites } from './system/sites/hooks/useSites';
 import { Icon } from '@mdi/react';
-import { Tooltip } from '../shell/Tooltip';
+import { Tooltip } from '../core/components/Tooltip';
 import { 
   mdiClock,
   mdiAccountGroup,
@@ -336,10 +336,9 @@ export function AdminLayout({ children, pageHeader, title, subtitle, actions }: 
                 <div className="flex flex-col">
                   {sites.length > 0 ? (
                     <select
-                      value={selectedSite?.id || ''}
+                      value={selectedSite || ''}
                       onChange={(e) => {
-                        const site = sites.find(s => s.id === e.target.value);
-                        if (site) selectSite(site);
+                        selectSite(e.target.value);
                       }}
                       className="bg-transparent text-white text-sm font-medium focus:outline-none cursor-pointer"
                     >

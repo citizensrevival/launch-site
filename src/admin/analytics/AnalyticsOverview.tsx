@@ -3,17 +3,19 @@ import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar } from './TimeRangeToolbar'
 import { ChartCard, MetricCard, TimeSeriesLineChart, TimeSeriesBarChart, SimplePieChart, CHART_COLORS } from './ChartComponents'
-import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
-import type { RootState } from '../../shell/store'
+import { useAppSelector, useAppDispatch } from '../store/hooks'
+import type { RootState } from '../store'
 
 // Create properly typed selectors
 const selectTimeRange = (state: RootState) => (state as any).admin?.timeRange || '30days'
 const selectLoading = (state: RootState) => (state as any).admin?.analytics?.loading || false
 const selectRefreshing = (state: RootState) => (state as any).admin?.analytics?.refreshing || false
 const selectCache = (state: RootState) => (state as any).cache
-import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../../shell/store/slices/adminSlice'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
-import { analyticsService, AnalyticsOverviewData } from '../../shell/lib/AnalyticsService'
+import { setTimeRange, setAnalyticsLoading, setAnalyticsRefreshing } from '../store/slices/adminSlice'
+import { setCacheData, clearCacheType } from '../store/slices/cacheSlice'
+import { getCacheData, isCacheValid } from '../store/cacheHelpers'
+import { analyticsService } from '../analytics/services/AnalyticsService'
+import type { AnalyticsOverview as AnalyticsOverviewData } from '../analytics/types/analytics.types'
 import { mdiRefresh } from '@mdi/js'
 
 // Remove the interface since we're importing it from AnalyticsService
@@ -24,7 +26,7 @@ export default function AnalyticsOverview() {
   const loading = useAppSelector(selectLoading)
   const refreshing = useAppSelector(selectRefreshing)
   const cache = useAppSelector(selectCache)
-  const [data, setData] = useState<AnalyticsOverviewData | null>(null)
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsOverviewData | null>(null)
 
   const getCacheKey = useCallback(() => `analytics-overview-${timeRange}`, [timeRange])
 
@@ -35,7 +37,7 @@ export default function AnalyticsOverview() {
     if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
       const cachedData = getCacheData<AnalyticsOverviewData>(cache, 'analytics', cacheKey)
       if (cachedData) {
-        setData(cachedData)
+        setAnalyticsData(cachedData)
         return
       }
     }
@@ -44,13 +46,12 @@ export default function AnalyticsOverview() {
       dispatch(setAnalyticsLoading(true))
       
       // Fetch data from analytics service
-      const analyticsData = await analyticsService.getAnalyticsOverview(timeRange)
-      setData(analyticsData)
+      const analyticsData = await analyticsService.getAnalyticsOverview()
+      setAnalyticsData(analyticsData)
       
       // Cache the data
       dispatch(setCacheData({
-        type: 'analytics',
-        key: cacheKey,
+        key: `analytics:${cacheKey}`,
         data: analyticsData
       }))
     } catch (error) {
@@ -106,7 +107,7 @@ export default function AnalyticsOverview() {
     )
   }
 
-  if (!data) {
+  if (!analyticsData) {
     return (
       <AdminLayout pageHeader={pageHeader}>
         <div className="text-center py-12">
@@ -122,28 +123,28 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
           title="Unique Users"
-          value={data.uniqueUsers}
+          value={analyticsData.uniqueUsers}
           trend="+12%"
           trendUp={true}
           tooltip="The number of distinct users who visited your site during the selected time period. This excludes authenticated users and focuses on anonymous visitor engagement."
         />
         <MetricCard
           title="Total Sessions"
-          value={data.totalSessions}
+          value={analyticsData.totalSessions}
           trend="+8%"
           trendUp={true}
           tooltip="The total number of user sessions on your site. A session begins when a user visits and ends after 30 minutes of inactivity or when they leave."
         />
         <MetricCard
           title="Page Views"
-          value={data.totalPageviews}
+          value={analyticsData.totalPageviews}
           trend="+15%"
           trendUp={true}
           tooltip="The total number of pages viewed by all users. Each time a user loads a page, it counts as one page view."
         />
         <MetricCard
           title="Events"
-          value={data.totalEvents}
+          value={analyticsData.totalEvents}
           trend="+23%"
           trendUp={true}
           tooltip="The total number of custom events tracked on your site, such as button clicks, form submissions, and other user interactions."
@@ -154,7 +155,7 @@ export default function AnalyticsOverview() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={(range) => dispatch(setTimeRange(range))}
+            onRangeChange={() => dispatch(setTimeRange({ start: '', end: '' }))}
         />
       </div>
 
@@ -166,7 +167,7 @@ export default function AnalyticsOverview() {
           tooltip="Shows the daily count of unique users visiting your site over the selected time period. This helps identify trends in user engagement and growth patterns."
         >
           <TimeSeriesLineChart 
-            data={data.uniqueUsersOverTime}
+            data={analyticsData.uniqueUsersOverTime}
             dataKey="unique_users"
             color={CHART_COLORS.primary}
           />
@@ -178,7 +179,7 @@ export default function AnalyticsOverview() {
           tooltip="Displays the daily number of user sessions. A session represents a user's visit to your site and includes all their interactions during that visit."
         >
           <TimeSeriesBarChart 
-            data={data.sessionsOverTime}
+            data={analyticsData.sessionsOverTime}
             dataKey="sessions"
             color={CHART_COLORS.secondary}
           />
@@ -190,7 +191,7 @@ export default function AnalyticsOverview() {
           tooltip="Shows the distribution of users by device type (desktop, mobile, tablet). This helps understand how users access your site and optimize for different devices."
         >
           <SimplePieChart 
-            data={data.deviceBreakdown}
+            data={analyticsData.deviceBreakdown}
             dataKey="count"
             nameKey="category"
             valueKey="count"
@@ -203,7 +204,7 @@ export default function AnalyticsOverview() {
           tooltip="Compares the ratio of new visitors versus returning users. This metric helps gauge user retention and the effectiveness of your content in bringing back visitors."
         >
           <SimplePieChart 
-            data={data.newVsReturning}
+            data={analyticsData.newVsReturning}
             dataKey="count"
             nameKey="type"
             valueKey="count"
@@ -215,17 +216,17 @@ export default function AnalyticsOverview() {
       <div className="bg-gray-900 rounded-lg border border-gray-800 p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Top Pages</h3>
         <div className="space-y-3">
-          {data.topPages.map((page, index) => (
-            <div key={page.path} className="flex items-center justify-between">
+          {analyticsData?.topPages.map((page, index) => (
+            <div key={page.page} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-gray-400 text-sm w-6">#{index + 1}</span>
-                <span className="text-white font-medium">{page.path}</span>
+                <span className="text-white font-medium">{page.page}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-32 bg-gray-800 rounded-full h-2">
                   <div 
                     className="bg-purple-600 h-2 rounded-full" 
-                    style={{ width: `${(page.views / data.topPages[0].views) * 100}%` }}
+                    style={{ width: `${(page.views / (analyticsData?.topPages[0]?.views || 1)) * 100}%` }}
                   />
                 </div>
                 <span className="text-gray-300 text-sm w-16 text-right">{page.views.toLocaleString()}</span>

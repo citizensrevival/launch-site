@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { Asset, AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../../../lib/cms/types';
+import type { Asset, AssetEditOperation, CropParams, ResizeParams, RotateParams } from '../assets/types/asset.types';
 import { Toast } from './Toast';
 
 type EditMode = 'none' | 'crop' | 'resize' | 'rotate';
@@ -217,7 +217,7 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
       return {
         blob,
         operation: {
-          operation: 'crop',
+          type: 'crop',
           params: cropArea,
         },
       };
@@ -233,7 +233,7 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
       return {
         blob,
         operation: {
-          operation: 'resize',
+          type: 'resize',
           params: {
             width: resizeWidth,
             height: resizeHeight,
@@ -264,8 +264,8 @@ export function AssetEditor({ asset, imageUrl, onSave, onCancel }: AssetEditorPr
       return {
         blob,
         operation: {
-          operation: 'rotate',
-          params: { degrees: rotation as 90 | 180 | 270 } as RotateParams,
+          type: 'rotate',
+          params: { angle: rotation } as RotateParams,
         },
       };
     }

@@ -13,8 +13,18 @@ import {
   mdiContentSave,
   mdiClose
 } from '@mdi/js';
-import type { BlockInstance } from '../../../lib/cms/types';
-import { generateUUID } from '../../../lib/cms/utils';
+// Stub type - TODO: Implement proper BlockInstance type
+type BlockInstance = {
+  id: string;
+  block_id: string;
+  block_version: number;
+  settings: Record<string, any>;
+  slot?: string;
+  order?: number;
+};
+
+// Stub function - TODO: Implement proper UUID generation
+const generateUUID = () => Math.random().toString(36).substr(2, 9);
 
 interface PageSlotEditorProps {
   slots: BlockInstance[];
@@ -49,17 +59,18 @@ export function PageSlotEditor({ slots, onSlotsChange, onClose }: PageSlotEditor
 
     // Group existing blocks
     slots.forEach(block => {
-      if (!slotMap.has(block.slot)) {
-        slotMap.set(block.slot, []);
+      const slotName = block.slot || 'default';
+      if (!slotMap.has(slotName)) {
+        slotMap.set(slotName, []);
       }
-      slotMap.get(block.slot)!.push(block);
+      slotMap.get(slotName)!.push(block);
     });
 
     // Create groups and sort blocks by order
     slotMap.forEach((blocks, slot) => {
       groups.push({
         slot,
-        blocks: blocks.sort((a, b) => a.order - b.order)
+        blocks: blocks.sort((a, b) => (a.order || 0) - (b.order || 0))
       });
     });
 
@@ -104,7 +115,7 @@ export function PageSlotEditor({ slots, onSlotsChange, onClose }: PageSlotEditor
     // Reorder blocks in the target slot
     const targetSlotBlocks = newSlots
       .filter(block => block.slot === targetSlot)
-      .sort((a, b) => a.order - b.order);
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
 
     // Update order for all blocks in the target slot
     const updatedSlots = newSlots.map(block => {
@@ -122,10 +133,12 @@ export function PageSlotEditor({ slots, onSlotsChange, onClose }: PageSlotEditor
 
   const addBlockToSlot = (slot: string) => {
     const newBlock: BlockInstance = {
+      id: generateUUID(),
       slot,
       order: slotGroups.find(g => g.slot === slot)?.blocks.length || 0,
       block_id: generateUUID(),
-      instance_props: {}
+      block_version: 1,
+      settings: {}
     };
 
     onSlotsChange([...slots, newBlock]);
@@ -138,7 +151,7 @@ export function PageSlotEditor({ slots, onSlotsChange, onClose }: PageSlotEditor
   const moveBlockUp = (block: BlockInstance) => {
     const slotBlocks = slots
       .filter(b => b.slot === block.slot)
-      .sort((a, b) => a.order - b.order);
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
     
     const currentIndex = slotBlocks.findIndex(b => b.block_id === block.block_id);
     if (currentIndex > 0) {
@@ -157,7 +170,7 @@ export function PageSlotEditor({ slots, onSlotsChange, onClose }: PageSlotEditor
   const moveBlockDown = (block: BlockInstance) => {
     const slotBlocks = slots
       .filter(b => b.slot === block.slot)
-      .sort((a, b) => a.order - b.order);
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
     
     const currentIndex = slotBlocks.findIndex(b => b.block_id === block.block_id);
     if (currentIndex < slotBlocks.length - 1) {
@@ -274,9 +287,9 @@ export function PageSlotEditor({ slots, onSlotsChange, onClose }: PageSlotEditor
                                   (Order: {block.order})
                                 </span>
                               </div>
-                              {block.instance_props && Object.keys(block.instance_props).length > 0 && (
+                              {block.settings && Object.keys(block.settings).length > 0 && (
                                 <div className="text-sm text-gray-400">
-                                  Props: {Object.keys(block.instance_props).join(', ')}
+                                  Props: {Object.keys(block.settings).join(', ')}
                                 </div>
                               )}
                             </div>

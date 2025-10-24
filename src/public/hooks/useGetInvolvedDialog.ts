@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { LeadType } from '../lib/types';
+import { LeadType } from '../leads/types/leads.types';
 
 export function useGetInvolvedDialog() {
   const [searchParams, setSearchParams] = useSearchParams();

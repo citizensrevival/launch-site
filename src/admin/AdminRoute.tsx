@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import { useAuth } from '../shell/contexts/AuthContext';
+import { useAuth } from '../core/contexts/AuthContext';
 import { AdminLoginForm } from './AdminLoginForm';
 import { CmsRoute } from './cms/CmsRoute';
 

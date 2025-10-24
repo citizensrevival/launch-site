@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Icon } from '@mdi/react';
-import { useBlockVersions } from '../../../lib/cms/hooks';
+import { useBlockVersions } from '../blocks/hooks/useBlocks';
 import { 
   mdiClose,
   mdiContentSave,
@@ -11,7 +11,14 @@ import {
   mdiPlus,
   mdiMinus
 } from '@mdi/js';
-import type { BlockInstance } from '../../../lib/cms/types';
+
+// Stub type - TODO: Implement proper BlockInstance type
+type BlockInstance = {
+  id: string;
+  block_id: string;
+  block_version: number;
+  settings: Record<string, any>;
+};
 
 interface BlockInstanceConfigProps {
   blockInstance: BlockInstance;
@@ -30,7 +37,7 @@ export function BlockInstanceConfig({ blockInstance, onSave, onClose }: BlockIns
   const [versionMode, setVersionMode] = useState<'latest' | 'pinned'>('latest');
   const [pinnedVersion, setPinnedVersion] = useState<number>(1);
   const [availableVersions, setAvailableVersions] = useState<BlockVersion[]>([]);
-  const [instanceProps, setInstanceProps] = useState<Record<string, unknown>>(blockInstance.instance_props || {});
+  const [instanceProps, setInstanceProps] = useState<Record<string, unknown>>(blockInstance.settings || {});
   const [propsJson, setPropsJson] = useState<string>('');
   const [jsonError, setJsonError] = useState<string | null>(null);
   // const [isLoading, setIsLoading] = useState(false); // TODO: Implement loading state
@@ -70,7 +77,7 @@ export function BlockInstanceConfig({ blockInstance, onSave, onClose }: BlockIns
   const handleSave = () => {
     const updatedBlock: BlockInstance = {
       ...blockInstance,
-      instance_props: instanceProps,
+      settings: instanceProps,
       // Add version tracking if needed
     };
     onSave(updatedBlock);

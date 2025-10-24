@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { SimpleLayout } from '../../shell/SimpleLayout'
-import { Button } from '../../shell/Button'
-import { useAnalytics } from '../../shell/contexts/AnalyticsContext'
-import { supabase } from '../../shell/lib/supabase'
-import { useAppDispatch } from '../../shell/store/hooks'
-import { clearGetInvolvedSubmissions, setEmailSubscribed } from '../../shell/store/slices/sessionSlice'
+import { SimpleLayout } from '../../core/components/SimpleLayout'
+import { Button } from '../../core/components/Button'
+import { useAnalytics } from '../analytics/contexts/AnalyticsContext'
+import { supabase } from '../../core/supabase'
+import { useAppDispatch } from '../store/hooks'
+import { clearGetInvolvedSubmissions, setEmailSubscribed } from '../store/slices/sessionSlice'
 
 interface LeadType {
   id: string

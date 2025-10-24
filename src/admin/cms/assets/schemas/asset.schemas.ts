@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { Asset, AssetInput, AssetUpdate, AssetFilters, AssetSortOptions, AssetListResponse, AssetResponse } from '../types/asset.types';
 
 // ================================================
 // Asset Schemas
@@ -7,19 +6,14 @@ import type { Asset, AssetInput, AssetUpdate, AssetFilters, AssetSortOptions, As
 
 export const AssetSchema = z.object({
   id: z.string().uuid(),
-  kind: z.enum(['image', 'video', 'audio', 'document', 'other']),
+  kind: z.string(),
   storage_key: z.string(),
-  width: z.number().optional(),
-  height: z.number().optional(),
+  width: z.number().nullable().optional(),
+  height: z.number().nullable().optional(),
   duration_ms: z.number().nullable().optional(),
-  file_size: z.number().optional(),
-  mime_type: z.string().optional(),
-  alt_text: z.string().optional(),
-  caption: z.string().optional(),
+  site_id: z.string().nullable().optional(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
-  created_by: z.string().uuid(),
-  updated_by: z.string().uuid(),
 });
 
 export const AssetInputSchema = z.object({

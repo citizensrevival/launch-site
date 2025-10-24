@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAnalytics } from '../contexts/AnalyticsContext'
+import { useAnalytics } from '../../public/analytics/contexts/AnalyticsContext'
 
 /**
  * Hook to automatically track pageviews on route changes

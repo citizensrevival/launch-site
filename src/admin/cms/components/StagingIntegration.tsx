@@ -2,7 +2,7 @@
 // This component provides staging controls that can be integrated into existing editors
 
 import React, { useState } from 'react';
-import { useStagingManagement } from '../../../lib/cms/stagingHooks';
+import { useStagingManagement } from '../staging/hooks/useStaging';
 import { StagingStatusIndicator } from './StagingControls';
 
 interface StagingIntegrationProps {

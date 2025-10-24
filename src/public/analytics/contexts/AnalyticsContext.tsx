@@ -61,7 +61,6 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       const excluded = await analyticsTracker.isUserExcluded(
         undefined,
         undefined,
-        undefined,
         anonId
       )
 
@@ -74,7 +73,6 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       // Auto-exclude all logged-in users by anonId
       console.log('Excluding user by anonId:', anonId)
       const result = await analyticsTracker.excludeUser(
-        undefined,
         undefined,
         undefined,
         anonId,

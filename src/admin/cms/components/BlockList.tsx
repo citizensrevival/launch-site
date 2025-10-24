@@ -12,9 +12,9 @@ import {
   mdiFileDocumentOutline,
   mdiLoading
 } from '@mdi/js';
-import { Tooltip } from '../../../shell/Tooltip';
-import { useBlockUsageCount } from '../../../lib/cms/hooks';
-import type { Block, PaginatedResponse, ContentSort } from '../../../lib/cms/types';
+import { Tooltip } from '../../../core/components/Tooltip';
+import { useBlockUsageCount } from '../blocks/hooks/useBlocks';
+import type { Block, PaginatedResponse, ContentSort } from '../blocks/types/block.types';
 
 interface BlockListProps {
   blocks: PaginatedResponse<Block> | null;

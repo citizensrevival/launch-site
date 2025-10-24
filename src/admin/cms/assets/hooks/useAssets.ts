@@ -7,8 +7,6 @@ import type {
   AssetUpdate,
   AssetFilters,
   AssetSortOptions,
-  AssetListResponse,
-  AssetResponse,
 } from '../types/asset.types';
 
 export const useAssets = () => {

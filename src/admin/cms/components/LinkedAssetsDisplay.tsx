@@ -11,13 +11,16 @@ import {
   mdiAlertCircle,
   mdiLoading
 } from '@mdi/js';
-import { getAssetUrl, getAssetVariantUrl } from '../../../lib/cms/utils';
-import type { Asset } from '../../../lib/cms/types';
+// Stub functions - TODO: Implement proper asset URL generation
+const getAssetUrl = (asset: Asset) => `#asset-${asset.id}`;
+const getAssetVariantUrl = (asset: Asset, variant: string) => `#asset-${asset.id}-${variant}`;
+
+import type { Asset } from '../assets/types/asset.types';
 
 
 interface LinkedAssetsDisplayProps {
   assets: Array<{ role: string; asset_id: string }>;
-  siteId: string;
+  siteId?: string; // Make optional since it's not used
   className?: string;
   showPreviews?: boolean;
   compact?: boolean;
@@ -45,7 +48,6 @@ const ROLE_DESCRIPTIONS = {
 
 export function LinkedAssetsDisplay({ 
   assets, 
-  siteId, 
   className = '',
   showPreviews = true,
   compact = false
@@ -105,9 +107,9 @@ export function LinkedAssetsDisplay({
   // Get asset preview URL
   const getAssetPreviewUrl = (asset: Asset) => {
     if (asset.kind === 'image') {
-      return getAssetVariantUrl(asset.storage_key, siteId, 'thumbnail');
+      return getAssetVariantUrl(asset, 'thumbnail');
     }
-    return getAssetUrl(asset.storage_key, siteId);
+    return getAssetUrl(asset);
   };
 
   if (assets.length === 0) {
@@ -190,7 +192,7 @@ export function LinkedAssetsDisplay({
                   <button
                     onClick={() => {
                       // Open asset in new tab or modal
-                      window.open(getAssetUrl(asset.storage_key, siteId), '_blank');
+                      window.open(getAssetUrl(asset), '_blank');
                     }}
                     className="p-1 text-gray-400 hover:text-blue-400 rounded"
                     title="View full size"

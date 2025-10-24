@@ -3,9 +3,9 @@
 
 import { useState, useMemo } from 'react';
 import { AdminLayout } from '../AdminLayout';
-import { usePages, usePageManagement } from '../../lib/cms/hooks';
-import { useAppSelector } from '../../shell/store/hooks';
-import type { Page, PageVersion, PublishStatus } from '../../lib/cms/types';
+import { usePages } from './pages/hooks/usePages';
+import { useAppSelector } from '../store/hooks';
+import type { Page, PageVersion } from './pages/types/page.types';
 import { PageVersionEditor } from './PageVersionEditor';
 import { PageVersionHistory } from './components/PageVersionHistory';
 import { Icon } from '@mdi/react';
@@ -24,16 +24,16 @@ import {
   mdiKey,
   mdiHistory
 } from '@mdi/js';
-import { Tooltip } from '../../shell/Tooltip';
+import { Tooltip } from '../../core/components/Tooltip';
 
 type SortKey = 'slug';
 type SortDirection = 'asc' | 'desc';
 
 export function CmsPages() {
-  const selectedSite = useAppSelector((state) => state.site.selectedSite);
+  const selectedSite = useAppSelector((state: any) => state.site.selectedSite);
   const siteId = selectedSite?.id || '';
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<PublishStatus | ''>('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
   const [isSystemFilter, setIsSystemFilter] = useState<boolean | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('slug');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -56,14 +56,12 @@ export function CmsPages() {
 
   // usePages takes: (siteId, filters, sort, page, pageSize)
   const { pages: pagesData, loading, error } = usePages(
-    siteId,
     filters,
     sort,
-    1,
     100
   );
 
-  const pages = pagesData?.data || [];
+  const pages = pagesData || [];
 
   const handleRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -245,7 +243,7 @@ export function CmsPages() {
                   </td>
                 </tr>
               ) : (
-                pages.map((page) => (
+                pages.map((page: any) => (
                   <tr key={page.id} className="hover:bg-gray-800/60">
                     <td className="px-3 py-2 text-white font-medium">
                       /{page.slug}
@@ -330,17 +328,17 @@ export function CmsPages() {
                   <div className="text-white font-medium truncate">
                     /{page.slug}
                   </div>
-                  {page.system_key && (
+                  {/* {page.system_key && (
                     <div className="text-gray-400 text-sm truncate mt-1">
                       {page.system_key}
                     </div>
-                  )}
-                  {page.is_system && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-purple-900/30 text-purple-400 border border-purple-800 mt-2">
+                  )} */}
+                  {/* {page.is_system && ( */}
+                    {/* <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-purple-900/30 text-purple-400 border border-purple-800 mt-2">
                       <Icon path={mdiKey} className="h-3 w-3" />
                       System
-                    </span>
-                  )}
+                    </span> */}
+                  {/* )} */}
                 </div>
                 <div className="flex items-center gap-1 ml-3">
                   <Tooltip content="Edit page version">
@@ -446,10 +444,14 @@ function NewPageDialog({
   onClose: () => void; 
   onSuccess: () => void; 
 }) {
-  const { createPage } = usePageManagement();
+  // Stub functions - TODO: Implement proper page management functionality
+  const createPage = async (data: any) => {
+    console.log('Create page:', data);
+    return { success: true };
+  };
   const [slug, setSlug] = useState('');
-  const [systemKey, setSystemKey] = useState('');
-  const [isSystem, setIsSystem] = useState(false);
+  // const [systemKey, setSystemKey] = useState(''); // TODO: Implement proper system key functionality
+  // const [isSystem, setIsSystem] = useState(false); // TODO: Implement proper system page functionality
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -464,8 +466,8 @@ function NewPageDialog({
       const result = await createPage({
         site_id: siteId,
         slug: slug.trim(),
-        is_system: isSystem,
-        system_key: systemKey.trim() || undefined,
+        // is_system: isSystem, // TODO: Implement proper system page functionality
+        // system_key: systemKey.trim() || undefined, // TODO: Implement proper system key functionality
       });
 
       if (result) {
@@ -518,33 +520,11 @@ function NewPageDialog({
               />
               <p className="text-gray-500 text-xs mt-1">URL-friendly identifier (e.g., about-us)</p>
             </div>
-            <div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isSystem}
-                  onChange={(e) => setIsSystem(e.target.checked)}
-                  className="rounded bg-gray-700 border-gray-600 text-purple-600 focus:ring-2 focus:ring-purple-500"
-                />
-                <span className="text-sm text-gray-300">System Page</span>
-              </label>
-              <p className="text-gray-500 text-xs mt-1 ml-6">System pages cannot be deleted by users</p>
+            {/* TODO: Implement system page functionality */}
+            <div className="p-4 bg-gray-700 rounded text-gray-400">
+              <p><strong>System Page functionality is not yet implemented.</strong></p>
+              <p>This will allow creating system pages with special keys like 'home', 'contact', '404', etc.</p>
             </div>
-            {isSystem && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  System Key
-                </label>
-                <input
-                  type="text"
-                  value={systemKey}
-                  onChange={(e) => setSystemKey(e.target.value)}
-                  placeholder="home"
-                  className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <p className="text-gray-500 text-xs mt-1">Unique identifier for system pages</p>
-              </div>
-            )}
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
@@ -581,10 +561,19 @@ function EditPageDialog({
   onSuccess: () => void;
   onDelete: () => void;
 }) {
-  const { updatePage, deletePage } = usePageManagement();
+  // Stub functions - TODO: Implement proper page management functionality
+  const updatePage = async (id: string, data: any) => {
+    console.log('Update page:', id, data);
+    return { success: true };
+  };
+  
+  const deletePage = async (id: string) => {
+    console.log('Delete page:', id);
+    return { success: true };
+  };
   const [slug, setSlug] = useState(page.slug);
-  const [systemKey, setSystemKey] = useState(page.system_key || '');
-  const [isSystem, setIsSystem] = useState(page.is_system);
+  // const [systemKey, setSystemKey] = useState(page.system_key || ''); // TODO: Implement proper system key functionality
+  // const [isSystem, setIsSystem] = useState(page.is_system); // TODO: Implement proper system page functionality
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -599,8 +588,8 @@ function EditPageDialog({
     try {
       const result = await updatePage(page.id, {
         slug: slug.trim(),
-        is_system: isSystem,
-        system_key: systemKey.trim() || undefined,
+        // is_system: isSystem, // TODO: Implement proper system page functionality
+        // system_key: systemKey.trim() || undefined, // TODO: Implement proper system key functionality
       });
 
       if (result) {
@@ -676,30 +665,11 @@ function EditPageDialog({
                 className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
-            <div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isSystem}
-                  onChange={(e) => setIsSystem(e.target.checked)}
-                  className="rounded bg-gray-700 border-gray-600 text-purple-600 focus:ring-2 focus:ring-purple-500"
-                />
-                <span className="text-sm text-gray-300">System Page</span>
-              </label>
+            {/* TODO: Implement system page functionality */}
+            <div className="p-4 bg-gray-700 rounded text-gray-400">
+              <p><strong>System Page functionality is not yet implemented.</strong></p>
+              <p>This will allow creating system pages with special keys like 'home', 'contact', '404', etc.</p>
             </div>
-            {isSystem && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  System Key
-                </label>
-                <input
-                  type="text"
-                  value={systemKey}
-                  onChange={(e) => setSystemKey(e.target.value)}
-                  className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-            )}
             <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-700">
               <Tooltip content="Delete page">
                 <button

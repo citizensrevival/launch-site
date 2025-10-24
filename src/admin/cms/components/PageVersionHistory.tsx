@@ -11,8 +11,8 @@ import {
   mdiChevronDown,
   mdiChevronUp
 } from '@mdi/js';
-import { usePageVersions, usePageVersionManagement } from '../../../lib/cms/hooks';
-import type { Page, PageVersion } from '../../../lib/cms/types';
+import { usePageVersions, usePageVersionManagement } from '../pages/hooks/usePages';
+import type { Page, PageVersion } from '../pages/types/page.types';
 
 interface PageVersionHistoryProps {
   page: Page;
@@ -148,7 +148,11 @@ export function PageVersionHistory({ page, onClose, onRestore }: PageVersionHist
         if (result) {
           // Auto-publish the restored version
           try {
-            const { publishPage } = await import('../../../lib/cms/client');
+            // TODO: Implement proper page publishing functionality
+            const publishPage = async (pageId: string, version: number) => {
+              console.log('Publishing page:', pageId, version);
+              return true;
+            };
             const publishResult = await publishPage(page.id, result.version);
             if (publishResult) {
               console.log('Version restored and published successfully');

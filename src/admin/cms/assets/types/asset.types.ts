@@ -5,19 +5,14 @@
 
 export interface Asset {
   id: string;
-  kind: 'image' | 'video' | 'audio' | 'document' | 'other';
+  kind: string;
   storage_key: string;
-  width?: number;
-  height?: number;
-  duration_ms?: number;
-  file_size?: number;
-  mime_type?: string;
-  alt_text?: string;
-  caption?: string;
+  width?: number | null;
+  height?: number | null;
+  duration_ms?: number | null;
+  site_id?: string | null;
   created_at: string;
   updated_at: string;
-  created_by: string;
-  updated_by: string;
 }
 
 export interface AssetVersion {
@@ -101,4 +96,30 @@ export interface AssetUsage {
   page_id?: string;
   role: string;
   usage_count: number;
+}
+
+export interface CropParams {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface ResizeParams {
+  width: number;
+  height: number;
+  maintainAspectRatio?: boolean;
+}
+
+export interface RotateParams {
+  angle: number;
+}
+
+export interface AssetEditOperation {
+  type: 'crop' | 'resize' | 'rotate' | 'filter';
+  params: Record<string, any>;
+  operation?: {
+    type: 'crop' | 'resize' | 'rotate' | 'filter';
+    params: Record<string, any>;
+  };
 }

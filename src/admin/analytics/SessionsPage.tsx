@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { AdminLayout } from '../AdminLayout'
 import { Icon } from '@mdi/react'
 import { TimeRangeToolbar } from './TimeRangeToolbar'
-import { useAppSelector, useAppDispatch } from '../../shell/store/hooks'
-import { setCacheData, getCacheData, isCacheValid, clearCacheType } from '../../shell/store/slices/cacheSlice'
-import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../../shell/store/slices/adminSlice'
-import { analyticsService, SessionsData, AnalyticsSession } from '../../shell/lib/AnalyticsService'
+import { useAppSelector, useAppDispatch } from '../store/hooks'
+import { setCacheData, clearCacheType } from '../store/slices/cacheSlice'
+import { getCacheData, isCacheValid } from '../store/cacheHelpers'
+import { setAnalyticsLoading, setAnalyticsRefreshing, setTimeRange } from '../store/slices/adminSlice'
+import { analyticsService } from '../analytics/services/AnalyticsService'
+import type { AnalyticsSession } from '../analytics/types/analytics.types'
 import { 
   mdiEye,
   mdiRefresh,
@@ -25,7 +27,7 @@ import {
 } from '@mdi/js'
 import { formatDistanceToNow } from 'date-fns'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
-import { Tooltip } from '../../shell/Tooltip'
+import { Tooltip } from '../../core/components/Tooltip'
 import { ChartTooltipWrapper } from './ChartComponents'
 
 // Using SessionsData from AnalyticsService
@@ -36,8 +38,8 @@ export default function SessionsPage() {
   const timeRange = useAppSelector((state) => (state as any).admin?.timeRange || '30days')
   const loading = useAppSelector((state) => (state as any).admin?.analytics?.loading || false)
   const refreshing = useAppSelector((state) => (state as any).admin?.analytics?.refreshing || false)
-  const [data, setData] = useState<SessionsData | null>(null)
-  const [sortKey, setSortKey] = useState<'startedAt' | 'duration' | 'pageviews' | 'events' | 'id' | 'userId' | 'deviceCategory' | 'geoCountry'>('startedAt')
+  const [sessionsData, setSessionsData] = useState<AnalyticsSession[]>([])
+  const [sortKey, setSortKey] = useState<'startTime' | 'duration' | 'pageViews' | 'events' | 'id' | 'userId' | 'deviceCategory' | 'geoCountry'>('startTime')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [drawerSession, setDrawerSession] = useState<AnalyticsSession | null>(null)
   const [excludedSessions, setExcludedSessions] = useState<Set<string>>(new Set())
@@ -50,9 +52,9 @@ export default function SessionsPage() {
     
     // Check cache first (unless force refresh)
     if (!forceRefresh && isCacheValid(cache, 'analytics', cacheKey)) {
-      const cachedData = getCacheData<SessionsData>(cache, 'analytics', cacheKey)
+      const cachedData = getCacheData<AnalyticsSession[]>(cache, 'analytics', cacheKey)
       if (cachedData) {
-        setData(cachedData)
+        setSessionsData(cachedData)
         return
       }
     }
@@ -61,14 +63,13 @@ export default function SessionsPage() {
       dispatch(setAnalyticsLoading(true))
       
       // Fetch data from analytics service
-      const sessionsData = await analyticsService.getSessionsData(timeRange)
-      setData(sessionsData)
+      const sessions = await analyticsService.getSessionsData()
+      setSessionsData(sessions)
       
       // Cache the data
       dispatch(setCacheData({
-        type: 'analytics',
-        key: cacheKey,
-        data: sessionsData
+        key: `analytics:${cacheKey}`,
+        data: sessions
       }))
     } catch (error) {
       console.error('Failed to fetch sessions data:', error)
@@ -102,22 +103,15 @@ export default function SessionsPage() {
     setExcludingSessions(prev => new Set(prev).add(session.id))
     
     try {
-      const result = await analyticsService.excludeUser(
-        session.userId,
-        session.id,
-        session.ipAddress,
-        undefined,
-        'Manual exclusion from admin panel',
-        'admin'
-      )
+      const success = await analyticsService.excludeUser(session.userId)
 
-      if (result.success) {
+      if (success) {
         setExcludedSessions(prev => new Set(prev).add(session.id))
         // Refresh data to reflect exclusion
         await fetchSessionsData(true)
       } else {
-        console.error('Failed to exclude session:', result.error)
-        alert(`Failed to exclude session: ${result.error}`)
+        console.error('Failed to exclude session')
+        alert('Failed to exclude session')
       }
     } catch (error) {
       console.error('Error excluding session:', error)
@@ -137,14 +131,9 @@ export default function SessionsPage() {
     setExcludingSessions(prev => new Set(prev).add(session.id))
     
     try {
-      const result = await analyticsService.removeExclusion(
-        session.userId,
-        session.id,
-        session.ipAddress,
-        undefined
-      )
+      const success = await analyticsService.removeExclusion(session.userId)
 
-      if (result.success) {
+      if (success) {
         setExcludedSessions(prev => {
           const newSet = new Set(prev)
           newSet.delete(session.id)
@@ -153,8 +142,8 @@ export default function SessionsPage() {
         // Refresh data to reflect removal
         await fetchSessionsData(true)
       } else {
-        console.error('Failed to remove exclusion:', result.error)
-        alert(`Failed to remove exclusion: ${result.error}`)
+        console.error('Failed to remove exclusion')
+        alert('Failed to remove exclusion')
       }
     } catch (error) {
       console.error('Error removing exclusion:', error)
@@ -215,7 +204,7 @@ export default function SessionsPage() {
     )
   }
 
-  if (!data) {
+  if (!sessionsData || sessionsData.length === 0) {
     return (
       <AdminLayout pageHeader={pageHeader}>
         <div className="text-center py-12">
@@ -225,7 +214,7 @@ export default function SessionsPage() {
     )
   }
 
-  const sortedSessions = [...data.sessions].sort((a, b) => {
+  const sortedSessions = [...sessionsData].sort((a, b) => {
     const aVal = a[sortKey] ?? ''
     const bVal = b[sortKey] ?? ''
     const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
@@ -269,7 +258,7 @@ export default function SessionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">Total Sessions</p>
-              <p className="text-2xl font-bold text-white">{data.sessions.length}</p>
+              <p className="text-2xl font-bold text-white">{sessionsData.length}</p>
             </div>
             <Icon path={mdiEye} className="h-8 w-8 text-purple-500" />
           </div>
@@ -278,7 +267,7 @@ export default function SessionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">Avg Session Length</p>
-              <p className="text-2xl font-bold text-white">{formatDuration(data.avgSessionLength)}</p>
+              <p className="text-2xl font-bold text-white">{formatDuration(0)}</p>
             </div>
             <Icon path={mdiClock} className="h-8 w-8 text-blue-500" />
           </div>
@@ -287,7 +276,7 @@ export default function SessionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-400 text-sm">Avg Pages per Session</p>
-              <p className="text-2xl font-bold text-white">{data.avgPagesPerSession}</p>
+              <p className="text-2xl font-bold text-white">0</p>
             </div>
             <Icon path={mdiMouse} className="h-8 w-8 text-green-500" />
           </div>
@@ -298,7 +287,7 @@ export default function SessionsPage() {
       <div className="mb-6">
         <TimeRangeToolbar 
           selectedRange={timeRange} 
-          onRangeChange={(range) => dispatch(setTimeRange(range))}
+          onRangeChange={() => dispatch(setTimeRange({ start: '', end: '' }))}
         />
       </div>
 
@@ -309,7 +298,7 @@ export default function SessionsPage() {
         className="mb-8"
       >
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data.sessionsPerUser}>
+          <BarChart data={[]}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis 
               dataKey="sessions" 
@@ -338,9 +327,9 @@ export default function SessionsPage() {
               <tr>
                 {headerCell('Session ID', 'id')}
                 {headerCell('User ID', 'userId')}
-                {headerCell('Started', 'startedAt')}
+                {headerCell('Started', 'startTime')}
                 {headerCell('Duration', 'duration')}
-                {headerCell('Pageviews', 'pageviews')}
+                {headerCell('Pageviews', 'pageViews')}
                 {headerCell('Events', 'events')}
                 {headerCell('Device', 'deviceCategory')}
                 {headerCell('Location', 'geoCountry')}
@@ -359,28 +348,28 @@ export default function SessionsPage() {
                   <td className="px-3 py-2 text-white">
                     <div className="flex items-center gap-2">
                       <Icon path={mdiCalendar} className="h-4 w-4 text-gray-400" />
-                      <span>{formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}</span>
+                      <span>{formatDistanceToNow(new Date(session.startTime), { addSuffix: true })}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-white text-center">
-                    {formatDuration(session.duration)}
+                    {formatDuration(session.duration || 0)}
                   </td>
                   <td className="px-3 py-2 text-white text-center">
-                    {session.pageviews}
+                    {session.pageViews}
                   </td>
                   <td className="px-3 py-2 text-white text-center">
                     {session.events}
                   </td>
                   <td className="px-3 py-2 text-white">
                     <div className="flex items-center gap-2">
-                      <Icon path={getDeviceIcon(session.deviceCategory)} className="h-4 w-4 text-gray-400" />
-                      <span className="capitalize">{session.deviceCategory}</span>
+                      <Icon path={getDeviceIcon(session.deviceCategory || 'unknown')} className="h-4 w-4 text-gray-400" />
+                      <span className="capitalize">{session.deviceCategory || 'Unknown'}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-white">
                     <div className="flex items-center gap-2">
                       <Icon path={mdiMapMarker} className="h-4 w-4 text-gray-400" />
-                      <span>{session.geoCity}, {session.geoCountry}</span>
+                      <span>{session.city || 'Unknown'}, {session.geoCountry || 'Unknown'}</span>
                     </div>
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -446,10 +435,10 @@ export default function SessionsPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="User ID" value={drawerSession.userId} />
-                <Field label="Started At" value={new Date(drawerSession.startedAt).toLocaleString()} />
-                <Field label="Ended At" value={drawerSession.endedAt ? new Date(drawerSession.endedAt).toLocaleString() : 'Still active'} />
-                <Field label="Duration" value={formatDuration(drawerSession.duration)} />
-                <Field label="Pageviews" value={drawerSession.pageviews.toString()} />
+                <Field label="Started At" value={new Date(drawerSession.startTime).toLocaleString()} />
+                <Field label="Ended At" value={drawerSession.endTime ? new Date(drawerSession.endTime).toLocaleString() : 'Still active'} />
+                <Field label="Duration" value={formatDuration(drawerSession.duration || 0)} />
+                <Field label="Pageviews" value={drawerSession.pageViews.toString()} />
                 <Field label="Events" value={drawerSession.events.toString()} />
                 <Field label="Landing Page" value={drawerSession.landingPage} isLink={drawerSession.landingPage} />
                 <Field label="Referrer" value={drawerSession.referrer} isLink={drawerSession.referrer} />

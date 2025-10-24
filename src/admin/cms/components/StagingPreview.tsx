@@ -2,7 +2,7 @@
 // This component provides real-time preview of staged content
 
 import { useState, useEffect } from 'react';
-import { getStagedContentPreview } from '../../../lib/cms/stagingClient';
+import { getStagedContentPreview } from '../staging/services/StagingService';
 
 interface StagingPreviewProps {
   stagingId: string;

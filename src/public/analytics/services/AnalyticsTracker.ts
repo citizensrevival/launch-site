@@ -1,16 +1,12 @@
-import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '../../../core/types/database.types';
-import { BaseService } from '../../../core/services/BaseService';
-import { supabase } from '../../../core/supabase';
+import { BaseService } from "../../../core/services/BaseService";
+import { supabase } from "../../../core/supabase";
 import type {
-  AnalyticsUser,
-  AnalyticsSession,
   AnalyticsContext,
-  TrackPageviewInput,
-  TrackEventInput,
   StartSessionInput,
+  TrackEventInput,
+  TrackPageviewInput,
   UpdateSessionContextInput,
-} from '../types/analytics.types';
+} from "../types/analytics.types";
 
 export class AnalyticsTracker extends BaseService {
   private context: AnalyticsContext = {
@@ -25,7 +21,7 @@ export class AnalyticsTracker extends BaseService {
     try {
       // Generate or retrieve anonymous ID
       const anonId = this.getOrCreateAnonId();
-      
+
       // Create or get user
       const userResult = await this.upsertUser(anonId);
       if (!userResult.success) {
@@ -47,7 +43,7 @@ export class AnalyticsTracker extends BaseService {
         });
       }
     } catch (error) {
-      console.error('Failed to initialize analytics:', error);
+      console.error("Failed to initialize analytics:", error);
       throw error;
     }
   }
@@ -62,19 +58,26 @@ export class AnalyticsTracker extends BaseService {
   /**
    * Start a new session
    */
-  public async startSession(input: StartSessionInput): Promise<{ success: true; data: { sessionId: string; userId: string } } | { success: false; error: string }> {
+  public async startSession(
+    input: StartSessionInput,
+  ): Promise<
+    { success: true; data: { sessionId: string; userId: string } } | {
+      success: false;
+      error: string;
+    }
+  > {
     try {
       if (!this.context.user) {
-        return { success: false, error: 'User not initialized' };
+        return { success: false, error: "User not initialized" };
       }
 
       const sessionId = this.generateSessionId();
-      
+
       // Call the start-session edge function
-      const response = await fetch('/api/functions/v1/ingest-start-session', {
-        method: 'POST',
+      const response = await fetch("/api/functions/v1/ingest-start-session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           anonId: this.context.user.anonId,
@@ -91,8 +94,6 @@ export class AnalyticsTracker extends BaseService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      
       this.context.session = {
         id: sessionId,
         userId: this.context.user.userId!,
@@ -106,24 +107,26 @@ export class AnalyticsTracker extends BaseService {
 
       return this.success({ sessionId, userId: this.context.user.userId! });
     } catch (error) {
-      return this.handleError(error, 'startSession');
+      return this.handleError(error, "startSession");
     }
   }
 
   /**
    * End the current session
    */
-  public async endSession(): Promise<{ success: true } | { success: false; error: string }> {
+  public async endSession(): Promise<
+    { success: true } | { success: false; error: string }
+  > {
     try {
       if (!this.context.session) {
-        return { success: false, error: 'No active session' };
+        return { success: false, error: "No active session" };
       }
 
       // Call the end-session edge function
-      const response = await fetch('/api/functions/v1/ingest-end-session', {
-        method: 'POST',
+      const response = await fetch("/api/functions/v1/ingest-end-session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId: this.context.session.id,
@@ -139,24 +142,28 @@ export class AnalyticsTracker extends BaseService {
 
       return this.success({});
     } catch (error) {
-      return this.handleError(error, 'endSession');
+      return this.handleError(error, "endSession");
     }
   }
 
   /**
    * Track a pageview
    */
-  public async trackPageview(input: TrackPageviewInput): Promise<{ success: true; data: { id: number } } | { success: false; error: string }> {
+  public async trackPageview(
+    input: TrackPageviewInput,
+  ): Promise<
+    { success: true; data: { id: number } } | { success: false; error: string }
+  > {
     try {
       if (!this.context.session || !this.context.user) {
-        return { success: false, error: 'Session or user not initialized' };
+        return { success: false, error: "Session or user not initialized" };
       }
 
       // Call the pageview edge function
-      const response = await fetch('/api/functions/v1/ingest-pageview', {
-        method: 'POST',
+      const response = await fetch("/api/functions/v1/ingest-pageview", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId: this.context.session.id,
@@ -177,24 +184,28 @@ export class AnalyticsTracker extends BaseService {
       const result = await response.json();
       return this.success({ id: result.id });
     } catch (error) {
-      return this.handleError(error, 'trackPageview');
+      return this.handleError(error, "trackPageview");
     }
   }
 
   /**
    * Track an event
    */
-  public async trackEvent(input: TrackEventInput): Promise<{ success: true; data: { id: number } } | { success: false; error: string }> {
+  public async trackEvent(
+    input: TrackEventInput,
+  ): Promise<
+    { success: true; data: { id: number } } | { success: false; error: string }
+  > {
     try {
       if (!this.context.session || !this.context.user) {
-        return { success: false, error: 'Session or user not initialized' };
+        return { success: false, error: "Session or user not initialized" };
       }
 
       // Call the event edge function
-      const response = await fetch('/api/functions/v1/ingest-event', {
-        method: 'POST',
+      const response = await fetch("/api/functions/v1/ingest-event", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId: this.context.session.id,
@@ -215,33 +226,38 @@ export class AnalyticsTracker extends BaseService {
       const result = await response.json();
       return this.success({ id: result.id });
     } catch (error) {
-      return this.handleError(error, 'trackEvent');
+      return this.handleError(error, "trackEvent");
     }
   }
 
   /**
    * Update session context
    */
-  public async updateSessionContext(input: UpdateSessionContextInput): Promise<{ success: true } | { success: false; error: string }> {
+  public async updateSessionContext(
+    input: UpdateSessionContextInput,
+  ): Promise<{ success: true } | { success: false; error: string }> {
     try {
       if (!this.context.session) {
-        return { success: false, error: 'No active session' };
+        return { success: false, error: "No active session" };
       }
 
       // Call the update-session-context edge function
-      const response = await fetch('/api/functions/v1/ingest-update-session-context', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "/api/functions/v1/ingest-update-session-context",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId: this.context.session.id,
+            geo: input.geo,
+            device: input.device,
+            utm: input.utm,
+            properties: input.properties,
+          }),
         },
-        body: JSON.stringify({
-          sessionId: this.context.session.id,
-          geo: input.geo,
-          device: input.device,
-          utm: input.utm,
-          properties: input.properties,
-        }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -266,24 +282,29 @@ export class AnalyticsTracker extends BaseService {
 
       return this.success({});
     } catch (error) {
-      return this.handleError(error, 'updateSessionContext');
+      return this.handleError(error, "updateSessionContext");
     }
   }
 
   /**
    * Send heartbeat
    */
-  public async sendHeartbeat(): Promise<{ success: true; data: { serverTime: string } } | { success: false; error: string }> {
+  public async sendHeartbeat(): Promise<
+    { success: true; data: { serverTime: string } } | {
+      success: false;
+      error: string;
+    }
+  > {
     try {
       if (!this.context.session || !this.context.user) {
-        return { success: false, error: 'Session or user not initialized' };
+        return { success: false, error: "Session or user not initialized" };
       }
 
       // Call the heartbeat edge function
-      const response = await fetch('/api/functions/v1/ingest-heartbeat', {
-        method: 'POST',
+      const response = await fetch("/api/functions/v1/ingest-heartbeat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           sessionId: this.context.session.id,
@@ -298,7 +319,7 @@ export class AnalyticsTracker extends BaseService {
       const result = await response.json();
       return this.success({ serverTime: result.serverTime });
     } catch (error) {
-      return this.handleError(error, 'sendHeartbeat');
+      return this.handleError(error, "sendHeartbeat");
     }
   }
 
@@ -310,9 +331,9 @@ export class AnalyticsTracker extends BaseService {
       user: null,
       session: null,
     };
-    
+
     // Clear stored anonymous ID
-    localStorage.removeItem('analytics_anon_id');
+    localStorage.removeItem("analytics_anon_id");
   }
 
   /**
@@ -321,20 +342,23 @@ export class AnalyticsTracker extends BaseService {
   public async isUserExcluded(
     userId?: string,
     email?: string,
-    anonId?: string
+    anonId?: string,
   ): Promise<boolean> {
     try {
-      const response = await fetch('/api/functions/v1/ingest-is-user-excluded', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "/api/functions/v1/ingest-is-user-excluded",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            email,
+            anonId,
+          }),
         },
-        body: JSON.stringify({
-          userId,
-          email,
-          anonId,
-        }),
-      });
+      );
 
       if (!response.ok) {
         return false;
@@ -343,7 +367,7 @@ export class AnalyticsTracker extends BaseService {
       const result = await response.json();
       return result.excluded || false;
     } catch (error) {
-      console.error('Failed to check user exclusion:', error);
+      console.error("Failed to check user exclusion:", error);
       return false;
     }
   }
@@ -356,13 +380,13 @@ export class AnalyticsTracker extends BaseService {
     email?: string,
     anonId?: string,
     reason?: string,
-    source?: string
+    source?: string,
   ): Promise<{ success: true } | { success: false; error: string }> {
     try {
-      const response = await fetch('/api/functions/v1/ingest-exclude-user', {
-        method: 'POST',
+      const response = await fetch("/api/functions/v1/ingest-exclude-user", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userId,
@@ -379,7 +403,7 @@ export class AnalyticsTracker extends BaseService {
 
       return this.success({});
     } catch (error) {
-      return this.handleError(error, 'excludeUser');
+      return this.handleError(error, "excludeUser");
     }
   }
 
@@ -389,20 +413,23 @@ export class AnalyticsTracker extends BaseService {
   public async removeExclusion(
     userId?: string,
     email?: string,
-    anonId?: string
+    anonId?: string,
   ): Promise<{ success: true } | { success: false; error: string }> {
     try {
-      const response = await fetch('/api/functions/v1/ingest-remove-exclusion', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "/api/functions/v1/ingest-remove-exclusion",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            email,
+            anonId,
+          }),
         },
-        body: JSON.stringify({
-          userId,
-          email,
-          anonId,
-        }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -410,17 +437,17 @@ export class AnalyticsTracker extends BaseService {
 
       return this.success({});
     } catch (error) {
-      return this.handleError(error, 'removeExclusion');
+      return this.handleError(error, "removeExclusion");
     }
   }
 
   // Private helper methods
 
   private getOrCreateAnonId(): string {
-    let anonId = localStorage.getItem('analytics_anon_id');
+    let anonId = localStorage.getItem("analytics_anon_id");
     if (!anonId) {
       anonId = this.generateAnonId();
-      localStorage.setItem('analytics_anon_id', anonId);
+      localStorage.setItem("analytics_anon_id", anonId);
     }
     return anonId;
   }
@@ -433,12 +460,19 @@ export class AnalyticsTracker extends BaseService {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private async upsertUser(anonId: string): Promise<{ success: true; data: { userId: string } } | { success: false; error: string }> {
+  private async upsertUser(
+    anonId: string,
+  ): Promise<
+    { success: true; data: { userId: string } } | {
+      success: false;
+      error: string;
+    }
+  > {
     try {
-      const response = await fetch('/api/functions/v1/ingest-upsert-user', {
-        method: 'POST',
+      const response = await fetch("/api/functions/v1/ingest-upsert-user", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           anonId,
@@ -453,7 +487,7 @@ export class AnalyticsTracker extends BaseService {
       const result = await response.json();
       return this.success({ userId: result.userId });
     } catch (error) {
-      return this.handleError(error, 'upsertUser');
+      return this.handleError(error, "upsertUser");
     }
   }
 }

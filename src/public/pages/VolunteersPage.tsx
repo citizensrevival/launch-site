@@ -1,9 +1,9 @@
-import { Layout } from '../../shell/Layout'
-import { Section } from '../../shell/Section'
-import { Button } from '../../shell/Button'
-import { useTheme } from '../../shell/contexts/ThemeContext'
-import { useSiteSettings } from '../../shell/lib/SiteSettingsManager'
-import { useGetInvolvedDialog } from '../../shell/hooks/useGetInvolvedDialog'
+import { Layout } from '../../core/components/Layout'
+import { Section } from '../../core/components/Section'
+import { Button } from '../../core/components/Button'
+import { useTheme } from '../../core/contexts/ThemeContext'
+import { useSiteSettings } from '../../admin/system/services/SiteSettingsService'
+import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 
 export default function VolunteersPage() {
   const theme = useTheme()

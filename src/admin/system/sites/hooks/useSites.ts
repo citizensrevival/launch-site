@@ -6,11 +6,22 @@ import type { SiteFilters } from '../types/site.types';
 const siteService = new SiteService(supabase);
 
 export function useSites(filters: SiteFilters = {}, limit = 50, offset = 0) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['sites', filters, limit, offset],
     queryFn: () => siteService.getSites(filters, limit, offset),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Return the expected structure for AdminLayout
+  return {
+    ...query,
+    sites: query.data?.success ? query.data.data.sites : [],
+    selectedSite: null, // TODO: Implement site selection state
+    selectSite: (siteId: string) => {
+      // TODO: Implement site selection logic
+      console.log('Selecting site:', siteId);
+    },
+  };
 }
 
 export function useSite(id: string) {

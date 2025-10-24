@@ -16,7 +16,7 @@ export const LeadSchema = z.object({
   status: z.enum(['new', 'contacted', 'qualified', 'converted', 'rejected']),
   source: z.string().optional(),
   notes: z.string().optional(),
-  metadata: z.record(z.any()),
+  metadata: z.unknown().nullable(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
   created_by: z.string().uuid().optional(),
@@ -33,7 +33,7 @@ export const CreateLeadInputSchema = z.object({
   status: z.enum(['new', 'contacted', 'qualified', 'converted', 'rejected']).optional().default('new'),
   source: z.string().optional(),
   notes: z.string().optional(),
-  metadata: z.record(z.any()).optional().default({}),
+  metadata: z.record(z.unknown()).optional().default({}),
 });
 
 export const UpdateLeadInputSchema = z.object({
@@ -46,7 +46,7 @@ export const UpdateLeadInputSchema = z.object({
   status: z.enum(['new', 'contacted', 'qualified', 'converted', 'rejected']).optional(),
   source: z.string().optional(),
   notes: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
 });
 
 export const LeadFiltersSchema = z.object({

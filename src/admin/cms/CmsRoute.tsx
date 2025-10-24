@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppSelector } from '../../shell/store/hooks';
+import { useAppSelector } from '../store/hooks';
 import { AdminLayout } from '../AdminLayout';
 
 interface CmsRouteProps {
@@ -7,7 +7,7 @@ interface CmsRouteProps {
 }
 
 export function CmsRoute({ children }: CmsRouteProps) {
-  const selectedSite = useAppSelector((state) => state.site.selectedSite);
+  const selectedSite = useAppSelector((state: any) => state.site.selectedSite);
 
   if (!selectedSite) {
     return (

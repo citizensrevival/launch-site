@@ -11,10 +11,15 @@ import {
   mdiCheck,
   mdiRefresh
 } from '@mdi/js';
-import { useAssets } from '../../../lib/cms/hooks';
-import { useAppSelector } from '../../../shell/store/hooks';
-import { getAssetUrl, getAssetVariantUrl } from '../../../lib/cms/utils';
-import type { Asset, ContentFilters, ContentSort } from '../../../lib/cms/types';
+import { useAssets } from '../assets/hooks/useAssets';
+import { useAppSelector } from '../../store/hooks';
+// Stub functions - TODO: Implement proper asset URL generation
+const getAssetUrl = (asset: Asset) => `#asset-${asset.id}`;
+const getAssetVariantUrl = (asset: Asset, variant: string) => `#asset-${asset.id}-${variant}`;
+import type { Asset } from '../assets/types/asset.types';
+
+// Stub types - TODO: Implement proper types
+type ContentFilters = Record<string, any>;
 
 interface AssetPickerProps {
   isOpen: boolean;
@@ -35,11 +40,10 @@ export function AssetPicker({
   role,
   acceptedTypes = ['image']
 }: AssetPickerProps) {
-  const selectedSite = useAppSelector((state) => state.site.selectedSite);
+  const selectedSite = useAppSelector((state: any) => state.site.selectedSite);
   
   // Use refs to store stable values and prevent infinite loops
   const filtersRef = useRef<ContentFilters>({});
-  const sortRef = useRef<ContentSort>({ field: 'created_at', direction: 'desc' });
   
   // Update filters only when acceptedTypes changes
   useEffect(() => {
@@ -51,14 +55,14 @@ export function AssetPicker({
   }, [acceptedTypes.join(',')]);
   
   // Use a stable site ID to prevent unnecessary re-renders
-  const siteId = selectedSite?.id || '';
-  const { assets, loading, error } = useAssets(siteId, filtersRef.current, sortRef.current, 1, 50);
+  // const siteId = selectedSite?.id || ''; // TODO: Implement proper site filtering
+  const { assets, loading, error } = useAssets();
   
   // Debug logging
   useEffect(() => {
-    if (assets?.data) {
-      console.log('🔍 [AssetPicker] Assets loaded:', assets.data.length);
-      console.log('🔍 [AssetPicker] First asset:', assets.data[0]);
+    if (assets) {
+      console.log('🔍 [AssetPicker] Assets loaded:', assets.length);
+      console.log('🔍 [AssetPicker] First asset:', assets[0]);
       console.log('🔍 [AssetPicker] Selected site:', selectedSite?.id);
     }
   }, [assets, selectedSite?.id]);
@@ -68,10 +72,9 @@ export function AssetPicker({
   const [filterKind, setFilterKind] = useState<'all' | 'image' | 'video' | 'file'>('all');
 
   // Filter assets based on search and kind
-  const filteredAssets = assets?.data?.filter(asset => {
+  const filteredAssets = assets?.filter((asset: Asset) => {
     const matchesSearch = !searchTerm || 
-      asset.storage_key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (asset.system_key && asset.system_key.toLowerCase().includes(searchTerm.toLowerCase()));
+      asset.storage_key.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesKind = filterKind === 'all' || asset.kind === filterKind;
     
@@ -187,7 +190,7 @@ export function AssetPicker({
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {filteredAssets.map((asset) => (
+                  {filteredAssets.map((asset: Asset) => (
                     <div
                       key={asset.id}
                       onClick={() => handleAssetSelect(asset)}
@@ -201,8 +204,8 @@ export function AssetPicker({
                       <div className="aspect-square rounded-t-lg overflow-hidden bg-gray-800">
                         {asset.kind === 'image' ? (
                           <img
-                            src={getAssetVariantUrl(asset.storage_key, selectedSite?.id || '', 'thumbnail')}
-                            alt={asset.system_key || 'Asset'}
+                            src={getAssetVariantUrl(asset, 'thumbnail')}
+                            alt={asset.storage_key || 'Asset'}
                             className="w-full h-full object-cover"
                             onLoad={() => {
                               console.log('🔍 [AssetPicker] Thumbnail loaded:', asset.storage_key);
@@ -211,7 +214,7 @@ export function AssetPicker({
                               console.log('🔍 [AssetPicker] Thumbnail failed, trying original:', asset.storage_key);
                               // Try original image as fallback
                               const target = e.target as HTMLImageElement;
-                              const originalUrl = getAssetUrl(asset.storage_key, selectedSite?.id || '');
+                              const originalUrl = getAssetUrl(asset);
                               target.src = originalUrl;
                               target.onerror = () => {
                                 // Final fallback to icon
@@ -234,7 +237,7 @@ export function AssetPicker({
                       <div className="p-3">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-300 truncate">
-                            {asset.system_key || asset.storage_key.split('/').pop()?.split('.')[0] || 'Untitled'}
+                            {asset.storage_key.split('/').pop()?.split('.')[0] || 'Untitled'}
                           </span>
                           {selectedAsset?.id === asset.id && (
                             <Icon path={mdiCheck} size={1} className="text-blue-400" />
@@ -255,7 +258,7 @@ export function AssetPicker({
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-700">
           <div className="text-sm text-gray-400">
-            {selectedAsset ? `Selected: ${selectedAsset.system_key || 'Untitled'}` : 'No asset selected'}
+            {selectedAsset ? `Selected: ${selectedAsset.storage_key || 'Untitled'}` : 'No asset selected'}
           </div>
           
           <div className="flex items-center gap-3">

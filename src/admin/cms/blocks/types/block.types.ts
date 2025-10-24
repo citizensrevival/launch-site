@@ -5,15 +5,13 @@
 
 export interface Block {
   id: string;
-  site_id: string;
+  site_id?: string | null;
   type: string;
   tag?: string | null;
-  is_system: boolean;
+  is_system?: boolean | null;
   system_key?: string | null;
   created_at: string;
   updated_at: string;
-  created_by: string;
-  updated_by: string;
 }
 
 export interface BlockVersion {
@@ -38,12 +36,12 @@ export interface BlockPublish {
 }
 
 export interface CreateBlockInput {
-  site_id: string;
+  site_id?: string;
   type: string;
   tag?: string;
   is_system?: boolean;
   system_key?: string;
-  created_by: string;
+  // created_by: string; // TODO: Implement proper user tracking
 }
 
 export interface UpdateBlockInput {
@@ -57,7 +55,7 @@ export interface CreateBlockVersionInput {
   layout_variant: string;
   content: Record<string, any>;
   assets?: Array<{ role: string; asset_id: string }>;
-  created_by: string;
+  // created_by: string; // TODO: Implement proper user tracking
 }
 
 export interface UpdateBlockVersionInput {
@@ -94,4 +92,21 @@ export interface BlockUsage {
   block_id: string;
   page_id?: string;
   usage_count: number;
+}
+
+// Additional types for components
+export interface LocalizedContent<T = Record<string, unknown>> {
+  [locale: string]: T;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  count: number;
+  total_pages: number;
+  current_page: number;
+}
+
+export interface ContentSort {
+  field: string;
+  direction: 'asc' | 'desc';
 }
