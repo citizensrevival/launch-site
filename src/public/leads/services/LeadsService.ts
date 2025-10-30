@@ -1,5 +1,6 @@
 import { BaseService } from '../../../core/services/BaseService';
 import type { CreateLeadInput, LeadSubmissionResult } from '../types/leads.types';
+import { EnvironmentConfigProvider } from '../../../core/supabase';
 
 export class LeadsService extends BaseService {
   /**
@@ -122,5 +123,44 @@ export class LeadsService extends BaseService {
     } catch (error) {
       return this.handleError(error, 'getLeadById');
     }
+  }
+}
+
+/**
+ * Public-facing leads service for client-side use
+ * Provides a simplified interface for lead creation
+ */
+export class LeadsPublic {
+  private leadsService: LeadsService;
+
+  constructor(configProvider: EnvironmentConfigProvider) {
+    this.leadsService = new LeadsService(configProvider);
+  }
+
+  /**
+   * Create a new lead with simplified interface
+   */
+  public async createLead(input: CreateLeadInput): Promise<LeadSubmissionResult> {
+    // Map the public interface to the internal service interface
+    const mappedInput = {
+      email: input.email,
+      first_name: input.first_name || input.contact_name?.split(' ')[0],
+      last_name: input.last_name || input.contact_name?.split(' ').slice(1).join(' '),
+      phone: input.phone,
+      company: input.company || input.business_name,
+      lead_kind: input.lead_kind,
+      source: input.source || input.source_path,
+      notes: input.notes,
+      metadata: {
+        ...input.metadata,
+        ...input.meta,
+        website: input.website,
+        social_links: input.social_links,
+        tags: input.tags,
+        source_path: input.source_path
+      }
+    };
+
+    return await this.leadsService.submitLead(mappedInput);
   }
 }

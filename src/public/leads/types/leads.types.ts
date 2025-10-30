@@ -9,10 +9,17 @@ export interface CreateLeadInput {
   last_name?: string;
   phone?: string;
   company?: string;
-  lead_kind: 'volunteer' | 'vendor' | 'sponsor' | 'general';
+  business_name?: string;
+  contact_name?: string;
+  website?: string;
+  social_links?: string[];
+  lead_kind: 'volunteer' | 'vendor' | 'sponsor' | 'general' | 'subscriber';
   source?: string;
+  source_path?: string;
   notes?: string;
   metadata?: Record<string, any>;
+  meta?: Record<string, any>;
+  tags?: string[];
 }
 
 export interface LeadSubmissionResult {
@@ -21,4 +28,4 @@ export interface LeadSubmissionResult {
   error?: string;
 }
 
-export type LeadType = 'volunteer' | 'vendor' | 'sponsor' | 'general';
+export type LeadType = 'volunteer' | 'vendor' | 'sponsor' | 'general' | 'subscriber';
