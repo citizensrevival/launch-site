@@ -118,8 +118,6 @@ dist
 # TernJS port file
 .tern-port
 
-# Supabase
-.supabase/
 .env.local
 .env.*.local
 
@@ -142,3 +140,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Lead exports (contain PII)
+exports/

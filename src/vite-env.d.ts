@@ -1,11 +1,13 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_SUPABASE_URL: string
-  readonly VITE_SUPABASE_ANON_KEY: string
-  readonly VITE_SUPABASE_SERVICE_ROLE_KEY?: string
+  /**
+   * Lambda Function URL that emails lead submissions via SES. Set in
+   * .env.production. When absent, the site falls back to FakeLeadsProvider.
+   */
+  readonly VITE_LEADS_ENDPOINT?: string;
 }
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv
+  readonly env: ImportMetaEnv;
 }

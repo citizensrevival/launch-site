@@ -1,0 +1,1 @@
+pkill -f "vite" && pkill -f "npm run start:local" && pkill -f "npm run start" && pkill -f "cross-env.*vite"

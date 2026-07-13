@@ -1,25 +1,95 @@
 # Cursor Rules for Launch Site Project
 
-## Server Management
-- Always shutdown any development servers (npm run dev, npm start, etc.) after completing changes
-- Use `pkill -f "next dev"` or similar commands to ensure servers are properly terminated
-- Do not leave background processes running after task completion
+## Development & Cleanup
+- Always shutdown development servers after completing changes: `pkill -f "vite"`
+- Verify no processes on ports 3000-3010 before considering task complete
+- Do not start the development server so that the user can test. The user will manually start the server
 
-## Development Workflow
-- When testing builds or running development servers, always clean up processes
-- If a server is started for testing, explicitly stop it before considering the task complete
-- Use `jobs` command to check for running background processes and terminate them
+## Build
+- Build for GitHub Pages: `npm run build:github`
+- Verify CNAME file for custom domain (citizens.fvcsolutions.com)
+- The build takes no secrets and no environment variables
 
 ## Code Quality
-- Ensure all linting errors are resolved before completing tasks
+- Resolve all linting errors before completing tasks
 - Run builds to verify changes work correctly
-- Clean up any temporary files or processes created during development
+- Update README.md instead of creating additional documentation files
 
-## Project Structure
-- This is a Next.js project with custom theme management
-- Uses TypeScript and Tailwind CSS
-- No MDX dependencies (removed)
-- Custom theme context replaces next-themes
+## Lead capture
+- The site has no backend. Both signup forms submit through a `LeadsProvider`
+- `FakeLeadsProvider` is a placeholder: it accepts a lead, holds it in memory and
+  discards it. Nothing is persisted
+- To make signups real, implement `LeadsProvider` and swap `src/public/leads/provider.ts`.
+  Write code against the interface, not the implementation
 
-## Package Dependencies
-- Do not downgrade package dependencies
+## Quick Commands
+```bash
+# Kill all development processes
+pkill -f "vite" && pkill -f "npm run start"
+
+# Daily workflow
+npm start → make changes → npm run lint && npm run test:run → pkill -f "vite"
+
+# Before deploying
+npm run build:github
+```
+
+# Open Source
+Ensure all AI-generated code and content in this repo is **immediately open-source-ready**:
+legally clear, secure, documented, reproducible, and maintainable by one person.
+
+## 📁 Repository Hygiene
+1. Required top-level files:
+   - `README.md` ✅
+   - `.gitignore` ✅
+   - `package.json` ✅
+   - `vite.config.ts` ✅
+   - `tailwind.config.js` ✅
+   - `tsconfig.json` ✅
+
+2. Directory layout:
+   - `src/` - Source code ✅
+   - `public/` - Static assets ✅
+   - `dist/` - Build output (gitignored) ✅
+
+3. Config hygiene:
+   - `prettier.config.js` checked into source control ✅
+   - `postcss.config.js` for Tailwind CSS ✅
+   - `tsconfig.node.json` for Vite configuration ✅
+   - `.cursorrules` for development guidelines ✅
+
+4. Secrets:
+   - The app needs no secrets or environment variables. Keep it that way unless a real
+     backend requires them ✅
+   - Never commit `.env*` files ✅
+
+## 🔒 Security & Supply Chain
+1. Pin dependencies; maintain `package-lock.json` ✅
+2. Prefer reproducible builds with Vite ✅
+3. Run vulnerability audits (`npm audit`) before release ✅
+4. Avoid dangerous patterns (`eval`, arbitrary shell exec) ✅
+5. Default to least privilege and safe ports (`127.0.0.1` for dev) ✅
+6. **If a backend is added**: never put privileged keys in client-side code. Anything
+   shipped in the Vite bundle is public ✅
+
+## 🧰 Documentation
+1. **README.md**
+   - One-screen overview, install, quickstart, test command, license badge.
+2. **API Docs**
+   - Use docstrings / JSDoc / GoDoc style comments.
+
+## 🧪 Testing & CI
+1. **Local Testing**:
+   - Run the app: `npm start`
+   - Run tests: `npm run test:run`
+   - Test builds: `npm run build` and `npm run build:github`
+   - Preview builds: `npm run preview`
+
+2. **Deployment Testing**:
+   - Test GitHub Pages build: `npm run build:github`
+   - Verify CNAME file for custom domain
+
+3. **CI Pipeline** (GitHub Actions):
+   - Install dependencies: `npm ci`
+   - Build: `npm run build`
+   - Deploy to GitHub Pages automatically

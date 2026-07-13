@@ -1,0 +1,20 @@
+{
+  "name": "citizens-revival-leads",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lambda behind the Citizens Revival site's lead capture forms. Sends submissions to SES.",
+  "scripts": {
+    "build": "esbuild src/handler.ts --bundle --platform=node --target=node22 --outfile=dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.700.0"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-lambda": "^3.700.0",
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^24.1.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.3"
+  }
+}
