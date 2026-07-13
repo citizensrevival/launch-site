@@ -1,166 +1,45 @@
-import { BaseService } from '../../../core/services/BaseService';
-import type { CreateLeadInput, LeadSubmissionResult } from '../types/leads.types';
-import { EnvironmentConfigProvider } from '../../../core/supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '../../../core/types/database.types';
+import { supabase } from '../../../core/supabase';
+import { CreateLeadInput, LeadSubmissionResult } from '../types/leads.types';
 
-export class LeadsService extends BaseService {
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export class LeadsService {
+  constructor(private readonly client: SupabaseClient<Database>) {}
+
   /**
-   * Submit a new lead
+   * Submit a lead (newsletter subscriber, sponsor, vendor or volunteer).
+   *
+   * Goes through the `upsert_lead` function rather than writing the table
+   * directly: anon holds EXECUTE on the function and no table-level DML, so a
+   * repeat signup upserts on (email, lead_kind) without exposing the table.
    */
   public async submitLead(input: CreateLeadInput): Promise<LeadSubmissionResult> {
-    try {
-      // Validate required fields
-      if (!input.email || !input.lead_kind) {
-        return {
-          success: false,
-          error: 'Email and lead kind are required',
-        };
-      }
-
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(input.email)) {
-        return {
-          success: false,
-          error: 'Invalid email format',
-        };
-      }
-
-      // Check if email already exists
-      const { data: existingLead } = await this.supabase
-        .from('leads_submissions')
-        .select('id')
-        .eq('email', input.email)
-        .single();
-
-      if (existingLead) {
-        return {
-          success: false,
-          error: 'A lead with this email already exists',
-        };
-      }
-
-      // Create the lead using the upsert_lead RPC function
-      const { data, error } = await this.supabase.rpc('upsert_lead', {
-        p_email: input.email,
-        p_first_name: input.first_name || undefined,
-        p_last_name: input.last_name || undefined,
-        p_phone: input.phone || undefined,
-        p_company: input.company || undefined,
-        p_lead_kind: input.lead_kind,
-        p_source: input.source || undefined,
-        p_notes: input.notes || undefined,
-        p_metadata: input.metadata || {},
-      });
-
-      if (error) {
-        console.error('Error creating lead:', error);
-        return {
-          success: false,
-          error: 'Failed to submit lead. Please try again.',
-        };
-      }
-
-      return {
-        success: true,
-        leadId: data,
-      };
-    } catch (error) {
-      console.error('Error in submitLead:', error);
-      return {
-        success: false,
-        error: 'An unexpected error occurred. Please try again.',
-      };
+    if (!EMAIL_PATTERN.test(input.email)) {
+      return { success: false, error: 'Please enter a valid email address.' };
     }
-  }
 
-  /**
-   * Check if an email already exists
-   */
-  public async emailExists(email: string): Promise<{ success: true; data: { exists: boolean } } | { success: false; error: string }> {
-    try {
-      const { data, error } = await this.supabase
-        .from('leads_submissions')
-        .select('id')
-        .eq('email', email)
-        .single();
+    const { data, error } = await this.client.rpc('upsert_lead', {
+      p_lead_kind: input.lead_kind,
+      p_email: input.email,
+      p_business_name: input.business_name,
+      p_contact_name: input.contact_name,
+      p_phone: input.phone,
+      p_website: input.website,
+      p_social_links: input.social_links,
+      p_source_path: input.source_path,
+      p_meta: input.meta as Database['public']['Functions']['upsert_lead']['Args']['p_meta'],
+      p_tags: input.tags,
+    });
 
-      if (error && error.code === 'PGRST116') {
-        // No rows found, email doesn't exist
-        return this.success({ exists: false });
-      }
-
-      if (error) {
-        return this.handleError(error, 'emailExists');
-      }
-
-      // Email exists
-      return this.success({ exists: true });
-    } catch (error) {
-      return this.handleError(error, 'emailExists');
+    if (error) {
+      console.error('upsert_lead failed:', error);
+      return { success: false, error: 'Failed to submit. Please try again.' };
     }
-  }
 
-  /**
-   * Get a lead by ID (for confirmation pages)
-   */
-  public async getLeadById(id: string): Promise<{ success: true; data: any } | { success: false; error: string }> {
-    try {
-      const { data, error } = await this.supabase
-        .from('leads_submissions')
-        .select('id, email, first_name, last_name, lead_kind, status, created_at')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        return this.handleError(error, 'getLeadById');
-      }
-
-      if (!data) {
-        return { success: false, error: 'Lead not found' };
-      }
-
-      return this.success(data);
-    } catch (error) {
-      return this.handleError(error, 'getLeadById');
-    }
+    return { success: true, leadId: data };
   }
 }
 
-/**
- * Public-facing leads service for client-side use
- * Provides a simplified interface for lead creation
- */
-export class LeadsPublic {
-  private leadsService: LeadsService;
-
-  constructor(configProvider: EnvironmentConfigProvider) {
-    this.leadsService = new LeadsService(configProvider);
-  }
-
-  /**
-   * Create a new lead with simplified interface
-   */
-  public async createLead(input: CreateLeadInput): Promise<LeadSubmissionResult> {
-    // Map the public interface to the internal service interface
-    const mappedInput = {
-      email: input.email,
-      first_name: input.first_name || input.contact_name?.split(' ')[0],
-      last_name: input.last_name || input.contact_name?.split(' ').slice(1).join(' '),
-      phone: input.phone,
-      company: input.company || input.business_name,
-      lead_kind: input.lead_kind,
-      source: input.source || input.source_path,
-      notes: input.notes,
-      metadata: {
-        ...input.metadata,
-        ...input.meta,
-        website: input.website,
-        social_links: input.social_links,
-        tags: input.tags,
-        source_path: input.source_path
-      }
-    };
-
-    return await this.leadsService.submitLead(mappedInput);
-  }
-}
+export const leadsService = new LeadsService(supabase);

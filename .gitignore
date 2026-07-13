@@ -142,3 +142,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Lead exports (contain PII)
+exports/

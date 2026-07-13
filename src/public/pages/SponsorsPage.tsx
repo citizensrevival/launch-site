@@ -2,13 +2,13 @@ import { Layout } from '../../core/components/Layout'
 import { Section } from '../../core/components/Section'
 import { Button } from '../../core/components/Button'
 import { useTheme } from '../../core/contexts/ThemeContext'
-import { useSiteSettings } from '../../admin/system/services/SiteSettingsService'
+import { useAppSelector } from '../../core/store/hooks'
 import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 
 export default function SponsorsPage() {
   const theme = useTheme()
   const colorTheme = theme?.colorTheme || 'purple'
-  const siteSettings = useSiteSettings()
+  const hasSubmittedAsSponsor = useAppSelector((state) => state.session.getInvolvedSubmissions.sponsor)
   const { openDialog } = useGetInvolvedDialog()
   
   // Get theme-specific colors
@@ -50,8 +50,6 @@ export default function SponsorsPage() {
   const themeColors = getThemeColors(colorTheme)
   
   // Check if user has already submitted as a sponsor
-  const hasSubmittedAsSponsor = siteSettings.getGetInvolvedSubmission('sponsor')
-  
   return (
     <Layout>
       <div className="space-y-16">

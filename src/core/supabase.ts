@@ -1,106 +1,31 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Database } from './types/database.types';
 import { SupabaseConfig } from './types/supabase.types';
 
-/**
- * Supabase client factory with dependency injection
- */
-export class SupabaseClientFactory {
-  private static instance: SupabaseClient | null = null;
-  private static config: SupabaseConfig | null = null;
+function loadConfig(): SupabaseConfig {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  /**
-   * Creates a Supabase client with the provided configuration
-   */
-  static createClient(config: SupabaseConfig): SupabaseClient {
-    return createClient(config.url, config.anonKey);
-  }
-
-  /**
-   * Creates a Supabase client for admin operations using RLS policies
-   * Note: Admin operations should be handled via Row Level Security policies, not service role keys
-   */
-  static createAdminClient(config: SupabaseConfig): SupabaseClient {
-    // Always use anon key with RLS policies for security
-    return createClient(config.url, config.anonKey);
-  }
-
-  /**
-   * Gets or creates a singleton instance of the Supabase client
-   */
-  static getInstance(config: SupabaseConfig): SupabaseClient {
-    // Check if we need to create a new instance or if config has changed
-    if (!this.instance || !this.config || 
-        this.config.url !== config.url || 
-        this.config.anonKey !== config.anonKey) {
-      this.instance = this.createClient(config);
-      this.config = config;
-    }
-    return this.instance;
-  }
-
-  /**
-   * Resets the singleton instance (useful for testing)
-   */
-  static resetInstance(): void {
-    this.instance = null;
-    this.config = null;
-  }
-}
-
-/**
- * Configuration provider interface for dependency injection
- */
-export interface ConfigProvider {
-  getSupabaseConfig(): SupabaseConfig;
-}
-
-/**
- * Environment-based configuration provider
- */
-export class EnvironmentConfigProvider implements ConfigProvider {
-  getSupabaseConfig(): SupabaseConfig {
-    const url = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    console.log('[EnvironmentConfigProvider] Loading Supabase config:', {
-      url,
-      anonKeyPresent: !!anonKey,
-      anonKeyPrefix: anonKey ? anonKey.substring(0, 20) + '...' : 'NOT SET'
-    });
-
-    if (!url) {
-      throw new Error(
-        'VITE_SUPABASE_URL environment variable is required. ' +
+  if (!url) {
+    throw new Error(
+      'VITE_SUPABASE_URL environment variable is required. ' +
         'Please set it in your .env.local file or environment variables.'
-      );
-    }
+    );
+  }
 
-    if (!anonKey) {
-      throw new Error(
-        'VITE_SUPABASE_ANON_KEY environment variable is required. ' +
+  if (!anonKey) {
+    throw new Error(
+      'VITE_SUPABASE_ANON_KEY environment variable is required. ' +
         'Please set it in your .env.local file or environment variables.'
-      );
-    }
-
-    return {
-      url,
-      anonKey,
-    };
+    );
   }
+
+  return { url, anonKey };
 }
 
-/**
- * Custom configuration provider for testing or specific use cases
- */
-export class CustomConfigProvider implements ConfigProvider {
-  constructor(private config: SupabaseConfig) {}
+const config = loadConfig();
 
-  getSupabaseConfig(): SupabaseConfig {
-    return this.config;
-  }
-}
-
-// Create a default client instance using singleton pattern
-const configProvider = new EnvironmentConfigProvider();
-const config = configProvider.getSupabaseConfig();
-export const supabase = SupabaseClientFactory.getInstance(config);
+export const supabase: SupabaseClient<Database> = createClient<Database>(
+  config.url,
+  config.anonKey
+);

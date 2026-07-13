@@ -2,10 +2,9 @@ import { useId, useState } from 'react'
 
 import { Button } from '../../core/components/Button'
 import { useTheme } from '../../core/contexts/ThemeContext'
-import { useAppSelector, useAppDispatch } from '../store/hooks'
-import { setEmailSubscribed } from '../store/slices/sessionSlice'
-import { LeadsPublic } from '../leads/services/LeadsService'
-import { EnvironmentConfigProvider } from '../../core/supabase'
+import { useAppSelector, useAppDispatch } from '../../core/store/hooks'
+import { setEmailSubscribed } from '../../core/store/slices/sessionSlice'
+import { leadsService } from '../leads/services/LeadsService'
 import { Icon } from '@mdi/react'
 import { mdiCheck } from '@mdi/js'
 
@@ -73,12 +72,7 @@ export function SignUpForm() {
     setErrorMessage('')
     
     try {
-      // Initialize LeadsPublic with environment config
-      const configProvider = new EnvironmentConfigProvider()
-      const leadsPublic = new LeadsPublic(configProvider)
-      
-      // Create lead with email subscription
-      const result = await leadsPublic.createLead({
+      const result = await leadsService.submitLead({
         lead_kind: 'subscriber',
         email: email.trim(),
         source_path: window.location.pathname,
@@ -87,7 +81,7 @@ export function SignUpForm() {
           subscribed_at: new Date().toISOString()
         }
       })
-      
+
       if (result.success) {
         // Update Redux state to mark as subscribed
         dispatch(setEmailSubscribed(true))
@@ -95,7 +89,7 @@ export function SignUpForm() {
         setEmail('')
       } else {
         setSubmitStatus('error')
-        setErrorMessage(result.error?.message || 'Failed to subscribe. Please try again.')
+        setErrorMessage(result.error || 'Failed to subscribe. Please try again.')
       }
     } catch (error) {
       setSubmitStatus('error')

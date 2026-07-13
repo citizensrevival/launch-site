@@ -3,13 +3,8 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { Provider } from 'react-redux'
 import { store } from './core/store'
 import { ThemeProvider } from './core/contexts/ThemeContext'
-import { AuthProvider } from './core/contexts/AuthContext'
-import { AnalyticsProvider } from './public/analytics/contexts/AnalyticsContext'
-import { SiteProvider } from './core/contexts/SiteContext'
 import { GetInvolvedDialog } from './public/components/GetInvolvedDialog'
 import { useGetInvolvedDialog } from './public/hooks/useGetInvolvedDialog'
-import { useAnalyticsPageview } from './core/hooks/useAnalyticsPageview'
-import { AdminRoute } from './admin/AdminRoute'
 
 // Lazy load public pages
 const HomePage = lazy(() => import('./public/HomePage'))
@@ -18,22 +13,17 @@ const VendorsPage = lazy(() => import('./public/pages/VendorsPage'))
 const VolunteersPage = lazy(() => import('./public/pages/VolunteersPage'))
 const PrivacyPolicyPage = lazy(() => import('./public/pages/PrivacyPolicyPage'))
 const TermsAndConditionsPage = lazy(() => import('./public/pages/TermsAndConditionsPage'))
-const UnsubscribePage = lazy(() => import('./public/pages/UnsubscribePage'))
-
 
 function PublicRoutes() {
   const { isDialogOpen, preselectedType } = useGetInvolvedDialog();
   const location = useLocation();
   const [isAnimating, setIsAnimating] = useState(false);
-  
-  // Initialize analytics pageview tracking
-  useAnalyticsPageview();
 
   // Handle scroll disabling during transitions
   useEffect(() => {
     setIsAnimating(true);
     document.body.style.overflow = 'hidden';
-    
+
     const timer = setTimeout(() => {
       setIsAnimating(false);
       document.body.style.overflow = '';
@@ -59,34 +49,10 @@ function PublicRoutes() {
           <Route path="/volunteers" element={<VolunteersPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsAndConditionsPage />} />
-          <Route path="/unsubscribe" element={<UnsubscribePage />} />
+          <Route path="*" element={<HomePage />} />
         </Routes>
       </Suspense>
       {isDialogOpen && <GetInvolvedDialog preselectedType={preselectedType || undefined} />}
-    </div>
-  )
-}
-
-function AppContent() {
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/manage');
-
-  return (
-    <div className={`route-transition ${isAdminRoute ? 'admin-route' : 'public-route'}`}>
-      <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
-        </div>
-      }>
-        <Routes>
-          <Route path="/manage/*" element={<AdminRoute />} />
-          <Route path="/*" element={
-            <SiteProvider slug="aztec">
-              <PublicRoutes />
-            </SiteProvider>
-          } />
-        </Routes>
-      </Suspense>
     </div>
   )
 }
@@ -95,18 +61,14 @@ export default function App() {
   return (
     <Provider store={store}>
       <ThemeProvider disableTransitionOnChange>
-        <AuthProvider>
-          <AnalyticsProvider>
-            <Router
-              future={{
-                v7_startTransition: true,
-                v7_relativeSplatPath: true
-              }}
-            >
-              <AppContent />
-            </Router>
-          </AnalyticsProvider>
-        </AuthProvider>
+        <Router
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
+          <PublicRoutes />
+        </Router>
       </ThemeProvider>
     </Provider>
   )

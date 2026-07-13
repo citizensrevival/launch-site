@@ -2,13 +2,13 @@ import { Layout } from '../../core/components/Layout'
 import { Section } from '../../core/components/Section'
 import { Button } from '../../core/components/Button'
 import { useTheme } from '../../core/contexts/ThemeContext'
-import { useSiteSettings } from '../../admin/system/services/SiteSettingsService'
+import { useAppSelector } from '../../core/store/hooks'
 import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 
 export default function VolunteersPage() {
   const theme = useTheme()
   const colorTheme = theme?.colorTheme || 'purple'
-  const siteSettings = useSiteSettings()
+  const hasSubmittedAsVolunteer = useAppSelector((state) => state.session.getInvolvedSubmissions.volunteer)
   const { openDialog } = useGetInvolvedDialog()
 
   const getThemeColors = (theme: string) => {
@@ -52,9 +52,6 @@ export default function VolunteersPage() {
   }
 
   const themeColors = getThemeColors(colorTheme)
-  
-  // Check if user has already submitted as a volunteer
-  const hasSubmittedAsVolunteer = siteSettings.getGetInvolvedSubmission('volunteer')
 
   return (
     <Layout>

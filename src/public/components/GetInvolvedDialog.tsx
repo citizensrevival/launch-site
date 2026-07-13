@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { LeadsPublic } from '../leads/services/LeadsService';
-import { EnvironmentConfigProvider } from '../../core/supabase';
+import { leadsService } from '../leads/services/LeadsService';
 import { CreateLeadInput, LeadType } from '../leads/types/leads.types';
 import { useTheme } from '../../core/contexts/ThemeContext';
-import { useAnalytics } from '../analytics/contexts/AnalyticsContext';
-import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { setGetInvolvedSubmission } from '../store/slices/sessionSlice';
+import { useAppSelector, useAppDispatch } from '../../core/store/hooks';
+import { setGetInvolvedSubmission } from '../../core/store/slices/sessionSlice';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiCheck } from '@mdi/js';
 
@@ -31,7 +29,6 @@ interface SocialLink {
 export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
-  const { trackEvent } = useAnalytics();
   const dispatch = useAppDispatch();
   const getInvolvedSubmissions = useAppSelector((state) => state.session.getInvolvedSubmissions);
   const [isOpen, setIsOpen] = useState(false);
@@ -62,15 +59,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
     if (dialogOpen && preselectedType) {
       setSelectedType(preselectedType);
     }
-    
-    // Track dialog opening
-    if (dialogOpen) {
-      trackEvent('get_involved_dialog_opened', 'Get Involved Dialog', {
-        preselected_type: preselectedType || 'none',
-        source: 'url_param'
-      });
-    }
-  }, [searchParams, preselectedType, trackEvent]);
+  }, [searchParams, preselectedType]);
 
   // Check for existing submissions when dialog opens
   useEffect(() => {
@@ -78,27 +67,6 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
       setExistingSubmissions(getInvolvedSubmissions);
     }
   }, [isOpen, getInvolvedSubmissions]);
-
-  // Handle escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        closeDialog();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
 
   const closeDialog = useCallback(() => {
     setSearchParams(prev => {
@@ -121,6 +89,27 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
     setSubmitStatus('idle');
     setErrorMessage('');
   }, [setSearchParams]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        closeDialog();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, closeDialog]);
 
   const handleTypeSelection = (type: LeadType) => {
     setSelectedType(type);
@@ -212,9 +201,6 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
     setErrorMessage('');
 
     try {
-      const configProvider = new EnvironmentConfigProvider();
-      const leadsPublic = new LeadsPublic(configProvider);
-
       const socialLinksArray = socialLinks
         .map(link => link.value.trim())
         .filter(link => link.length > 0);
@@ -235,20 +221,11 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
         }
       };
 
-      const result = await leadsPublic.createLead(leadData);
+      const result = await leadsService.submitLead(leadData);
 
       if (result.success) {
         setSubmitStatus('success');
-        
-        // Track analytics event
-        await trackEvent('lead_form_submitted', `${selectedType} signup`, {
-          lead_type: selectedType,
-          business_name: formData.business_name,
-          has_website: !!formData.website,
-          social_links_count: socialLinksArray.length,
-          source_path: window.location.pathname
-        });
-        
+
         // Track the submission in Redux (only for get involved types)
         if (selectedType === 'vendor' || selectedType === 'sponsor' || selectedType === 'volunteer') {
           dispatch(setGetInvolvedSubmission({ type: selectedType, submitted: true }));
@@ -257,7 +234,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
         setExistingSubmissions(prev => ({ ...prev, [selectedType!]: true }));
       } else {
         setSubmitStatus('error');
-        setErrorMessage(result.error?.message || 'Failed to submit form');
+        setErrorMessage(result.error || 'Failed to submit form');
       }
     } catch (error) {
       setSubmitStatus('error');

@@ -101,7 +101,8 @@ port = 54324
 # sender_name = "Admin"
 
 [storage]
-enabled = true
+# The site uploads nothing. The only bucket was for CMS assets, which are gone.
+enabled = false
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 

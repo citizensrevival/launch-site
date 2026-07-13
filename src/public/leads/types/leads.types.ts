@@ -3,22 +3,22 @@
  * For public lead submission
  */
 
+export type LeadType = 'volunteer' | 'vendor' | 'sponsor' | 'general' | 'subscriber';
+
+/**
+ * Mirrors the arguments of the `upsert_lead` Postgres function.
+ * Field names must stay aligned with the RPC parameters (`p_<field>`).
+ */
 export interface CreateLeadInput {
+  lead_kind: LeadType;
   email: string;
-  first_name?: string;
-  last_name?: string;
-  phone?: string;
-  company?: string;
   business_name?: string;
   contact_name?: string;
+  phone?: string;
   website?: string;
   social_links?: string[];
-  lead_kind: 'volunteer' | 'vendor' | 'sponsor' | 'general' | 'subscriber';
-  source?: string;
   source_path?: string;
-  notes?: string;
-  metadata?: Record<string, any>;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
   tags?: string[];
 }
 
@@ -27,5 +27,3 @@ export interface LeadSubmissionResult {
   leadId?: string;
   error?: string;
 }
-
-export type LeadType = 'volunteer' | 'vendor' | 'sponsor' | 'general' | 'subscriber';

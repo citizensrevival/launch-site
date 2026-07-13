@@ -230,16 +230,27 @@ This script:
 ├── supabase/
 │   ├── config.toml           # Supabase configuration
 │   ├── migrations/           # Database migrations
-│   ├── functions/            # Edge functions
-│   └── seed.sql             # Seed data
+│   └── seed.sql              # Seed data
 ├── src/
-│   ├── admin/                # Admin dashboard
-│   ├── public/               # Public pages
-│   ├── shell/                # Shared components
-│   └── lib/                  # Utilities and types
+│   ├── core/                 # Shared components, store, theme, Supabase client
+│   └── public/               # Public pages and lead capture
 ├── .env.local               # Local environment (gitignored)
 └── package.json             # NPM scripts
 ```
+
+## 📬 Lead capture
+
+The site is otherwise static; the only thing it persists is lead capture — newsletter
+subscribers plus sponsor / vendor / volunteer signups. All of it goes into a single
+`leads_submissions` table via the `upsert_lead` function.
+
+There is no admin UI. Read the signups from the Supabase dashboard.
+
+Visitors are anonymous, so `leads_submissions` has RLS enabled with **no policies** and
+**no table grants** to `anon`. Anonymous callers can execute `upsert_lead` (which is
+`SECURITY DEFINER`) and nothing else — they cannot read, update or delete signups. If you
+ever need the site to read a lead back, add a policy deliberately; do not grant table
+access to `anon`.
 
 ## 🚀 GitHub Pages Deployment
 

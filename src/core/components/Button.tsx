@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { useTheme } from '../contexts/ThemeContext'
-import { useAnalytics } from '../../public/analytics/contexts/AnalyticsContext'
 
 export function Button({
   className,
@@ -14,7 +13,6 @@ export function Button({
   | ({ href?: undefined } & React.ComponentPropsWithoutRef<'button'>)
 )) {
   const theme = useTheme()
-  const { trackEvent } = useAnalytics()
   const colorTheme = theme?.colorTheme || 'purple'
   
   // Get theme-specific colors for main content area
@@ -73,29 +71,20 @@ export function Button({
     arrow ? 'pl-2.5 pr-[calc(9/16*1rem)]' : 'px-2.5',
   )
 
-  const handleClick = async () => {
-    // Track button click
-    await trackEvent('button_clicked', children?.toString() || 'Button', {
-      button_text: children?.toString(),
-      destination: to,
-      has_arrow: arrow
-    })
-  }
-
   if (to) {
     return (
-      <Link to={to} className={className} onClick={handleClick}>
+      <Link to={to} className={className}>
         {children} {arrow ? <span aria-hidden="true">&rarr;</span> : null}
       </Link>
     )
   }
 
   return typeof props.href === 'undefined' ? (
-    <button className={className} onClick={handleClick} {...(props as React.ComponentPropsWithoutRef<'button'>)}>
+    <button className={className} {...(props as React.ComponentPropsWithoutRef<'button'>)}>
       {children} {arrow ? <span aria-hidden="true">&rarr;</span> : null}
     </button>
   ) : (
-    <a className={className} onClick={handleClick} {...(props as React.ComponentPropsWithoutRef<'a'>)}>
+    <a className={className} {...(props as React.ComponentPropsWithoutRef<'a'>)}>
       {children} {arrow ? <span aria-hidden="true">&rarr;</span> : null}
     </a>
   )
