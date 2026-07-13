@@ -105,9 +105,9 @@ src/public/leads/
 
 Deploys automatically via GitHub Actions on push to `main`.
 
-- **Custom domain**: `citizens.fvcsolutions.com` (configured in `public/CNAME`)
+- **Custom domain**: `thecitizensrevival.com` (configured in `public/CNAME`)
 - **Source**: `.github/workflows/deploy.yml`, publishing `dist/`
-- **Live at**: https://citizens.fvcsolutions.com
+- **Live at**: https://thecitizensrevival.com
 
 The build takes no secrets and no environment variables.
 

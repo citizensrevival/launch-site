@@ -5,7 +5,11 @@ import userEvent from '@testing-library/user-event';
 
 import App from '../App';
 import { store } from '../core/store';
-import { resetSession } from '../core/store/slices/sessionSlice';
+import {
+  resetSession,
+  setEmailSubscribed,
+  setGetInvolvedSubmission,
+} from '../core/store/slices/sessionSlice';
 import { leadsProvider } from '../public/leads/provider';
 
 /**
@@ -47,7 +51,7 @@ describe('lead capture', () => {
       })
     );
 
-    expect(await screen.findByText(/subscribed for updates/i)).toBeDefined();
+    expect(await screen.findByText(/successfully subscribed/i)).toBeDefined();
   });
 
   it('surfaces a failed signup instead of reporting success', async () => {
@@ -60,7 +64,40 @@ describe('lead capture', () => {
     await user.click(screen.getByRole('button', { name: /stay informed/i }));
 
     expect(await screen.findByText(/subscription failed/i)).toBeDefined();
-    expect(screen.queryByText(/subscribed for updates/i)).toBeNull();
+    expect(screen.queryByText(/successfully subscribed/i)).toBeNull();
+  });
+
+  // A previous signup is remembered in localStorage, but it must never stop the
+  // visitor submitting again -- they may want to use a different address.
+  it('still lets a previously subscribed visitor sign up again', async () => {
+    store.dispatch(setEmailSubscribed(true));
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(await screen.findByPlaceholderText('Email Address'), 'second@example.com');
+    await user.click(screen.getByRole('button', { name: /stay informed/i }));
+
+    await waitFor(() => expect(submitLead).toHaveBeenCalledTimes(1));
+    expect(submitLead).toHaveBeenCalledWith(
+      expect.objectContaining({ lead_kind: 'subscriber', email: 'second@example.com' })
+    );
+  });
+
+  // Same rule for the Get Involved dialog: a remembered sponsor submission must
+  // not disable the sponsor option.
+  it('still lets a previously submitted sponsor open the sponsor form again', async () => {
+    store.dispatch(setGetInvolvedSubmission({ type: 'sponsor', submitted: true }));
+    window.history.pushState({}, '', '/?dialog=get-involved');
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    const sponsorButton = await screen.findByRole('button', { name: /^sponsor/i });
+    expect(sponsorButton.hasAttribute('disabled')).toBe(false);
+
+    await user.click(sponsorButton);
+    expect(screen.getByPlaceholderText('Your business name')).toBeDefined();
   });
 
   it('submits a sponsor through the get involved dialog', async () => {

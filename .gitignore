@@ -143,3 +143,13 @@ Thumbs.db
 
 # Lead exports (contain PII)
 exports/
+
+# Supabase CLI state. Supabase is gone; this stops the CLI re-creating a
+# project ref here if anyone ever runs it again in this directory.
+supabase/
+
+# Internal working notes. This repository is public: these quote private email,
+# name third parties, and discuss unreleased or unconfirmed event details.
+# They stay on disk -- they are just not published.
+docs/DISCREPANCIES.md
+docs/SUPPORTER-LINKS.md
