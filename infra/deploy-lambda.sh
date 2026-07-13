@@ -22,7 +22,11 @@ FROM_EMAIL="noreply@fvcsolutions.com"
 SES_IDENTITY="fvcsolutions.com"
 LEADS_EMAIL="citizensrevivalproject@gmail.com"
 ADMIN_EMAIL="jason@fvcsolutions.com"
-ALLOWED_ORIGINS="https://citizens.fvcsolutions.com,http://localhost:3000"
+# The live site. Note this is NOT the value in public/CNAME, which is stale --
+# the custom domain is configured in the repo's Pages settings, and that wins.
+# Verify with: gh api repos/citizensrevival/launch-site/pages --jq .cname
+SITE_ORIGIN="https://thecitizensrevival.com"
+ALLOWED_ORIGINS="${SITE_ORIGIN},http://localhost:3000"
 
 # Caps the blast radius if the endpoint is ever abused: at most this many
 # concurrent executions, no matter how hard someone hammers it.
@@ -238,7 +242,7 @@ aws lambda put-function-concurrency \
 # ---------------------------------------------------------------------------
 # Function URL
 # ---------------------------------------------------------------------------
-CORS_CONFIG="{\"AllowOrigins\":[\"https://citizens.fvcsolutions.com\",\"http://localhost:3000\"],\"AllowMethods\":[\"POST\"],\"AllowHeaders\":[\"content-type\"],\"MaxAge\":300}"
+CORS_CONFIG="{\"AllowOrigins\":[\"${SITE_ORIGIN}\",\"http://localhost:3000\"],\"AllowMethods\":[\"POST\"],\"AllowHeaders\":[\"content-type\"],\"MaxAge\":300}"
 
 if aws lambda get-function-url-config --function-name "${FUNCTION_NAME}" --region "${REGION}" > /dev/null 2>&1; then
   echo "==> Updating Function URL config"
