@@ -4,7 +4,7 @@ import { Button } from '../../core/components/Button'
 import { useTheme } from '../../core/contexts/ThemeContext'
 import { useAppSelector, useAppDispatch } from '../../core/store/hooks'
 import { setEmailSubscribed } from '../../core/store/slices/sessionSlice'
-import { leadsService } from '../leads/services/LeadsService'
+import { leadsProvider } from '../leads/provider'
 import { Icon } from '@mdi/react'
 import { mdiCheck } from '@mdi/js'
 
@@ -72,7 +72,7 @@ export function SignUpForm() {
     setErrorMessage('')
     
     try {
-      const result = await leadsService.submitLead({
+      const result = await leadsProvider.submitLead({
         lead_kind: 'subscriber',
         email: email.trim(),
         source_path: window.location.pathname,

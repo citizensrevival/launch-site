@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { leadsService } from '../leads/services/LeadsService';
+import { leadsProvider } from '../leads/provider';
 import { CreateLeadInput, LeadType } from '../leads/types/leads.types';
 import { useTheme } from '../../core/contexts/ThemeContext';
 import { useAppSelector, useAppDispatch } from '../../core/store/hooks';
@@ -221,7 +221,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
         }
       };
 
-      const result = await leadsService.submitLead(leadData);
+      const result = await leadsProvider.submitLead(leadData);
 
       if (result.success) {
         setSubmitStatus('success');

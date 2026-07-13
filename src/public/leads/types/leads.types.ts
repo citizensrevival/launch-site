@@ -5,10 +5,6 @@
 
 export type LeadType = 'volunteer' | 'vendor' | 'sponsor' | 'general' | 'subscriber';
 
-/**
- * Mirrors the arguments of the `upsert_lead` Postgres function.
- * Field names must stay aligned with the RPC parameters (`p_<field>`).
- */
 export interface CreateLeadInput {
   lead_kind: LeadType;
   email: string;
@@ -26,4 +22,14 @@ export interface LeadSubmissionResult {
   success: boolean;
   leadId?: string;
   error?: string;
+}
+
+/**
+ * Where a submitted lead goes. The site has no backend right now, so the only
+ * implementation is FakeLeadsProvider. Swap the implementation in
+ * `leads/provider.ts` when a real destination exists -- nothing else should
+ * need to change.
+ */
+export interface LeadsProvider {
+  submitLead(input: CreateLeadInput): Promise<LeadSubmissionResult>;
 }

@@ -1,5 +1,0 @@
--- Seed data for local development.
--- Automatically loaded by `supabase db reset`.
---
--- The site has no admin app and no authenticated users, so there is nothing to
--- seed. Leads are created by visitors through public.upsert_lead().

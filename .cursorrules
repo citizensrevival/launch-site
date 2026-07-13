@@ -1,40 +1,37 @@
 # Cursor Rules for Launch Site Project
 
 ## Development & Cleanup
-- Always shutdown development servers after completing changes: `pkill -f "vite" && npm run db:stop`
+- Always shutdown development servers after completing changes: `pkill -f "vite"`
 - Verify no processes on ports 3000-3010 before considering task complete
-- Use `npm run db:ensure` to verify Supabase is running before starting development
-- Never commit `.env.local` files; use `npm run update-supabase-keys` for environment setup
 - Do not start the development server so that the user can test. The user will manually start the server
 
-## Database & Build
-- Generate types after schema changes: `npm run db:generate`
-- Test migrations locally: `npm run db:reset` 
-- Use `./scripts/db-workflow.sh` for complex database operations
+## Build
 - Build for GitHub Pages: `npm run build:github`
-- Test with remote Supabase before deploying (backup data first)
 - Verify CNAME file for custom domain (citizens.fvcsolutions.com)
+- The build takes no secrets and no environment variables
 
 ## Code Quality
 - Resolve all linting errors before completing tasks
 - Run builds to verify changes work correctly
 - Update README.md instead of creating additional documentation files
-- Never commit sensitive data to migration files
-- Use `VITE_` prefix for client-side environment variables
 
-## Supabase
-- All objects that are not default Supabase features should be in the `public` schema
+## Lead capture
+- The site has no backend. Both signup forms submit through a `LeadsProvider`
+- `FakeLeadsProvider` is a placeholder: it accepts a lead, holds it in memory and
+  discards it. Nothing is persisted
+- To make signups real, implement `LeadsProvider` and swap `src/public/leads/provider.ts`.
+  Write code against the interface, not the implementation
 
 ## Quick Commands
 ```bash
 # Kill all development processes
-pkill -f "vite" && pkill -f "npm run start" && npm run db:stop
+pkill -f "vite" && pkill -f "npm run start"
 
 # Daily workflow
-npm start → make changes → npm run db:generate → pkill -f "vite" && npm run db:stop
+npm start → make changes → npm run lint && npm run test:run → pkill -f "vite"
 
 # Before deploying
-npm run start:remote → ./scripts/db-workflow.sh push → npm run build:github
+npm run build:github
 ```
 
 # Open Source
@@ -52,8 +49,6 @@ legally clear, secure, documented, reproducible, and maintainable by one person.
 
 2. Directory layout:
    - `src/` - Source code ✅
-   - `scripts/` - Development scripts ✅
-   - `supabase/` - Database configuration ✅
    - `public/` - Static assets ✅
    - `dist/` - Build output (gitignored) ✅
 
@@ -64,10 +59,9 @@ legally clear, secure, documented, reproducible, and maintainable by one person.
    - `.cursorrules` for development guidelines ✅
 
 4. Secrets:
-   - Never store credentials in `.env.local` ✅
-   - Use `npm run update-supabase-keys` for environment setup ✅
-   - Never commit service role keys ✅
-   - Use environment variables for all configuration ✅
+   - The app needs no secrets or environment variables. Keep it that way unless a real
+     backend requires them ✅
+   - Never commit `.env*` files ✅
 
 ## 🔒 Security & Supply Chain
 1. Pin dependencies; maintain `package-lock.json` ✅
@@ -75,15 +69,8 @@ legally clear, secure, documented, reproducible, and maintainable by one person.
 3. Run vulnerability audits (`npm audit`) before release ✅
 4. Avoid dangerous patterns (`eval`, arbitrary shell exec) ✅
 5. Default to least privilege and safe ports (`127.0.0.1` for dev) ✅
-6. **Supabase Security**:
-   - Never use service role keys in client-side code ✅
-   - Always use Row Level Security (RLS) policies ✅
-   - Test with both local and remote Supabase environments ✅
-   - Never commit sensitive data to migration files ✅
-7. **Environment Security**:
-   - Use `VITE_` prefix for client-side environment variables ✅
-   - Never commit `.env.local` files ✅
-   - Use `npm run update-supabase-keys` for secure key management ✅
+6. **If a backend is added**: never put privileged keys in client-side code. Anything
+   shipped in the Vite bundle is public ✅
 
 ## 🧰 Documentation
 1. **README.md**
@@ -93,22 +80,16 @@ legally clear, secure, documented, reproducible, and maintainable by one person.
 
 ## 🧪 Testing & CI
 1. **Local Testing**:
-   - Test with local Supabase: `npm start`
-   - Test with remote Supabase: `npm run start:remote`
+   - Run the app: `npm start`
+   - Run tests: `npm run test:run`
    - Test builds: `npm run build` and `npm run build:github`
    - Preview builds: `npm run preview`
 
-2. **Database Testing**:
-   - Test migrations locally: `npm run db:reset`
-   - Generate types after changes: `npm run db:generate`
-   - Use Supabase Studio for database inspection: `npm run db:studio`
-
-3. **Deployment Testing**:
+2. **Deployment Testing**:
    - Test GitHub Pages build: `npm run build:github`
    - Verify CNAME file for custom domain
-   - Test with remote Supabase before deploying
 
-4. **CI Pipeline** (GitHub Actions):
-   - Install dependencies: `npm install`
-   - Build for GitHub Pages: `npm run build:github`
+3. **CI Pipeline** (GitHub Actions):
+   - Install dependencies: `npm ci`
+   - Build: `npm run build`
    - Deploy to GitHub Pages automatically
