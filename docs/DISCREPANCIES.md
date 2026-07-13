@@ -38,27 +38,30 @@ The first date should be **28**. An earlier card in the same video gets it right
 - **What we did:** used **1:00pm**, because the flyer is already in public hands.
 - **What's still needed:** confirm which is right. If it's 2pm, the flyer is wrong too.
 
-### 3. The site's configured domain is dead
-
-| Domain | Status |
-| --- | --- |
-| `thecitizensrevival.com` | ✅ **live** — this is the real site |
-| `citizens.fvcsolutions.com` | ❌ **404** |
-
-The problem: `public/CNAME` — which gets published on every deploy — contains the **dead**
-domain. So does the README and `.cursorrules`.
-
-Today the live domain is set at the GitHub Pages level and wins, so the site works. But a
-future deploy could flip the custom domain to the 404ing one and **take the site down**.
-
-- **What we did:** nothing. Changing `CNAME` could equally break production, so this needs
-  a human decision.
-- **What's still needed:** decide which domain is canonical, then make `CNAME`, the README
-  and `.cursorrules` all say the same thing.
-
 ---
 
 ## ✅ Resolved — no action needed
+
+### 3. The site's configured domain is dead
+
+`thecitizensrevival.com` is the real site. `citizens.fvcsolutions.com` 404s and is no
+longer supported.
+
+- **What we did:** confirmed with Jason, then pointed `public/CNAME`, the README and
+  `.cursorrules` at `thecitizensrevival.com`.
+
+  Two things this had already broken, both fixed: the `og:`/`twitter:` tags in
+  `index.html` pointed at the dead domain, so **every social share showed a broken preview
+  image**; and the lead-capture Lambda's CORS allowlist was built from `CNAME`, which
+  would have made the browser **block every form submission** from the live site.
+
+  The lesson: `public/CNAME` is not the source of truth. For Pages deploys driven by
+  Actions, the custom domain lives in the repo's Pages settings and that is what serves
+  traffic — a stale `CNAME` file sits there looking authoritative while being wrong.
+  Check with `gh api repos/citizensrevival/launch-site/pages --jq .cname`.
+- **What's still needed:** the `citizens.fvcsolutions.com` CNAME record still exists in
+  Route53 (zone `fvcsolutions.com`) pointing at `citizensrevival.github.io`. It serves no
+  purpose now and can be deleted.
 
 ### 4. Friday: Main Street, or the Senior Center?
 

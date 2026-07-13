@@ -7,7 +7,7 @@
 
 ## Build
 - Build for GitHub Pages: `npm run build:github`
-- Verify CNAME file for custom domain (citizens.fvcsolutions.com)
+- Verify CNAME file for custom domain (thecitizensrevival.com)
 - The build takes no secrets and no environment variables
 
 ## Code Quality
