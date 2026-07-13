@@ -5,7 +5,36 @@ import { Logo } from './Logo'
 import { Menu } from './Menu'
 import { SignUpForm } from '../../public/components/SignUpForm'
 import { useGetInvolvedDialog } from '../../public/hooks/useGetInvolvedDialog'
-import { featuredSupporters } from '../../public/data/supporters'
+import { featuredSupporters, type Supporter } from '../../public/data/supporters'
+
+/** A supporter without a `url` -- the fiscal sponsor has none -- renders unlinked. */
+function SupporterTile({ supporter }: { supporter: Supporter }) {
+  const tile = (
+    <div className="flex h-20 items-center justify-center rounded-lg bg-white p-2">
+      <img
+        src={supporter.logo}
+        alt={supporter.name}
+        className="max-h-14 w-auto object-contain"
+      />
+    </div>
+  )
+
+  if (!supporter.url) {
+    return tile
+  }
+
+  return (
+    <a
+      href={supporter.url}
+      target="_blank"
+      rel="noreferrer noopener"
+      aria-label={supporter.name}
+      className="cursor-pointer no-underline transition-opacity hover:opacity-75"
+    >
+      {tile}
+    </a>
+  )
+}
 
 export function Intro() {
   const { openDialog } = useGetInvolvedDialog()
@@ -44,16 +73,7 @@ export function Intro() {
         </h2>
         <div className="mt-3 grid grid-cols-2 gap-3">
           {featuredSupporters.map((supporter) => (
-            <div
-              key={supporter.name}
-              className="flex h-20 items-center justify-center rounded-lg bg-white p-2"
-            >
-              <img
-                src={supporter.logo}
-                alt={supporter.name}
-                className="max-h-14 w-auto object-contain"
-              />
-            </div>
+            <SupporterTile key={supporter.name} supporter={supporter} />
           ))}
         </div>
         <div className="mt-3 text-center">

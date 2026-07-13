@@ -4,7 +4,7 @@ import { leadsProvider } from '../leads/provider';
 import { HoneypotField } from './HoneypotField';
 import { CreateLeadInput, LeadType } from '../leads/types/leads.types';
 import { useTheme } from '../../core/contexts/ThemeContext';
-import { useAppSelector, useAppDispatch } from '../../core/store/hooks';
+import { useAppDispatch } from '../../core/store/hooks';
 import { setGetInvolvedSubmission } from '../../core/store/slices/sessionSlice';
 import { Icon } from '@mdi/react';
 import { mdiClose, mdiCheck } from '@mdi/js';
@@ -31,7 +31,6 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const theme = useTheme();
   const dispatch = useAppDispatch();
-  const getInvolvedSubmissions = useAppSelector((state) => state.session.getInvolvedSubmissions);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<LeadType | null>(preselectedType || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,11 +47,6 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
   const [honeypot, setHoneypot] = useState('');
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [existingSubmissions, setExistingSubmissions] = useState<{ vendor: boolean; sponsor: boolean; volunteer: boolean }>({
-    vendor: false,
-    sponsor: false,
-    volunteer: false
-  });
 
   // Check if dialog should be open based on URL
   useEffect(() => {
@@ -62,13 +56,6 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
       setSelectedType(preselectedType);
     }
   }, [searchParams, preselectedType]);
-
-  // Check for existing submissions when dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      setExistingSubmissions(getInvolvedSubmissions);
-    }
-  }, [isOpen, getInvolvedSubmissions]);
 
   const closeDialog = useCallback(() => {
     setSearchParams(prev => {
@@ -233,8 +220,6 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
         if (selectedType === 'vendor' || selectedType === 'sponsor' || selectedType === 'volunteer') {
           dispatch(setGetInvolvedSubmission({ type: selectedType, submitted: true }));
         }
-        // Update local state
-        setExistingSubmissions(prev => ({ ...prev, [selectedType!]: true }));
       } else {
         setSubmitStatus('error');
         setErrorMessage(result.error || 'Failed to submit form');
@@ -370,45 +355,28 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
                 Choose how you'd like to get involved with our community event:
               </p>
               <div className="space-y-3">
-                {(['sponsor', 'vendor', 'volunteer'] as LeadType[]).map((type) => {
-                  const hasSubmitted = existingSubmissions[type as keyof typeof existingSubmissions];
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => !hasSubmitted && handleTypeSelection(type)}
-                      disabled={hasSubmitted}
-                      className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                        hasSubmitted
-                          ? 'border-green-200 bg-green-50 cursor-not-allowed'
-                          : selectedType === type 
-                            ? themeColors.typeButtonSelected
-                            : `${themeColors.typeButton} ${themeColors.typeButtonHover}`
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className={`font-medium capitalize ${themeColors.text}`}>
-                          {type === 'sponsor' ? 'Sponsor' : type === 'vendor' ? 'Vendor' : 'Volunteer'}
-                        </div>
-                        {hasSubmitted && (
-                          <div className="flex items-center gap-2">
-                            <Icon path={mdiCheck} className={`w-4 h-4 ${themeColors.accent}`} />
-                            <span className={`${themeColors.accent} text-xs font-medium`}>Already Submitted</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className={`text-xs mt-1 ${themeColors.text} ${hasSubmitted ? 'opacity-60' : 'opacity-70'}`}>
-                        {hasSubmitted 
-                          ? 'Thank you for your submission! We\'ll be in touch soon.'
-                          : type === 'sponsor' 
-                            ? 'Support our event with sponsorship opportunities'
-                            : type === 'vendor' 
-                              ? 'Sell your products or services at our event'
-                              : 'Help make our event a success with your time'
-                        }
-                      </div>
-                    </button>
-                  );
-                })}
+                {(['sponsor', 'vendor', 'volunteer'] as LeadType[]).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => handleTypeSelection(type)}
+                    className={`w-full cursor-pointer p-4 rounded-lg border-2 transition-all text-left ${
+                      selectedType === type
+                        ? themeColors.typeButtonSelected
+                        : `${themeColors.typeButton} ${themeColors.typeButtonHover}`
+                    }`}
+                  >
+                    <div className={`font-medium capitalize ${themeColors.text}`}>
+                      {type === 'sponsor' ? 'Sponsor' : type === 'vendor' ? 'Vendor' : 'Volunteer'}
+                    </div>
+                    <div className={`text-xs mt-1 opacity-70 ${themeColors.text}`}>
+                      {type === 'sponsor'
+                        ? 'Support our event with sponsorship opportunities'
+                        : type === 'vendor'
+                          ? 'Sell your products or services at our event'
+                          : 'Help make our event a success with your time'}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           ) : (
