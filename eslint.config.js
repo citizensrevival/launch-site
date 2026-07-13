@@ -261,6 +261,9 @@ module.exports = [
   {
     ignores: [
       'dist/**',
+      '**/dist/**',
+      // Lambda source: Node, not browser, and typechecked by its own tsconfig.
+      'infra/**',
       'node_modules/**',
       '*.config.js',
       '*.config.ts',

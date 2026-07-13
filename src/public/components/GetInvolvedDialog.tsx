@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { leadsProvider } from '../leads/provider';
+import { HoneypotField } from './HoneypotField';
 import { CreateLeadInput, LeadType } from '../leads/types/leads.types';
 import { useTheme } from '../../core/contexts/ThemeContext';
 import { useAppSelector, useAppDispatch } from '../../core/store/hooks';
@@ -44,6 +45,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
     website: '',
     social_links: []
   });
+  const [honeypot, setHoneypot] = useState('');
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [existingSubmissions, setExistingSubmissions] = useState<{ vendor: boolean; sponsor: boolean; volunteer: boolean }>({
@@ -212,6 +214,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
         email: formData.email.trim(),
         phone: formData.phone.trim() || undefined,
         website: formData.website.trim() || undefined,
+        company_website: honeypot,
         social_links: socialLinksArray.length > 0 ? socialLinksArray : undefined,
         source_path: window.location.pathname,
         tags: [selectedType!],
@@ -410,6 +413,7 @@ export function GetInvolvedDialog({ preselectedType }: GetInvolvedDialogProps) {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <HoneypotField value={honeypot} onChange={setHoneypot} />
               {/* Type Selection Header */}
               <div className="flex items-center justify-between">
                 <div>

@@ -11,6 +11,7 @@ const HomePage = lazy(() => import('./public/HomePage'))
 const SponsorsPage = lazy(() => import('./public/pages/SponsorsPage'))
 const VendorsPage = lazy(() => import('./public/pages/VendorsPage'))
 const VolunteersPage = lazy(() => import('./public/pages/VolunteersPage'))
+const BroughtToYouByPage = lazy(() => import('./public/pages/BroughtToYouByPage'))
 const PrivacyPolicyPage = lazy(() => import('./public/pages/PrivacyPolicyPage'))
 const TermsAndConditionsPage = lazy(() => import('./public/pages/TermsAndConditionsPage'))
 
@@ -47,6 +48,7 @@ function PublicRoutes() {
           <Route path="/sponsors" element={<SponsorsPage />} />
           <Route path="/vendors" element={<VendorsPage />} />
           <Route path="/volunteers" element={<VolunteersPage />} />
+          <Route path="/brought-to-you-by" element={<BroughtToYouByPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/terms" element={<TermsAndConditionsPage />} />
           <Route path="*" element={<HomePage />} />

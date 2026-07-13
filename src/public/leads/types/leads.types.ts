@@ -16,6 +16,11 @@ export interface CreateLeadInput {
   source_path?: string;
   meta?: Record<string, unknown>;
   tags?: string[];
+  /**
+   * Anti-spam honeypot, populated by HoneypotField. Real users leave it empty;
+   * a non-empty value means a bot and the server drops the submission.
+   */
+  company_website?: string;
 }
 
 export interface LeadSubmissionResult {
@@ -25,10 +30,8 @@ export interface LeadSubmissionResult {
 }
 
 /**
- * Where a submitted lead goes. The site has no backend right now, so the only
- * implementation is FakeLeadsProvider. Swap the implementation in
- * `leads/provider.ts` when a real destination exists -- nothing else should
- * need to change.
+ * Where a submitted lead goes. SesLeadsProvider posts to the Lambda that emails
+ * submissions; FakeLeadsProvider discards them. `leads/provider.ts` picks one.
  */
 export interface LeadsProvider {
   submitLead(input: CreateLeadInput): Promise<LeadSubmissionResult>;

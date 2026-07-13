@@ -5,6 +5,7 @@ import { useTheme } from '../../core/contexts/ThemeContext'
 import { useAppSelector, useAppDispatch } from '../../core/store/hooks'
 import { setEmailSubscribed } from '../../core/store/slices/sessionSlice'
 import { leadsProvider } from '../leads/provider'
+import { HoneypotField } from './HoneypotField'
 import { Icon } from '@mdi/react'
 import { mdiCheck } from '@mdi/js'
 
@@ -17,6 +18,7 @@ export function SignUpForm() {
   
   // Form state
   const [email, setEmail] = useState('')
+  const [honeypot, setHoneypot] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
@@ -75,6 +77,7 @@ export function SignUpForm() {
       const result = await leadsProvider.submitLead({
         lead_kind: 'subscriber',
         email: email.trim(),
+        company_website: honeypot,
         source_path: window.location.pathname,
         meta: {
           subscription_type: 'email_updates',
@@ -149,6 +152,7 @@ export function SignUpForm() {
           )}
           
           <form onSubmit={handleSubmit} className="relative isolate flex items-center pr-1">
+            <HoneypotField value={honeypot} onChange={setHoneypot} />
             <label htmlFor={id} className="sr-only">
               Email address
             </label>
