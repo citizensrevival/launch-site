@@ -7,7 +7,10 @@ export interface Supporter {
   url?: string
 }
 
-/** The host city and the event's fiscal sponsor. Shown above the rest. */
+/**
+ * The host city, the event's fiscal sponsor, and our top-tier sponsors, in that
+ * order. Shown above the rest.
+ */
 export const featuredSupporters: Supporter[] = [
   {
     name: 'City of Aztec',
@@ -18,6 +21,12 @@ export const featuredSupporters: Supporter[] = [
     name: 'Friends of the Aztec Seniors and Community',
     logo: '/images/supporters/helping-hands-caring-hearts.jpg',
     role: 'Fiscal Sponsor',
+  },
+  {
+    name: "Serrano's Inc.",
+    logo: '/images/supporters/serranos.jpg',
+    role: 'Community Champion',
+    url: 'https://serranosinc.com',
   },
 ]
 
