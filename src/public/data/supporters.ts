@@ -30,8 +30,30 @@ export const featuredSupporters: Supporter[] = [
   },
 ]
 
-/** Local businesses and organizations supporting the Revival. */
-export const supporters: Supporter[] = [
+/**
+ * Neighborhood Ally tier — the level above Friend of the Event. Listed ahead of
+ * the friends on the Brought to You By page.
+ */
+export const neighborhoodAllies: Supporter[] = [
+  {
+    name: 'Anchorpoint Insurance',
+    logo: '/images/supporters/anchorpoint-insurance.jpg',
+    url: 'https://lassteragency.com',
+  },
+  {
+    name: "Burnin' Barrels Dispensary",
+    logo: '/images/supporters/burnin-barrels.jpg',
+    url: 'https://www.facebook.com/p/Burnin-Barrels-100083582272199/',
+  },
+  {
+    name: "Rubia's Fine Mexican Dining",
+    logo: '/images/supporters/rubias.jpg',
+    url: 'https://rubiasfinemexicandining.net',
+  },
+]
+
+/** Friend of the Event tier — local businesses and organizations supporting the Revival. */
+export const friendsOfTheEvent: Supporter[] = [
   {
     name: '550 Brewing Taproom',
     logo: '/images/supporters/550-brewing-taproom.jpg',
@@ -46,11 +68,6 @@ export const supporters: Supporter[] = [
     name: 'AK Manufacturing',
     logo: '/images/supporters/ak-manufacturing.jpg',
     url: 'https://www.ak-mfg.com',
-  },
-  {
-    name: 'Anchorpoint Insurance',
-    logo: '/images/supporters/anchorpoint-insurance.jpg',
-    url: 'https://lassteragency.com',
   },
   {
     name: 'Aztec Chamber of Commerce',
@@ -78,9 +95,24 @@ export const supporters: Supporter[] = [
     url: 'https://finishlinegraphic.com',
   },
   {
+    name: 'Four Corners Community Bank',
+    logo: '/images/supporters/four-corners-community-bank.jpg',
+    url: 'https://www.thebankforme.bank',
+  },
+  {
+    name: 'Guzman Energy',
+    logo: '/images/supporters/guzman-energy.png',
+    url: 'https://www.guzmanenergy.com',
+  },
+  {
     name: "Jack's Plastic Welding",
     logo: '/images/supporters/jacks-plastic-welding.jpg',
     url: 'https://jpwinc.com',
+  },
+  {
+    name: 'Kare Drug',
+    logo: '/images/supporters/kare-drug.jpg',
+    url: 'https://www.karedrug.com',
   },
   {
     name: 'Kinsey Forge',
