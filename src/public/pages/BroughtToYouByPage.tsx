@@ -2,28 +2,41 @@ import { Layout } from '../../core/components/Layout'
 import { Section } from '../../core/components/Section'
 import { Button } from '../../core/components/Button'
 import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
-import { featuredSupporters, supporters, type Supporter } from '../data/supporters'
+import {
+  featuredSupporters,
+  neighborhoodAllies,
+  friendsOfTheEvent,
+  type Supporter,
+} from '../data/supporters'
+
+type TileSize = 'featured' | 'ally' | 'friend'
+
+const tileStyles: Record<TileSize, { box: string; image: string; showName: boolean }> = {
+  featured: { box: 'h-44', image: 'max-h-24', showName: true },
+  ally: { box: 'h-44', image: 'max-h-20', showName: true },
+  friend: { box: 'h-32', image: 'max-h-20', showName: false },
+}
 
 function LogoTile({
   supporter,
-  featured = false,
+  size = 'friend',
 }: {
   supporter: Supporter
-  featured?: boolean
+  size?: TileSize
 }) {
+  const styles = tileStyles[size]
+
   const tile = (
     <div
-      className={`flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-4 ${
-        featured ? 'h-44' : 'h-32'
-      }`}
+      className={`flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-4 ${styles.box}`}
     >
       <img
         src={supporter.logo}
         alt={supporter.name}
         loading="lazy"
-        className={`w-auto object-contain ${featured ? 'max-h-24' : 'max-h-20'}`}
+        className={`w-auto object-contain ${styles.image}`}
       />
-      {featured && (
+      {styles.showName && (
         <span className="mt-3 text-center text-xs font-semibold text-gray-700">
           {supporter.name}
           {supporter.role && (
@@ -72,14 +85,21 @@ export default function BroughtToYouByPage() {
 
             <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {featuredSupporters.map((supporter) => (
-                <LogoTile key={supporter.name} supporter={supporter} featured />
+                <LogoTile key={supporter.name} supporter={supporter} size="featured" />
               ))}
             </div>
 
-            <h3 className="mb-4 text-xl font-semibold">Our Local Supporters</h3>
+            <h3 className="mb-4 text-xl font-semibold">Neighborhood Allies</h3>
+            <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {neighborhoodAllies.map((supporter) => (
+                <LogoTile key={supporter.name} supporter={supporter} size="ally" />
+              ))}
+            </div>
+
+            <h3 className="mb-4 text-xl font-semibold">Friends of the Event</h3>
             <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {supporters.map((supporter) => (
-                <LogoTile key={supporter.name} supporter={supporter} />
+              {friendsOfTheEvent.map((supporter) => (
+                <LogoTile key={supporter.name} supporter={supporter} size="friend" />
               ))}
             </div>
 
