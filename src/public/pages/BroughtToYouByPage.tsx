@@ -4,22 +4,23 @@ import { Button } from '../../core/components/Button'
 import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 import {
   featuredSupporters,
+  facilitators,
   neighborhoodAllies,
   friendsOfTheEvent,
   type Supporter,
 } from '../data/supporters'
 
-type TileSize = 'featured' | 'ally' | 'friend'
+type TileSize = 'large' | 'medium' | 'small'
 
 const tileStyles: Record<TileSize, { box: string; image: string; showName: boolean }> = {
-  featured: { box: 'h-44', image: 'max-h-24', showName: true },
-  ally: { box: 'h-44', image: 'max-h-20', showName: true },
-  friend: { box: 'h-32', image: 'max-h-20', showName: false },
+  large: { box: 'h-44', image: 'max-h-24', showName: true },
+  medium: { box: 'h-44', image: 'max-h-20', showName: true },
+  small: { box: 'h-32', image: 'max-h-20', showName: false },
 }
 
 function LogoTile({
   supporter,
-  size = 'friend',
+  size = 'small',
 }: {
   supporter: Supporter
   size?: TileSize
@@ -85,21 +86,32 @@ export default function BroughtToYouByPage() {
 
             <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {featuredSupporters.map((supporter) => (
-                <LogoTile key={supporter.name} supporter={supporter} size="featured" />
+                <LogoTile key={supporter.name} supporter={supporter} size="large" />
+              ))}
+            </div>
+
+            <h3 className="mb-1 text-xl font-semibold">Facilitators</h3>
+            <p className="mb-4 text-sm text-gray-600">
+              The businesses and organizations our planning committee members come from,
+              who help put the event together.
+            </p>
+            <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {facilitators.map((supporter) => (
+                <LogoTile key={supporter.name} supporter={supporter} size="medium" />
               ))}
             </div>
 
             <h3 className="mb-4 text-xl font-semibold">Neighborhood Allies</h3>
             <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
               {neighborhoodAllies.map((supporter) => (
-                <LogoTile key={supporter.name} supporter={supporter} size="ally" />
+                <LogoTile key={supporter.name} supporter={supporter} size="medium" />
               ))}
             </div>
 
             <h3 className="mb-4 text-xl font-semibold">Friends of the Event</h3>
             <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {friendsOfTheEvent.map((supporter) => (
-                <LogoTile key={supporter.name} supporter={supporter} size="friend" />
+                <LogoTile key={supporter.name} supporter={supporter} size="small" />
               ))}
             </div>
 
