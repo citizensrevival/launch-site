@@ -31,10 +31,48 @@ export const featuredSupporters: Supporter[] = [
 ]
 
 /**
+ * The businesses and organizations our planning committee members come from.
+ * A role rather than a donation tier, so they sit above the tiers on the
+ * Brought to You By page.
+ */
+export const facilitators: Supporter[] = [
+  {
+    name: 'AK Manufacturing',
+    logo: '/images/supporters/ak-manufacturing.jpg',
+    url: 'https://www.ak-mfg.com',
+  },
+  {
+    name: 'Aztec Chamber of Commerce',
+    logo: '/images/supporters/aztec-chamber-of-commerce.jpg',
+    url: 'https://aztecchamber.com',
+  },
+  {
+    name: 'Aztec Downtown Association',
+    logo: '/images/supporters/aztec-downtown-association.jpg',
+    url: 'https://www.facebook.com/61582277062139',
+  },
+  {
+    name: 'Edgar Farms',
+    logo: '/images/supporters/edgar-farms.jpg',
+    url: 'https://www.edgarsfarm.com',
+  },
+  {
+    name: 'Kinsey Forge',
+    logo: '/images/supporters/kinsey-forge.jpg',
+    url: 'https://www.kinseyforge.com',
+  },
+]
+
+/**
  * Neighborhood Ally tier — the level above Friend of the Event. Listed ahead of
  * the friends on the Brought to You By page.
  */
 export const neighborhoodAllies: Supporter[] = [
+  {
+    name: '100% San Juan Initiative',
+    logo: '/images/supporters/100-san-juan-initiative.png',
+    url: 'https://www.100nm.org/sanjuan/',
+  },
   {
     name: 'Anchorpoint Insurance',
     logo: '/images/supporters/anchorpoint-insurance.jpg',
@@ -65,29 +103,9 @@ export const friendsOfTheEvent: Supporter[] = [
     url: 'https://fivefiftypizzeria.com',
   },
   {
-    name: 'AK Manufacturing',
-    logo: '/images/supporters/ak-manufacturing.jpg',
-    url: 'https://www.ak-mfg.com',
-  },
-  {
-    name: 'Aztec Chamber of Commerce',
-    logo: '/images/supporters/aztec-chamber-of-commerce.jpg',
-    url: 'https://aztecchamber.com',
-  },
-  {
-    name: 'Aztec Downtown Association',
-    logo: '/images/supporters/aztec-downtown-association.jpg',
-    url: 'https://www.facebook.com/61582277062139',
-  },
-  {
     name: 'Barefoot Bikes',
     logo: '/images/supporters/barefoot-bikes.jpg',
     url: 'https://www.barefoot.bike',
-  },
-  {
-    name: 'Edgar Farms',
-    logo: '/images/supporters/edgar-farms.jpg',
-    url: 'https://www.edgarsfarm.com',
   },
   {
     name: 'Finish Line Graphics',
@@ -113,11 +131,6 @@ export const friendsOfTheEvent: Supporter[] = [
     name: 'Kare Drug',
     logo: '/images/supporters/kare-drug.jpg',
     url: 'https://www.karedrug.com',
-  },
-  {
-    name: 'Kinsey Forge',
-    logo: '/images/supporters/kinsey-forge.jpg',
-    url: 'https://www.kinseyforge.com',
   },
   {
     name: 'Lil Aztec Flower Shop',
