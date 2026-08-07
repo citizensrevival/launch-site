@@ -8,6 +8,16 @@ export interface Supporter {
 }
 
 /**
+ * Supporters who gave together at a single tier and are shown as one tile
+ * rather than one each.
+ */
+export interface SupporterGroup {
+  /** Shown beneath the logos, in place of a per-supporter role. */
+  role: string
+  members: Supporter[]
+}
+
+/**
  * The host city, the event's fiscal sponsor, and our top-tier sponsors, in that
  * order. Shown above the rest.
  */
@@ -31,11 +41,40 @@ export const featuredSupporters: Supporter[] = [
 ]
 
 /**
+ * Three local healthcare providers who gave together at the Community Champion
+ * tier. Shown with the featured supporters, one tile for the three of them.
+ */
+export const healthcareChampions: SupporterGroup = {
+  role: 'Community Champion',
+  members: [
+    {
+      name: 'Aztec Healthcare',
+      logo: '/images/supporters/aztec-healthcare.png',
+      url: 'https://aztechealthcare.com',
+    },
+    {
+      name: 'Farmington Wellness & Rehabilitation',
+      logo: '/images/supporters/farmington-wellness-rehab.jpg',
+      url: 'https://farmingtonwellness.com',
+    },
+    {
+      name: 'San Juan Care Center',
+      logo: '/images/supporters/san-juan-care-center.jpg',
+      url: 'https://sanjuancarecenter.com',
+    },
+  ],
+}
+
+/**
  * The businesses and organizations our planning committee members come from.
  * A role rather than a donation tier, so they sit above the tiers on the
  * Brought to You By page.
  */
 export const facilitators: Supporter[] = [
+  {
+    name: '2nd Harvest Foundation',
+    logo: '/images/supporters/2nd-harvest-foundation.png',
+  },
   {
     name: 'AK Manufacturing',
     logo: '/images/supporters/ak-manufacturing.jpg',
@@ -87,6 +126,11 @@ export const neighborhoodAllies: Supporter[] = [
     name: "Rubia's Fine Mexican Dining",
     logo: '/images/supporters/rubias.jpg',
     url: 'https://rubiasfinemexicandining.net',
+  },
+  {
+    name: 'Waste Management',
+    logo: '/images/supporters/waste-management.png',
+    url: 'https://www.wm.com',
   },
 ]
 
