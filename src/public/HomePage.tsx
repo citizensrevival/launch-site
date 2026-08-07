@@ -48,15 +48,35 @@ export default function HomePage() {
         >
           <p className="font-medium">Friday August 28th, 2026 &middot; 4:00pm&ndash;8:00pm &middot; Main Street, Aztec NM</p>
           <p className="mb-6">
-          Kick off with the Community Scavenger Hunt: solve the clues that will introduce you and your family to the local businesses and organizations who have helped keep Aztec a thriving community. Pick the route that suits you&mdash;small, medium, or large&mdash;then explore Aztec, meet neighbors, and shop locally. Street vibes continue with live entertainment, family friendly art and information booths, and a bustling vendor fair.
+          Kick off at the Aztec Museum &amp; Pioneer Village, where the Community Scavenger Hunt starts: solve the clues that will introduce you and your family to the local businesses and organizations who have helped keep Aztec a thriving community. Pick the route that suits you&mdash;small, medium, or large&mdash;then explore Aztec, meet neighbors, and shop locally. Street vibes continue with live entertainment, family friendly art and information booths, and a bustling vendor fair.
           </p>
+
+          <figure className="mb-8">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <img
+                src={getImagePath("aztec-museum-pioneer-village.jpg")}
+                alt="The Aztec Museum & Pioneer Village building on Main Street"
+                loading="lazy"
+                className="w-40 rounded-lg ring-1 ring-gray-900/10 sm:h-28 sm:w-auto sm:shrink-0"
+              />
+              <img
+                src={getImagePath("aztec-museum-banner.jpg")}
+                alt="Aztec Museum & Pioneer Village: historic buildings, amazing artifacts, special programs, great events"
+                loading="lazy"
+                className="w-full rounded-lg ring-1 ring-gray-900/10 sm:h-28 sm:w-auto sm:shrink-0"
+              />
+            </div>
+            <figcaption className="mt-2 text-sm text-gray-500">
+              The Community Scavenger Hunt starts at the Aztec Museum &amp; Pioneer Village.
+            </figcaption>
+          </figure>
 
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             Activities
           </h3>
 
           <ul className="list-disc list-inside space-y-2 mb-8">
-            <li>Community Business Scavenger Hunt, starting from the Aztec Senior Community Center &mdash; three routes: small, medium, and large</li>
+            <li>Community Business Scavenger Hunt, starting from the Aztec Museum &amp; Pioneer Village &mdash; three routes: small, medium, and large</li>
             <li>Live music in three locations, including The Zia Chicks at the Stage on Main</li>
             <li>Family friendly art and information booths, with over 20 local businesses taking part</li>
             <li>Prizes awarded at 7:45pm &mdash; an inflatable paddle board, a ukulele, gift cards from participating businesses, and more</li>

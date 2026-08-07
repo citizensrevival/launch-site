@@ -4,10 +4,12 @@ import { Button } from '../../core/components/Button'
 import { useGetInvolvedDialog } from '../hooks/useGetInvolvedDialog'
 import {
   featuredSupporters,
+  healthcareChampions,
   facilitators,
   neighborhoodAllies,
   friendsOfTheEvent,
   type Supporter,
+  type SupporterGroup,
 } from '../data/supporters'
 
 type TileSize = 'large' | 'medium' | 'small'
@@ -64,6 +66,48 @@ function LogoTile({
   )
 }
 
+/** One tile for supporters who gave together, each logo linking out on its own. */
+function GroupTile({ group }: { group: SupporterGroup }) {
+  return (
+    <div className="flex min-h-44 flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-4 sm:col-span-2">
+      <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+        {group.members.map((member) => (
+          <a
+            key={member.name}
+            href={member.url}
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label={member.name}
+            className="cursor-pointer no-underline transition-opacity hover:opacity-75"
+          >
+            <img
+              src={member.logo}
+              alt={member.name}
+              loading="lazy"
+              className="max-h-16 w-auto object-contain"
+            />
+          </a>
+        ))}
+      </div>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-semibold text-gray-700">
+        {group.members.map((member, index) => (
+          <span key={member.name} className="flex items-center gap-x-3">
+            {index > 0 && (
+              <span aria-hidden="true" className="text-gray-300">
+                &middot;
+              </span>
+            )}
+            {member.name}
+          </span>
+        ))}
+      </div>
+      <span className="mt-1 text-center text-xs font-normal text-gray-500">
+        {group.role}
+      </span>
+    </div>
+  )
+}
+
 export default function BroughtToYouByPage() {
   const { openDialog } = useGetInvolvedDialog()
 
@@ -88,6 +132,7 @@ export default function BroughtToYouByPage() {
               {featuredSupporters.map((supporter) => (
                 <LogoTile key={supporter.name} supporter={supporter} size="large" />
               ))}
+              <GroupTile group={healthcareChampions} />
             </div>
 
             <h3 className="mb-1 text-xl font-semibold">Facilitators</h3>

@@ -5,7 +5,14 @@ import { Logo } from './Logo'
 import { Menu } from './Menu'
 import { SignUpForm } from '../../public/components/SignUpForm'
 import { useGetInvolvedDialog } from '../../public/hooks/useGetInvolvedDialog'
-import { featuredSupporters, type Supporter } from '../../public/data/supporters'
+import {
+  featuredSupporters,
+  healthcareChampions,
+  type Supporter,
+} from '../../public/data/supporters'
+
+/** The group gave at the same tier as the featured sponsors, so it shows here too. */
+const introSupporters = [...featuredSupporters, ...healthcareChampions.members]
 
 /** A supporter without a `url` -- the fiscal sponsor has none -- renders unlinked. */
 function SupporterTile({ supporter }: { supporter: Supporter }) {
@@ -72,7 +79,7 @@ export function Intro() {
           Brought to You By
         </h2>
         <div className="mt-3 grid grid-cols-2 gap-3">
-          {featuredSupporters.map((supporter) => (
+          {introSupporters.map((supporter) => (
             <SupporterTile key={supporter.name} supporter={supporter} />
           ))}
         </div>
